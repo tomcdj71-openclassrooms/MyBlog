@@ -18,10 +18,10 @@ class HomeController extends TwigHelper
         $data = [
             'title' => 'MyBlog - Portfolio',
             'message' => $message,
+            'route' => 'portfolio',
         ];
 
         $twig = new TwigHelper();
-
         $twig->render('pages/portfolio/index.html.twig', $data);
     }
 }

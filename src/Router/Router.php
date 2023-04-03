@@ -30,7 +30,7 @@ class Router
     {
         // Checks if the given key exists in the array
         if (!isset($paramList[1]) || !isset($paramList[2])) {
-            throw new \Exception("Get: The key of the array doesn't exist");
+            throw new \Exception("GET: The key of the array doesn't exist");
         }
 
         $class = $paramList[1];
@@ -55,7 +55,7 @@ class Router
     public function post(array $paramList = [], array $data = []): void
     {
         if (!isset($paramList[1]) || !isset($paramList[2])) {
-            throw new \Exception("Post: The key of the array doesn't exist");
+            throw new \Exception("POST: The key of the array doesn't exist");
         }
 
         $class = $paramList[1];
@@ -74,7 +74,7 @@ class Router
     /*
     * Runs the router
     *
-    * @throws \Exception If no routes matches
+    * @throws \RouterException If no routes matches
     */
     public function run(): void
     {
@@ -86,13 +86,19 @@ class Router
         $this->routes = $routeItem->getRoutes();
 
         if (empty($this->routes)) {
-            throw new RouterException('No routes matches');
+            $request = new Request();
+            $request->redirectToRoute('not_found');
         }
 
-        if ($this->match()) {
-            $this->call();
-        } else {
-            throw new RouterException('No routes matches');
+        try {
+            if ($this->match()) {
+                $this->call();
+            } else {
+                throw new RouterException('No routes matches');
+            }
+        } catch (RouterException $e) {
+            $request = new Request();
+            $request->redirectToRoute('not_found');
         }
     }
 
