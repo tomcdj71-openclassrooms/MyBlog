@@ -21,6 +21,11 @@ class Route
             'home' => ['', HomeController::class, 'index', 'GET'],
             'blog' => ['/blog', BlogController::class, 'blogIndex', 'GET'],
             'not_found' => ['404', ErrorController::class, 'not_found', 'GET'],
+            'blog_post' => ['/blog/post/{slug}', BlogController::class, 'blogPost', 'GET'],
+            'blog_category' => ['/blog/category/{slug}', BlogController::class, 'blogCategory', 'GET'],
+            'blog_tag' => ['/blog/tag/{slug}', BlogController::class, 'blogTag', 'GET'],
+            'blog_author' => ['/blog/author/{slug}', BlogController::class, 'blogAuthor', 'GET'],
+            'blog_date' => ['/blog/date/{date}', BlogController::class, 'blogDate', 'GET'],
         ];
     }
 }

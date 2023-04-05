@@ -38,7 +38,7 @@ class Router
         $methodArr = get_class_methods($class);
 
         if (in_array($paramMethod, $methodArr)) {
-            call_user_func([$class, $paramMethod], $this->param);
+            call_user_func([new $class(), $paramMethod], $this->param);
         } else {
             throw new \Exception('Function not found');
         }
