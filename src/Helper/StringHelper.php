@@ -58,4 +58,17 @@ class StringHelper
         // Convert the string to lowercase.
         return strtolower($string);
     }
+
+    /**
+     * This function transform a string to a slug.
+     *
+     * @param string $string
+     * @param mixed  $url
+     */
+    public function getLastUrlPart($url)
+    {
+        $url = explode('/', $url);
+
+        return end($url);
+    }
 }

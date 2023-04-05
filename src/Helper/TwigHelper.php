@@ -16,10 +16,21 @@ class TwigHelper
     {
         $loader = new FilesystemLoader(dirname(__DIR__).'/View');
 
-        $this->twig = new Environment($loader);
+        $this->twig = new Environment($loader, [
+            'cache' => false,
+            'debug' => true,
+            'strict_variables' => true,
+        ]);
         $this->twig->addFunction(new TwigFunction('asset', function ($asset) {
-            return sprintf('../assets/%s', ltrim($asset, '/'));
+            $protocol = isset($_SERVER['HTTPS']) && 'off' !== $_SERVER['HTTPS'] ? 'https' : 'http';
+            $host = $_SERVER['HTTP_HOST'];
+            $baseURL = "{$protocol}://{$host}";
+
+            return sprintf('%s/assets/%s', $baseURL, ltrim($asset, '/'));
         }));
+        // Required for the dump() function
+        // VSCode don't like this line but it's working
+        $this->twig->addExtension(new \Twig\Extension\DebugExtension());
     }
 
     /**
