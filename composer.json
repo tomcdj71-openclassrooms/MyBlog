@@ -26,7 +26,8 @@
         "symfony/routing": "^6.2",
         "php": "8.2",
         "ext-PDO": "^8.2",
-        "symfony/mailer": "^6.2"
+        "symfony/mailer": "^6.2",
+        "twbs/bootstrap-icons": "^1.10"
     },
     "require-dev": {
         "tracy/tracy": "^2.10"
