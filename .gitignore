@@ -1,3 +1,7 @@
 /vendor
 /.diagrams/.mermaid-diagrams
 /.diagrams/.lucidcharts
+/var/package*
+/var/node_modules
+/var/faker.js
+/var/pnpm*
