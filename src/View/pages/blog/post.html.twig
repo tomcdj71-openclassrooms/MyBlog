@@ -20,14 +20,15 @@
 								</li>
 								<li class="d-flex align-items-center">
 									<i class="bi bi-clock"></i>
-									<a href="/blog/date/{{ post.createdAt|date("y-m-d") }}">
+									<a href="/blog/date/{{ post.createdAt|date(" y-m-d") }}">
 										<time datetime="{{ post.createdAt|date("d/m/Y") }}">
 											{{ post.createdAt|date("d/m/Y") }}</time>
 									</a>
 								</li>
 								<li class="d-flex align-items-center">
 									<i class="bi bi-chat-dots"></i>
-									<a href="#comment-section">{{ post.numberOfComments }} Commentaire{{ post.numberOfComments > 1 ? 's' : '' }}</a>
+									<a href="#comment-section">{{ post.numberOfComments }}
+										Commentaire{{ post.numberOfComments > 1 ? 's' : '' }}</a>
 								</li>
 							</ul>
 						</div>
@@ -46,8 +47,7 @@
 								{% for tag in post.tags %}
 									<li>
 										<a href="/blog/tag/{{ tag.slug }}">{{ tag.name }}</a>
-										{% if not loop.last %},
-										{% endif %}
+
 									</li>
 								{% endfor %}
 							</ul>
@@ -57,11 +57,10 @@
 					<div class="blog-author d-flex align-items-center">
 						<img src="{{ postAuthor.avatar }}" class="rounded-circle float-left" alt="avater of the author {{ post.author }}">
 						<div>
-							<a href="/blog/author/{{ post.author }}">
-								<h4>{{ post.author }}
-									<small class="text-muted">({{ postAuthor.role }})</small>
-								</h4>
-							</a>
+							<h4>
+								{{ post.author }}
+							</h4>
+							<small class="text-muted">({{ postAuthor.role }})</small>
 							<div class="social-links">
 								<a href="https://twitters.com/#">
 									<i class="bi bi-twitter"></i>
