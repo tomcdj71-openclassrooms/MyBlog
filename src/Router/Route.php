@@ -7,6 +7,7 @@ namespace App\Router;
 use App\Controller\BlogController;
 use App\Controller\ErrorController;
 use App\Controller\HomeController;
+use App\Controller\UserController;
 
 class Route
 {
@@ -26,6 +27,10 @@ class Route
             'blog_tag' => ['/blog/tag/{slug}', BlogController::class, 'blogTag', 'GET'],
             'blog_author' => ['/blog/author/{slug}', BlogController::class, 'blogAuthor', 'GET'],
             'blog_date' => ['/blog/date/{date}', BlogController::class, 'blogDate', 'GET'],
+            'my_profile' => ['/profile', UserController::class, 'profile', 'GET'],
+            'user_profile' => ['/profile/{slug}', UserController::class, 'userProfile', 'GET'],
+            'login' => ['/login', UserController::class, 'login', 'GET'],
+            'register' => ['/register', UserController::class, 'register', 'GET'],
         ];
     }
 }
