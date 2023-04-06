@@ -19,6 +19,8 @@ class PostModel
     private $slug;
     private string $categorySlug;
     private $tags;
+    private $comments;
+    private $numberOfComments;
 
     public function __construct(
         int $id,
@@ -33,7 +35,9 @@ class PostModel
         string $category,
         string $slug,
         string $categorySlug,
-        array $tags
+        array $tags,
+        array $comments,
+        int $numberOfComments
     ) {
         $this->id = $id;
         $this->title = $title;
@@ -48,11 +52,34 @@ class PostModel
         $this->slug = $slug;
         $this->categorySlug = $categorySlug;
         $this->tags = $tags;
+        $this->comments = $comments;
+        $this->numberOfComments = $numberOfComments;
     }
 
     public function __toString(): string
     {
-        return json_encode($this->toArray());
+        return json_encode($this->__toArray());
+    }
+
+    public function __toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'title' => $this->title,
+            'content' => $this->content,
+            'chapo' => $this->chapo,
+            'createdAt' => $this->createdAt,
+            'updatedAt' => $this->updatedAt,
+            'isEnabled' => $this->isEnabled,
+            'featuredImage' => $this->featuredImage,
+            'author' => $this->author,
+            'category' => $this->category,
+            'slug' => $this->slug,
+            'categorySlug' => $this->categorySlug,
+            'tags' => $this->tags,
+            'comments' => $this->comments,
+            'numberOfComments' => $this->numberOfComments,
+        ];
     }
 
     public function getId(): int
@@ -211,46 +238,27 @@ class PostModel
         return $this;
     }
 
-    public function toArray(): array
+    public function getComments(): array
     {
-        return [
-            'id' => $this->id,
-            'title' => $this->title,
-            'content' => $this->content,
-            'chapo' => $this->chapo,
-            'createdAt' => $this->createdAt,
-            'updatedAt' => $this->updatedAt,
-            'isEnabled' => $this->isEnabled,
-            'featuredImage' => $this->featuredImage,
-            'author' => $this->author,
-            'category' => $this->category,
-            'category_slug' => $this->categorySlug,
-            'slug' => $this->slug,
-            'tags' => $this->tags,
-        ];
+        return $this->comments;
     }
 
-    public static function fromArray(array $data): self
+    public function setComments(array $comments): self
     {
-        return new self(
-            $data['id'],
-            $data['title'],
-            $data['content'],
-            $data['chapo'],
-            $data['createdAt'],
-            $data['updatedAt'],
-            $data['isEnabled'],
-            $data['featuredImage'],
-            $data['author'],
-            $data['category'],
-            $data['slug'],
-            $data['category_slug'],
-            $data['tags']
-        );
+        $this->comments = $comments;
+
+        return $this;
     }
 
-    public function jsonSerialize(): array
+    public function getNumberOfComments(): int
     {
-        return $this->toArray();
+        return $this->numberOfComments;
+    }
+
+    public function setNumberOfComments(int $numberOfComments): self
+    {
+        $this->numberOfComments = $numberOfComments;
+
+        return $this;
     }
 }

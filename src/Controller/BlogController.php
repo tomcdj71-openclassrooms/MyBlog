@@ -38,7 +38,9 @@ class BlogController extends TwigHelper
         $posts = $this->postManager->findAll();
         $tags = $this->tagManager->findAll();
         $categories = $this->categoryManager->findPopularCategories();
-        $recentPosts = $this->postManager->findRecentPosts();
+        $tags = $this->tagManager->findAll();
+        $date = date('Y-m-d', strtotime('-30 days'));
+        $recentPosts = $this->postManager->findBy(['recent' => $date, 'limit' => 5, 'order' => 'ASC']);
         $data = [
             'title' => 'MyBlog - Blog',
             'message' => $message,
@@ -64,11 +66,16 @@ class BlogController extends TwigHelper
         $sh = new StringHelper();
         $url = $_SERVER['REQUEST_URI'];
         $slug = $sh->getLastUrlPart($url);
-        $post = $this->postManager->findBySlug($slug);
-        $author = $this->userManager->findByUsername($post->getAuthor());
+        $posts = $this->postManager->findBy(['slug' => $slug]);
+        $post = $posts ? $posts[0] : null;
+        $username = $post->getAuthor();
+        $author = $this->userManager->findBy(['username' => $username]);
         $tags = $this->tagManager->findAll();
         $categories = $this->categoryManager->findPopularCategories();
-        $recentPosts = $this->postManager->findRecentPosts();
+        $tags = $this->tagManager->findAll();
+        $date = date('Y-m-d H:i:s', strtotime('-30 days'));
+        $recentPosts = $this->postManager->findBy(['recent' => $date, 'limit' => 5, 'order' => 'DESC']);
+
         $data = [
             'title' => 'MyBlog - Blog',
             'message' => $message,
@@ -77,9 +84,8 @@ class BlogController extends TwigHelper
             'tags' => $tags,
             'categories' => $categories,
             'recentPosts' => $recentPosts,
-            'author' => $author,
+            'postAuthor' => $author,
         ];
-
         $twig = new TwigHelper();
         $twig->render('pages/blog/post.html.twig', $data);
     }
@@ -89,16 +95,20 @@ class BlogController extends TwigHelper
      *
      * @param null  $message
      * @param mixed $slug
+     * @param mixed $categorySlug
      */
-    public function blogCategory($slug, $message = null)
+    public function blogCategory($categorySlug, $message = null)
     {
         $sh = new StringHelper();
         $url = $_SERVER['REQUEST_URI'];
-        $slug = $sh->getLastUrlPart($url);
-        $posts = $this->postManager->findPostsWithCategory($slug);
+        $categorySlug = $sh->getLastUrlPart($url);
+        $posts = $this->postManager->findBy(['category' => "{$categorySlug}"]);
         $tags = $this->tagManager->findAll();
         $categories = $this->categoryManager->findPopularCategories();
-        $recentPosts = $this->postManager->findRecentPosts();
+        $tags = $this->tagManager->findAll();
+        $date = date('Y-m-d H:i:s', strtotime('-30 days'));
+        $recentPosts = $this->postManager->findBy(['recent' => $date, 'limit' => 5, 'order' => 'DESC']);
+
         $data = [
             'title' => 'MyBlog - Blog',
             'message' => $message,
@@ -107,7 +117,7 @@ class BlogController extends TwigHelper
             'tags' => $tags,
             'categories' => $categories,
             'recentPosts' => $recentPosts,
-            'search' => $slug,
+            'search' => $categorySlug,
             'searchType' => 'Categorie',
         ];
 
@@ -115,15 +125,18 @@ class BlogController extends TwigHelper
         $twig->render('pages/blog/index.html.twig', $data);
     }
 
-    public function blogTag($slug, $message = null)
+    public function blogTag($tagSlug, $message = null)
     {
         $sh = new StringHelper();
         $url = $_SERVER['REQUEST_URI'];
-        $slug = $sh->getLastUrlPart($url);
-        $posts = $this->postManager->findPostsWithTag($slug);
+        $tagSlug = $sh->getLastUrlPart($url);
+        $posts = $this->postManager->findBy(['tag' => "{$tagSlug}"]);
         $tags = $this->tagManager->findAll();
         $categories = $this->categoryManager->findPopularCategories();
-        $recentPosts = $this->postManager->findRecentPosts();
+        $tags = $this->tagManager->findAll();
+        $date = date('Y-m-d H:i:s', strtotime('-30 days'));
+        $recentPosts = $this->postManager->findBy(['recent' => $date, 'limit' => 5, 'order' => 'DESC']);
+
         $data = [
             'title' => 'MyBlog - Blog',
             'message' => $message,
@@ -132,23 +145,30 @@ class BlogController extends TwigHelper
             'tags' => $tags,
             'categories' => $categories,
             'recentPosts' => $recentPosts,
-            'search' => $slug,
-            'searchType' => 'Tag',
+            'search' => $tagSlug,
+            'searchType' => 'Categorie',
         ];
 
         $twig = new TwigHelper();
         $twig->render('pages/blog/index.html.twig', $data);
     }
 
-    public function blogAuthor($author, $message = null)
+    public function blogAuthor($username, $message = null)
     {
         $sh = new StringHelper();
         $url = $_SERVER['REQUEST_URI'];
-        $author = $sh->getLastUrlPart($url);
-        $posts = $this->postManager->findPostsWithAuthor($author);
+        $username = $sh->getLastUrlPart($url);
+        $author = $this->userManager->findBy(['username' => $username]);
+        $json = json_encode($author);
+        $postAuthor = json_decode($json, true);
+        $authorId = $postAuthor['id'];
+        $posts = $this->postManager->findBy(['author' => $authorId]);
         $tags = $this->tagManager->findAll();
         $categories = $this->categoryManager->findPopularCategories();
-        $recentPosts = $this->postManager->findRecentPosts();
+        $tags = $this->tagManager->findAll();
+        $date = date('Y-m-d H:i:s', strtotime('-30 days'));
+        $recentPosts = $this->postManager->findBy(['recent' => $date, 'limit' => 5, 'order' => 'DESC']);
+
         $data = [
             'title' => 'MyBlog - Blog',
             'message' => $message,
@@ -157,7 +177,7 @@ class BlogController extends TwigHelper
             'tags' => $tags,
             'categories' => $categories,
             'recentPosts' => $recentPosts,
-            'search' => $author,
+            'search' => $username,
             'searchType' => 'Auteur',
         ];
 
@@ -165,16 +185,25 @@ class BlogController extends TwigHelper
         $twig->render('pages/blog/index.html.twig', $data);
     }
 
+    /**
+     * Return the posts made in the last 30 days.
+     *
+     * @param [type] $date
+     * @param [type] $message
+     */
     public function blogDate($date, $message = null)
     {
         $sh = new StringHelper();
         $url = $_SERVER['REQUEST_URI'];
         $date = $sh->getLastUrlPart($url);
-        $date = date('Y-m-d', strtotime($date));
-        $posts = $this->postManager->findPostsPostedAt($date);
+        $fromDate = date('Y-m-d', strtotime($date.' -15 days'));
+        $posts = $this->postManager->findBy(['from_date' => $fromDate, 'to_date' => $date]);
         $tags = $this->tagManager->findAll();
         $categories = $this->categoryManager->findPopularCategories();
-        $recentPosts = $this->postManager->findRecentPosts();
+        $tags = $this->tagManager->findAll();
+        $dateNow = date('Y-m-d H:i:s', strtotime('-30 days'));
+        $recentPosts = $this->postManager->findBy(['recent' => $dateNow, 'limit' => 5, 'order' => 'DESC']);
+
         $data = [
             'title' => 'MyBlog - Blog',
             'message' => $message,
@@ -183,7 +212,7 @@ class BlogController extends TwigHelper
             'tags' => $tags,
             'categories' => $categories,
             'recentPosts' => $recentPosts,
-            'search' => $date,
+            'search' => 'Postés entre le '.date('d-m-Y', strtotime($fromDate)).' et le '.date('d-m-Y', strtotime($date)),
             'searchType' => 'Date',
         ];
 

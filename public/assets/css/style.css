@@ -320,6 +320,7 @@ body {
 .blog .entry .entry-title a {
     color: #493c3e;
     transition: 0.3s;
+    text-decoration: none;
 }
 
 .blog .entry .entry-meta {
@@ -351,6 +352,7 @@ body {
     font-size: 14px;
     display: inline-block;
     line-height: 1;
+    text-decoration: none;
 }
 
 .blog .entry .entry-content p {
@@ -571,6 +573,7 @@ body {
 .blog .entry .entry-footer a {
     color: #57484a;
     transition: 0.3s;
+    text-decoration: none;
 }
 
 .blog .blog-author {
@@ -578,6 +581,15 @@ body {
     margin-bottom: 30px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     background-color: var(--bs-white);
+}
+
+.blog .blog-author a {
+    text-decoration: none;
+}
+
+.blog .blog-author small {
+    font-size: small;
+    font-weight: 400;
 }
 
 .blog .blog-author img {
@@ -614,6 +626,7 @@ body {
     margin-top: 30px;
     position: relative;
     background-color: var(--bs-white);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .blog .blog-comments .comment.comment-reply {
@@ -635,17 +648,24 @@ body {
 
 .blog .blog-comments .comment h5 a {
     font-weight: bold;
-    color: #444444;
+    color: var(--bs-indigo);
     transition: 0.3s;
+    text-decoration: none;
 }
 
 .blog .blog-comments .comment h5 .reply {
-    padding-left: 10px;
-    color: #493c3e;
+    padding-left: 20px;
+    color: var(--bs-purple);
+}
+
+.blog .blog-comments .comment h5 .reply small {
+    font-weight: 400;
+    font-size: 12px;
 }
 
 .blog .blog-comments .comment h5 .reply i {
-    font-size: 20px;
+    font-size: 16px;
+    font-weight: 400;
 }
 
 .blog .blog-comments .comment time {

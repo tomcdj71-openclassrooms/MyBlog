@@ -1,15 +1,5 @@
 <div class="col-lg-4">
 	<div class="sidebar">
-		<h3 class="sidebar-title">Search</h3>
-		<div class="sidebar-item search-form">
-			<form action="" data-np-checked="1" data-np-autofill-type="other">
-				<input type="text" data-np-checked="1">
-				<button type="submit">
-					<i class="bi bi-search"></i>
-				</button>
-			</form>
-		</div>
-		<!-- End sidebar search formn-->
 		<h3 class="sidebar-title">Categories</h3>
 		<div class="sidebar-item categories">
 			<ul>
@@ -25,16 +15,20 @@
 		<!-- End sidebar categories-->
 		<h3 class="sidebar-title">Recent Posts</h3>
 		<div class="sidebar-item recent-posts">
-			{% for post in recentPosts %}
-				<div class="post-item clearfix">
-					<img src="{{ post.featuredImage }}" alt="Illustration of the post {{ post.slug }}" class="img-fluid">
-					<h4>
-						<a href="/blog/post/{{ post.slug }}">{{ post.title }}</a>
-					</h4>
-					<time datetime="{{ post.createdAt }}">
-						{{ post.createdAt|date("d/m/Y") }}</time>
-				</div>
-			{% endfor %}
+			{% if recentPosts is empty %}
+				<p>There is no recent post</p>
+			{% else %}
+				{% for post in recentPosts %}
+					<div class="post-item clearfix">
+						<img src="{{ post.featuredImage }}" alt="Illustration of the post {{ post.slug }}" class="img-fluid">
+						<h4>
+							<a href="/blog/post/{{ post.slug }}">{{ post.title }}</a>
+						</h4>
+						<time datetime="{{ post.createdAt }}">
+							{{ post.createdAt|date("d/m/Y") }}</time>
+					</div>
+				{% endfor %}
+			{% endif %}
 		</div>
 		<!-- End sidebar recent posts-->
 		<h3 class="sidebar-title">Tags</h3>

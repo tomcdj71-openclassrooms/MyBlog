@@ -16,17 +16,18 @@
 								<li class="d-flex align-items-center">
 									<i class="bi bi-person"></i>
 									<a href="/blog/author/{{ post.author }}">
-										{{ post.author }}
-									</a>
+										{{ post.author }}</a>
+								</li>
 								<li class="d-flex align-items-center">
 									<i class="bi bi-clock"></i>
-									<a href="/blog/date/{{ post.createdAt|date("Y-m-d") }}">
+									<a href="/blog/date/{{ post.createdAt|date("y-m-d") }}">
 										<time datetime="{{ post.createdAt|date("d/m/Y") }}">
 											{{ post.createdAt|date("d/m/Y") }}</time>
 									</a>
+								</li>
 								<li class="d-flex align-items-center">
 									<i class="bi bi-chat-dots"></i>
-									<a href="blog-single.html">12 Comments</a>
+									<a href="#comment-section">{{ post.numberOfComments }} Commentaire{{ post.numberOfComments > 1 ? 's' : '' }}</a>
 								</li>
 							</ul>
 						</div>
@@ -37,7 +38,7 @@
 							<i class="bi bi-folder"></i>
 							<ul class="categories">
 								<li>
-									<a href="/blog/categories/{{ post.categorySlug }}">{{ post.category }}</a>
+									<a href="/blog/category/{{ post.categorySlug }}">{{ post.category }}</a>
 								</li>
 							</ul>
 							<i class="bi bi-tags"></i>
@@ -54,10 +55,12 @@
 					</article>
 					<!-- End blog entry -->
 					<div class="blog-author d-flex align-items-center">
-						<img src="{{ author.avatar }}" class="rounded-circle float-left" alt="avater of the author {{ post.author }}">
+						<img src="{{ postAuthor.avatar }}" class="rounded-circle float-left" alt="avater of the author {{ post.author }}">
 						<div>
 							<a href="/blog/author/{{ post.author }}">
-								<h4>{{ post.author }}</h4>
+								<h4>{{ post.author }}
+									<small class="text-muted">({{ postAuthor.role }})</small>
+								</h4>
 							</a>
 							<div class="social-links">
 								<a href="https://twitters.com/#">
@@ -70,9 +73,7 @@
 									<i class="biu bi-instagram"></i>
 								</a>
 							</div>
-							<p>
-								{{ author.bio }}
-							</p>
+							<p>{{ postAuthor.bio }}</p>
 						</div>
 					</div>
 					<!-- End blog author bio -->

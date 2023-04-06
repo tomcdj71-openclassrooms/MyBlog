@@ -29,8 +29,16 @@
 										</a>
 									</li>
 									<li class="d-flex align-items-center">
+										<i class="bi bi-folder"></i>
+										<ul class="categories">
+											<li>
+												<a href="/blog/category/{{ post.categorySlug }}">{{ post.category }}</a>
+											</li>
+										</ul>
+									</li>
+									<li class="d-flex align-items-center">
 										<i class="bi bi-chat-dots"></i>
-										<a href="/blog/post/{{ post.slug }}">12 Comments</a>
+										<a href="/blog/post/{{ post.slug }}#comment-section">{{ post.numberOfComments }} Commentaire{{ post.numberOfComments > 1 ? 's' : '' }}</a>
 									</li>
 								</ul>
 							</div>

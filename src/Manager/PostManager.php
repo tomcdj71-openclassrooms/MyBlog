@@ -21,44 +21,69 @@ class PostManager
         return $this->db;
     }
 
-    public function findBySlug(string $slug): ?PostModel
+    public function findBy(array $criteria)
     {
         try {
-            $sql = 'SELECT p.*, u.username as author_name, c.name as category_name, c.slug as category_slug, GROUP_CONCAT(t.name) as tag_names
-            FROM post p
-            LEFT JOIN user u ON p.author_id = u.id
-            LEFT JOIN category c ON p.category_id = c.id
-            LEFT JOIN tag t ON instr("," || p.tags || ",", "," || t.id || ",") > 0
-            WHERE p.slug = :slug
-            GROUP BY p.id';
+            $sql = 'SELECT p.*, u.username as author_name, c.name as category_name, c.slug as category_slug, GROUP_CONCAT(t.name) as tag_names,
+               (SELECT json_group_array(json_object(\'id\', cm.id, \'content\', cm.content, \'author_id\', cm.author_id, \'author_name\', cmu.username, \'created_at\', cm.created_at, \'parent_id\', cm.parent_id, \'avatar\', cmu.avatar))
+                FROM comment cm
+                LEFT JOIN user cmu ON cm.author_id = cmu.id
+                WHERE cm.post_id = p.id AND cm.is_enabled = 1) as comments,
+                (SELECT COUNT(*) FROM comment cm WHERE cm.post_id = p.id AND cm.is_enabled = 1) as number_of_comments
+                FROM post p
+                LEFT JOIN user u ON p.author_id = u.id
+                LEFT JOIN category c ON p.category_id = c.id
+                LEFT JOIN tag t ON instr("," || p.tags || ",", "," || t.id || ",") > 0';
 
-            $statement = $this->db->prepare($sql);
-            $statement->execute(['slug' => $slug]);
+            $conditionsMap = [
+                'category' => ['column' => 'c.slug', 'param' => 'category'],
+                'tag' => ['column' => 't.slug', 'param' => 'tag'],
+                'slug' => ['column' => 'p.slug', 'param' => 'slug'],
+                'author' => ['column' => 'p.author_id', 'param' => 'author'],
+            ];
 
-            if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                $tags = array_map(function ($tag) {
-                    return ['name' => $tag,
-                        'slug' => strtolower(str_replace(' ', '-', $tag))];
-                }, explode(',', $data['tag_names']));
+            $conditions = [];
+            $params = [];
 
-                return new PostModel(
-                    (int) $data['id'],
-                    $data['title'],
-                    $data['content'],
-                    $data['chapo'],
-                    $data['created_at'],
-                    $data['updated_at'],
-                    (bool) $data['is_enabled'],
-                    $data['featured_image'],
-                    $data['author_name'],
-                    $data['category_name'],
-                    $data['slug'],
-                    $data['category_slug'],
-                    $tags
-                );
+            foreach ($criteria as $key => $value) {
+                if (isset($conditionsMap[$key])) {
+                    $conditions[] = "{$conditionsMap[$key]['column']} = :{$conditionsMap[$key]['param']}";
+                    $params[$conditionsMap[$key]['param']] = $value;
+                }
             }
 
-            return null;
+            if (isset($criteria['from_date'], $criteria['to_date'])) {
+                $conditions[] = 'p.created_at BETWEEN :from_date AND :to_date';
+                $params['from_date'] = $criteria['from_date'];
+                $params['to_date'] = $criteria['to_date'];
+            }
+
+            if (!empty($conditions)) {
+                $sql .= ' WHERE '.implode(' AND ', $conditions);
+            }
+
+            $order = (isset($criteria['order']) && in_array(strtoupper($criteria['order']), ['ASC', 'DESC']))
+                    ? strtoupper($criteria['order'])
+                    : 'DESC';
+
+            $sql .= ' GROUP BY p.id';
+            $sql .= " ORDER BY p.created_at {$order}";
+
+            if (isset($criteria['limit'])) {
+                $sql .= ' LIMIT '.$criteria['limit'];
+            }
+
+            $statement = $this->db->prepare($sql);
+            $statement->execute($params);
+
+            $result = [];
+
+            while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
+                $post = $this->createPostModelFromData($data);
+                $result[] = $post;
+            }
+
+            return $result;
         } catch (\PDOException $e) {
             return 'Error: '.$e->getMessage();
         }
@@ -67,22 +92,33 @@ class PostManager
     public function findAll(): array
     {
         try {
-            $sql = 'SELECT p.*, u.username as author_name, c.name as category_name, c.slug as category_slug, GROUP_CONCAT(t.name) as tag_names
-            FROM post p
-            LEFT JOIN user u ON p.author_id = u.id
-            LEFT JOIN category c ON p.category_id = c.id
-            LEFT JOIN tag t ON instr("," || p.tags || ",", "," || t.id || ",") > 0
-            GROUP BY p.id';
+            $sql = 'SELECT p.*, u.username as author_name, c.name as category_name, c.slug as category_slug, GROUP_CONCAT(t.name) as tag_names,
+                       (SELECT json_group_array(json_object(\'id\', cm.id, \'content\', cm.content, \'author_id\', cm.author_id, \'author_name\', cmu.username, \'created_at\', cm.created_at, \'parent_id\', cm.parent_id))
+                        FROM comment cm
+                        LEFT JOIN user cmu ON cm.author_id = cmu.id
+                        WHERE cm.post_id = p.id AND cm.is_enabled = 1) as comments,
+                        (SELECT COUNT(*) FROM comment cm WHERE cm.post_id = p.id AND cm.is_enabled = 1) as number_of_comments
+                FROM post p
+                LEFT JOIN user u ON p.author_id = u.id
+                LEFT JOIN category c ON p.category_id = c.id
+                LEFT JOIN tag t ON instr("," || p.tags || ",", "," || t.id || ",") > 0
+                GROUP BY p.id
+                ORDER BY p.created_at DESC';
 
             $statement = $this->db->prepare($sql);
             $statement->execute();
 
             $posts = [];
+            $nestedComments = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
                 $tags = array_map(function ($tag) {
                     return ['name' => $tag,
                         'slug' => strtolower(str_replace(' ', '-', $tag))];
                 }, explode(',', $data['tag_names']));
+
+                $comments = json_decode($data['comments'], true);
+                $nestedComments = $this->buildNestedComments($comments);
+                $commentsCount = $data['number_of_comments'];
 
                 $posts[] = new PostModel(
                     (int) $data['id'],
@@ -97,279 +133,15 @@ class PostManager
                     $data['category_name'],
                     $data['slug'],
                     $data['category_slug'],
-                    $tags
+                    $tags,
+                    $nestedComments,
+                    $commentsCount,
                 );
             }
 
             return $posts;
         } catch (\PDOException $e) {
             return 'Error: '.$e->getMessage();
-        }
-    }
-
-    public function find(int $id): ?PostModel
-    {
-        try {
-            $sql = 'SELECT p.*, u.username as author_name, c.name as category_name, c.slug as category_slug, GROUP_CONCAT(t.name) as tag_names
-            FROM post p
-            LEFT JOIN user u ON p.author_id = u.id
-            LEFT JOIN category c ON p.category_id = c.id
-            LEFT JOIN tag t ON instr("," || p.tags || ",", "," || t.id || ",") > 0
-            WHERE p.id = :id
-            GROUP BY p.id';
-
-            $statement = $this->db->prepare($sql);
-            $statement->execute(['id' => $id]);
-
-            if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                $tags = array_map(function ($tag) {
-                    return ['name' => $tag,
-                        'slug' => strtolower(str_replace(' ', '-', $tag))];
-                }, explode(',', $data['tag_names']));
-
-                return new PostModel(
-                    (int) $data['id'],
-                    $data['title'],
-                    $data['content'],
-                    $data['chapo'],
-                    $data['created_at'],
-                    $data['updated_at'],
-                    (bool) $data['is_enabled'],
-                    $data['featured_image'],
-                    $data['author_name'],
-                    $data['category_name'],
-                    $data['slug'],
-                    $data['category_slug'],
-                    $tags
-                );
-            }
-
-            return null;
-        } catch (\PDOException $e) {
-            return 'Error: '.$e->getMessage();
-        }
-    }
-
-    public function findPostsWithTag(string $slug): array
-    {
-        try {
-            $sql = 'SELECT p.*, u.username as author_name, c.name as category_name, c.slug as category_slug, GROUP_CONCAT(t.name) as tag_names
-            FROM post p
-            LEFT JOIN user u ON p.author_id = u.id
-            LEFT JOIN category c ON p.category_id = c.id
-            LEFT JOIN tag t ON instr("," || p.tags || ",", "," || t.id || ",") > 0
-            WHERE instr("," || p.tags || ",", "," || (SELECT id FROM tag WHERE slug = :slug) || ",") > 0
-            GROUP BY p.id';
-
-            $statement = $this->db->prepare($sql);
-            $statement->execute(['slug' => $slug]);
-
-            $posts = [];
-            while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                $tags = array_map(function ($tag) {
-                    return ['name' => $tag,
-                        'slug' => strtolower(str_replace(' ', '-', $tag))];
-                }, explode(',', $data['tag_names']));
-
-                $posts[] = new PostModel(
-                    (int) $data['id'],
-                    $data['title'],
-                    $data['content'],
-                    $data['chapo'],
-                    $data['created_at'],
-                    $data['updated_at'],
-                    (bool) $data['is_enabled'],
-                    $data['featured_image'],
-                    $data['author_name'],
-                    $data['category_name'],
-                    $data['slug'],
-                    $data['category_slug'],
-                    $tags
-                );
-            }
-
-            return $posts;
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
-        }
-    }
-
-    public function findPostsWithCategory(string $slug): array
-    {
-        try {
-            $sql = 'SELECT p.*, u.username as author_name, c.name as category_name, c.slug as category_slug, GROUP_CONCAT(t.name) as tag_names
-            FROM post p
-            LEFT JOIN user u ON p.author_id = u.id
-            LEFT JOIN category c ON p.category_id = c.id
-            LEFT JOIN tag t ON instr("," || p.tags || ",", "," || t.id || ",") > 0
-            WHERE c.slug = :slug
-            GROUP BY p.id';
-
-            $statement = $this->db->prepare($sql);
-            $statement->execute(['slug' => $slug]);
-
-            $posts = [];
-            while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                $tags = array_map(function ($tag) {
-                    return ['name' => $tag,
-                        'slug' => strtolower(str_replace(' ', '-', $tag))];
-                }, explode(',', $data['tag_names']));
-
-                $posts[] = new PostModel(
-                    (int) $data['id'],
-                    $data['title'],
-                    $data['content'],
-                    $data['chapo'],
-                    $data['created_at'],
-                    $data['updated_at'],
-                    (bool) $data['is_enabled'],
-                    $data['featured_image'],
-                    $data['author_name'],
-                    $data['category_name'],
-                    $data['slug'],
-                    $data['category_slug'],
-                    $tags
-                );
-            }
-
-            return $posts;
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
-        }
-    }
-
-    public function findRecentPosts(int $limit = 5): array
-    {
-        try {
-            $sql = 'SELECT p.*, u.username as author_name, c.name as category_name, c.slug as category_slug, GROUP_CONCAT(t.name) as tag_names
-            FROM post p
-            LEFT JOIN user u ON p.author_id = u.id
-            LEFT JOIN category c ON p.category_id = c.id
-            LEFT JOIN tag t ON instr("," || p.tags || ",", "," || t.id || ",") > 0
-            WHERE p.is_enabled = 1
-            GROUP BY p.id
-            ORDER BY p.created_at DESC
-            LIMIT :limit';
-
-            $statement = $this->db->prepare($sql);
-            $statement->execute(['limit' => $limit]);
-
-            $posts = [];
-            while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                $tags = array_map(function ($tag) {
-                    return ['name' => $tag,
-                        'slug' => strtolower(str_replace(' ', '-', $tag))];
-                }, explode(',', $data['tag_names']));
-
-                $posts[] = new PostModel(
-                    (int) $data['id'],
-                    $data['title'],
-                    $data['content'],
-                    $data['chapo'],
-                    $data['created_at'],
-                    $data['updated_at'],
-                    (bool) $data['is_enabled'],
-                    $data['featured_image'],
-                    $data['author_name'],
-                    $data['category_name'],
-                    $data['slug'],
-                    $data['category_slug'],
-                    $tags
-                );
-            }
-
-            return $posts;
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
-        }
-    }
-
-    public function findPostsPostedAt(string $date): array
-    {
-        try {
-            $sql = 'SELECT p.*, u.username as author_name, c.name as category_name, c.slug as category_slug, GROUP_CONCAT(t.name) as tag_names
-            FROM post p
-            LEFT JOIN user u ON p.author_id = u.id
-            LEFT JOIN category c ON p.category_id = c.id
-            LEFT JOIN tag t ON instr("," || p.tags || ",", "," || t.id || ",") > 0
-            WHERE p.is_enabled = 1 AND p.created_at LIKE :date
-            GROUP BY p.id
-            ORDER BY p.created_at DESC';
-
-            $statement = $this->db->prepare($sql);
-            $statement->execute(['date' => $date.'%']);
-
-            $posts = [];
-            while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                $tags = array_map(function ($tag) {
-                    return ['name' => $tag,
-                        'slug' => strtolower(str_replace(' ', '-', $tag))];
-                }, explode(',', $data['tag_names']));
-
-                $posts[] = new PostModel(
-                    (int) $data['id'],
-                    $data['title'],
-                    $data['content'],
-                    $data['chapo'],
-                    $data['created_at'],
-                    $data['updated_at'],
-                    (bool) $data['is_enabled'],
-                    $data['featured_image'],
-                    $data['author_name'],
-                    $data['category_name'],
-                    $data['slug'],
-                    $data['category_slug'],
-                    $tags
-                );
-            }
-
-            return $posts;
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
-        }
-    }
-
-    public function findPostsWithAuthor(string $username): array
-    {
-        try {
-            $sql = 'SELECT p.*, u.username as author_name, c.name as category_name, c.slug as category_slug, GROUP_CONCAT(t.name) as tag_names
-            FROM post p
-            LEFT JOIN user u ON p.author_id = u.id
-            LEFT JOIN category c ON p.category_id = c.id
-            LEFT JOIN tag t ON instr("," || p.tags || ",", "," || t.id || ",") > 0
-            WHERE u.username = :username
-            GROUP BY p.id';
-
-            $statement = $this->db->prepare($sql);
-            $statement->execute(['username' => $username]);
-
-            $posts = [];
-            while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                $tags = array_map(function ($tag) {
-                    return ['name' => $tag,
-                        'slug' => strtolower(str_replace(' ', '-', $tag))];
-                }, explode(',', $data['tag_names']));
-
-                $posts[] = new PostModel(
-                    (int) $data['id'],
-                    $data['title'],
-                    $data['content'],
-                    $data['chapo'],
-                    $data['created_at'],
-                    $data['updated_at'],
-                    (bool) $data['is_enabled'],
-                    $data['featured_image'],
-                    $data['author_name'],
-                    $data['category_name'],
-                    $data['slug'],
-                    $data['category_slug'],
-                    $tags
-                );
-            }
-
-            return $posts;
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
         }
     }
 
@@ -438,5 +210,58 @@ class PostManager
 
             return false;
         }
+    }
+
+    private function createPostModelFromData(array $data): PostModel
+    {
+        $tags = array_map(function ($tag) {
+            return ['name' => $tag,
+                'slug' => strtolower(str_replace(' ', '-', $tag))];
+        }, explode(',', $data['tag_names']));
+
+        $comments = json_decode($data['comments'], true);
+        $nestedComments = $this->buildNestedComments($comments);
+        $commentsCount = $data['number_of_comments'];
+
+        return new PostModel(
+            (int) $data['id'],
+            $data['title'],
+            $data['content'],
+            $data['chapo'],
+            $data['created_at'],
+            $data['updated_at'],
+            (bool) $data['is_enabled'],
+            $data['featured_image'],
+            $data['author_name'],
+            $data['category_name'],
+            $data['slug'],
+            $data['category_slug'],
+            $tags,
+            $nestedComments,
+            $commentsCount,
+        );
+    }
+
+    private function buildNestedComments($comments, $parentId = null)
+    {
+        $nestedComments = [];
+        $byId = [];
+
+        foreach ($comments as $comment) {
+            $byId[$comment['id']] = $comment;
+            $byId[$comment['id']]['children'] = [];
+        }
+
+        foreach ($byId as $id => $comment) {
+            if (null === $comment['parent_id']) {
+                $nestedComments[] = &$byId[$id];
+            } else {
+                if (isset($byId[$comment['parent_id']])) {
+                    $byId[$comment['parent_id']]['children'][] = &$byId[$id];
+                }
+            }
+        }
+
+        return $nestedComments;
     }
 }
