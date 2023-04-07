@@ -20,7 +20,7 @@
 								</li>
 								<li class="d-flex align-items-center">
 									<i class="bi bi-clock"></i>
-									<a href="/blog/date/{{ post.createdAt|date(" y-m-d") }}">
+									<a href="/blog/date/{{ post.createdAt|date("y-m-d") }}">
 										<time datetime="{{ post.createdAt|date("d/m/Y") }}">
 											{{ post.createdAt|date("d/m/Y") }}</time>
 									</a>
@@ -55,12 +55,12 @@
 					</article>
 					<!-- End blog entry -->
 					<div class="blog-author d-flex align-items-center">
-						<img src="{{ postAuthor.avatar }}" class="rounded-circle float-left" alt="avater of the author {{ post.author }}">
+						<img src="{{ author.avatar }}" class="rounded-circle float-left" alt="avater of the author {{ post.author }}">
 						<div>
 							<h4>
 								{{ post.author }}
 							</h4>
-							<small class="text-muted">({{ postAuthor.role }})</small>
+							<small class="text-muted">({{ author.role }})</small>
 							<div class="social-links">
 								<a href="https://twitters.com/#">
 									<i class="bi bi-twitter"></i>
@@ -72,7 +72,7 @@
 									<i class="biu bi-instagram"></i>
 								</a>
 							</div>
-							<p>{{ postAuthor.bio }}</p>
+							<p>{{ author.bio }}</p>
 						</div>
 					</div>
 					<!-- End blog author bio -->

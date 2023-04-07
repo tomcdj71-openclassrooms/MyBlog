@@ -17,7 +17,11 @@
 			</ul>
 		</div>
 		<div class="navbar-nav ml-auto">
-			<a class="nav-item nav-link" href="#">Connexion</a>
+			{% if session.user is not defined %}
+				<a class="nav-item nav-link" href="/login">Connexion</a>
+			{% elseif session.user is not null %}
+				<a class="nav-item nav-link" href="/logout">Déconnexion</a>
+			{% endif %}
 		</div>
 	</nav>
 </header>
