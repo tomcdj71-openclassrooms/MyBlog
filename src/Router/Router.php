@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Router;
 
-use App\Helper\SessionHelper;
+use App\Helper\SecurityHelper;
 
 class Router
 {
@@ -65,7 +65,7 @@ class Router
         $id = $this->param;
 
         if (in_array($paramMethod, $methodArr)) {
-            call_user_func([$class, $paramMethod], $data, $id);
+            call_user_func([new $class(), $paramMethod], $data, $id);
         } else {
             throw new \Exception('Function not found');
         }
@@ -79,7 +79,7 @@ class Router
     public function run(): void
     {
         $routeItem = new Route();
-        $sessionHelper = new SessionHelper();
+        $sessionHelper = new SecurityHelper();
 
         $sessionHelper->startSession();
 

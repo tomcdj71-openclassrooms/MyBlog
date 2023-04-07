@@ -78,10 +78,10 @@ class UserManager
         }
     }
 
-    public function findBy(array $criteria): array
+    public function findBy(array $criteria): ?UserModel
     {
         try {
-            $sql = 'SELECT id, username, avatar, role, bio FROM user';
+            $sql = 'SELECT * FROM user';
 
             $conditions = [];
             $params = [];
@@ -109,21 +109,60 @@ class UserManager
             $statement = $this->db->prepare($sql);
             $statement->execute($params);
 
-            $users = [];
-
             if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                return [
-                    'id' => $data['id'],
-                    'username' => $data['username'],
-                    'avatar' => $data['avatar'],
-                    'role' => $data['role'],
-                    'bio' => $data['bio'],
-                ];
+                return new UserModel(
+                    $data['id'],
+                    $data['username'],
+                    $data['email'],
+                    $data['password'],
+                    $data['created_at'],
+                    $data['role'],
+                    $data['avatar'],
+                    $data['bio']
+                );
             }
 
             return null;
         } catch (\PDOException $e) {
             return 'Error: '.$e->getMessage();
+        }
+    }
+
+    public function createUser(array $userData): ?UserModel
+    {
+        try {
+            $sql = 'INSERT INTO user (username, email, password, created_at, role, avatar, bio)
+                VALUES (:username, :email, :password, :created_at, :role, :avatar, :bio)';
+
+            $statement = $this->db->prepare($sql);
+
+            $params = [
+                'username' => $userData['username'],
+                'email' => $userData['email'],
+                'password' => $userData['password'],
+                'created_at' => date('Y-m-d H:i:s'), // Assuming you want to set the current date and time
+                'role' => $userData['role'] ?? 'ROLE_USER', // Set the default role if not provided
+                'avatar' => $userData['avatar'] ?? 'https:// i.pravatar.cc/150?img=6', // Set the default avatar if not provided
+                'bio' => $userData['bio'] ?? '',
+            ];
+
+            $statement->execute($params);
+
+            $lastInsertId = $this->db->lastInsertId();
+
+            // Return the newly created user object
+            return new UserModel(
+                (int) $lastInsertId,
+                $userData['username'],
+                $userData['email'],
+                $userData['password'],
+                $params['created_at'],
+                $params['role'],
+                $params['avatar'],
+                $params['bio']
+            );
+        } catch (\PDOException $e) {
+            return null;
         }
     }
 }

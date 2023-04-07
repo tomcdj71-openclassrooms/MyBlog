@@ -29,8 +29,9 @@ class Route
             'blog_date' => ['/blog/date/{date}', BlogController::class, 'blogDate', 'GET'],
             'my_profile' => ['/profile', UserController::class, 'profile', 'GET'],
             'user_profile' => ['/profile/{slug}', UserController::class, 'userProfile', 'GET'],
-            'login' => ['/login', UserController::class, 'login', 'GET'],
-            'register' => ['/register', UserController::class, 'register', 'GET'],
+            'login' => ['/login', UserController::class, 'login', 'GET|POST'],
+            'logout' => ['/logout', UserController::class, 'logout', 'GET'],
+            'register' => ['/register', UserController::class, 'register', 'GET|POST'],
         ];
     }
 }

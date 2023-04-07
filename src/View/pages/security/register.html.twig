@@ -11,49 +11,56 @@
 									<h5 class="card-title text-center pb-0 fs-4">Create an Account</h5>
 									<p class="text-center small">Enter your personal details to create account</p>
 								</div>
-								<form class="row g-3 needs-validation" novalidate="" data-np-autofill-type="register" data-np-checked="1" data-np-watching="1">
-									<div class="col-12">
-										<label for="yourName" class="form-label">Your Name</label>
-										<input type="text" name="name" class="form-control" id="yourName" required="" data-np-autofill-type="name_first" data-np-uid="b12fc876-2e39-4f13-814b-deb8eb4ce4ba" autocomplete="off" data-np-checked="1">
-										<div class="invalid-feedback">Please, enter your name!</div>
-										<span data-np-uid="b12fc876-2e39-4f13-814b-deb8eb4ce4ba" style="width: 24px; min-width: 24px; height: 24px; background-image: url(&quot;moz-extension://fd2768e8-0512-443f-a150-1b711559b771/assets/manifestIcons/icon.svg&quot;); background-repeat: no-repeat; background-position: left center; background-size: auto; border: medium none; display: inline-block; visibility: visible; position: absolute; cursor: pointer; z-index: 998; padding: 0px; transition: none 0s ease 0s; pointer-events: all; right: 0px; left: 343px; top: 163.8px; min-height: 24px;"></span>
-									</div>
+								<form class="row g-3 needs-validation" method="POST" novalidate="" data-np-autofill-type="register" data-np-checked="1" data-np-watching="1">
 									<div class="col-12">
 										<label for="yourEmail" class="form-label">Your Email</label>
-										<input type="email" name="email" class="form-control" id="yourEmail" required="" data-np-autofill-type="identity_email" data-np-uid="570b29d1-12c5-4881-b6b2-8207cef012f9" autocomplete="off" data-np-checked="1">
-										<div class="invalid-feedback">Please enter a valid Email adddress!</div>
-										<span data-np-uid="570b29d1-12c5-4881-b6b2-8207cef012f9" style="width: 24px; min-width: 24px; height: 24px; background-image: url(&quot;moz-extension://fd2768e8-0512-443f-a150-1b711559b771/assets/manifestIcons/icon.svg&quot;); background-repeat: no-repeat; background-position: left center; background-size: auto; border: medium none; display: inline-block; visibility: visible; position: absolute; cursor: pointer; z-index: 998; padding: 0px; transition: none 0s ease 0s; pointer-events: all; right: 0px; left: 343px; top: 249.8px; min-height: 24px;"></span>
-									</div>
-									<div class="col-12">
-										<label for="yourUsername" class="form-label">Username</label>
 										<div class="input-group has-validation">
-											<span class="input-group-text" id="inputGroupPrepend">@</span>
-											<input type="text" name="username" class="form-control" id="yourUsername" required="" data-np-autofill-type="identity_email" data-np-uid="850aa6be-7cf7-404e-a1e3-f2fe0d6c238d" autocomplete="off" data-np-checked="1">
-											<div class="invalid-feedback">Please choose a username.</div>
+											<span class="input-group-text" id="inputGroupPrepend">
+												<i class="bi bi-envelope"></i>
+											</span>
+											<input type="email" name="email" class="form-control" id="yourEmail" required="" data-np-autofill-type="identity_email" data-np-uid="570b29d1-12c5-4881-b6b2-8207cef012f9" autocomplete="off" data-np-checked="1">
+											<div class="invalid-feedback">Please enter a valid Email adddress!</div>
 											<span data-np-uid="850aa6be-7cf7-404e-a1e3-f2fe0d6c238d" style="width: 24px; min-width: 24px; height: 24px; background-image: url(&quot;moz-extension://fd2768e8-0512-443f-a150-1b711559b771/assets/manifestIcons/icon.svg&quot;); background-repeat: no-repeat; background-position: left center; background-size: auto; border: medium none; display: inline-block; visibility: visible; position: absolute; cursor: pointer; z-index: 998; padding: 0px; transition: none 0s ease 0s; pointer-events: all; right: 0px; left: 324px; top: 6px; min-height: 24px;"></span>
 										</div>
-									</div>
-									<div class="col-12">
-										<label for="yourPassword" class="form-label">Password</label>
-										<input type="password" name="password" class="form-control" id="yourPassword" required="" data-np-autofill-type="generate" data-np-uid="5f4060e7-5886-4d69-b094-f77470665e27" autocomplete="off" data-np-checked="1">
-										<div class="invalid-feedback">Please enter your password!</div>
-										<span data-np-uid="5f4060e7-5886-4d69-b094-f77470665e27" style="width: 24px; min-width: 24px; height: 24px; background-image: url(&quot;moz-extension://fd2768e8-0512-443f-a150-1b711559b771/assets/manifestIcons/icon.svg&quot;); background-repeat: no-repeat; background-position: left center; background-size: auto; border: medium none; display: inline-block; visibility: visible; position: absolute; cursor: pointer; z-index: 998; padding: 0px; transition: none 0s ease 0s; pointer-events: all; right: 0px; left: 343px; top: 421.8px; min-height: 24px;"></span>
-									</div>
-									<div class="col-12">
-										<div class="form-check">
-											<input class="form-check-input" name="terms" type="checkbox" value="" id="acceptTerms" required="" data-np-checked="1">
-											<label class="form-check-label" for="acceptTerms">I agree and accept the
-												<a href="#">terms and conditions</a>
-											</label>
-											<div class="invalid-feedback">You must agree before submitting.</div>
+										<div class="col-12">
+											<label for="yourUsername" class="form-label">Username</label>
+											<div class="input-group has-validation">
+												<span class="input-group-text" id="inputGroupPrepend">
+													<i class="bi bi-person"></i>
+												</span>
+												<input type="text" name="username" class="form-control" id="yourUsername" required="" data-np-autofill-type="identity_email" data-np-uid="850aa6be-7cf7-404e-a1e3-f2fe0d6c238d" autocomplete="off" data-np-checked="1">
+												<div class="invalid-feedback">Please choose a username.</div>
+												<span data-np-uid="850aa6be-7cf7-404e-a1e3-f2fe0d6c238d" style="width: 24px; min-width: 24px; height: 24px; background-image: url(&quot;moz-extension://fd2768e8-0512-443f-a150-1b711559b771/assets/manifestIcons/icon.svg&quot;); background-repeat: no-repeat; background-position: left center; background-size: auto; border: medium none; display: inline-block; visibility: visible; position: absolute; cursor: pointer; z-index: 998; padding: 0px; transition: none 0s ease 0s; pointer-events: all; right: 0px; left: 324px; top: 6px; min-height: 24px;"></span>
+											</div>
+										</div>
+										<div class="col-12">
+											<label for="yourPassword" class="form-label">Password</label>
+											<div class="input-group has-validation">
+												<span class="input-group-text" id="inputGroupPrepend">
+													<i class="bi bi-lock"></i>
+												</span>
+												<input type="password" name="password" class="form-control" id="yourPassword" required="" data-np-autofill-type="generate" data-np-uid="5f4060e7-5886-4d69-b094-f77470665e27" autocomplete="off" data-np-checked="1">
+												<div class="invalid-feedback">Please enter your password!</div>
+												<span data-np-uid="5f4060e7-5886-4d69-b094-f77470665e27" style="width: 24px; min-width: 24px; height: 24px; background-image: url(&quot;moz-extension://fd2768e8-0512-443f-a150-1b711559b771/assets/manifestIcons/icon.svg&quot;); background-repeat: no-repeat; background-position: left center; background-size: auto; border: medium none; display: inline-block; visibility: visible; position: absolute; cursor: pointer; z-index: 998; padding: 0px; transition: none 0s ease 0s; pointer-events: all; right: 0px; left: 343px; top: 421.8px; min-height: 24px;"></span>
+											</div>
+										</div>
+										<div class="col-12">
+											<label for="passwordConfirm" class="form-label">Confirm Password</label>
+											<div class="input-group has-validation">
+												<span class="input-group-text" id="inputGroupPrepend">
+													<i class="bi bi-lock"></i>
+												</span>
+												<input type="password" name="passwordConfirm" class="form-control" id="passwordConfirm" required="">
+												<div class="invalid-feedback">Please confirm your password!</div>
+											</div>
 										</div>
 									</div>
 									<div class="col-12">
-										<button class="btn btn-primary w-100" type="submit">Create Account</button>
+										<button class="btn btn-primary w-100" type="submit" name="register">Create Account</button>
 									</div>
 									<div class="col-12">
 										<p class="small mb-0">Already have an account?
-											<a href="pages-login.html">Log in</a>
+											<a href="/login">Log in</a>
 										</p>
 									</div>
 								</form>

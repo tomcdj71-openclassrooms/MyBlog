@@ -31,7 +31,7 @@ class UserModel
         $this->password = $password;
         $this->created_at = $created_at;
         $this->role = $role;
-        $this->avatar = $avatar;
+        $this->avatar = $avatar ?? '';
         $this->bio = $bio ?? '';
     }
 
