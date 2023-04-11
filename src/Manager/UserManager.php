@@ -30,23 +30,7 @@ class UserManager
             $statement->execute(['id' => $id]);
 
             if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                return new UserModel(
-                    (int) $data['id'],
-                    $data['username'],
-                    $data['email'],
-                    $data['password'],
-                    $data['created_at'],
-                    $data['role'],
-                    $data['avatar'],
-                    $data['bio'],
-                    $data['remember_me_token'],
-                    $data['first_name'],
-                    $data['last_name'],
-                    $data['twitter'],
-                    $data['facebook'],
-                    $data['linkedin'],
-                    $data['github']
-                );
+                return $this->createUserModelFromArray($data);
             }
         } catch (\PDOException $e) {
             echo $e->getMessage();
@@ -63,23 +47,7 @@ class UserManager
 
             $users = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                $users[] = new UserModel(
-                    (int) $data['id'],
-                    $data['username'],
-                    $data['email'],
-                    $data['password'],
-                    $data['created_at'],
-                    $data['role'],
-                    $data['avatar'],
-                    $data['bio'],
-                    $data['remember_me_token'],
-                    $data['first_name'],
-                    $data['last_name'],
-                    $data['twitter'],
-                    $data['facebook'],
-                    $data['linkedin'],
-                    $data['github']
-                );
+                $users[] = $this->createUserModelFromArray($data);
             }
 
             return $users;
@@ -127,24 +95,7 @@ class UserManager
             $statement->execute($params);
 
             if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                return new UserModel(
-                    (int) $data['id'],
-                    $data['username'],
-                    $data['email'],
-                    $data['password'],
-                    $data['created_at'],
-                    $data['role'],
-                    $data['avatar'],
-                    $data['bio'],
-                    $data['remember_me_token'],
-                    $data['remember_me_expires_at'],
-                    $data['firstName'],
-                    $data['lastName'],
-                    $data['twitter'] ?? '',
-                    $data['facebook'] ?? '',
-                    $data['linkedin'] ?? '',
-                    $data['github'] ?? '',
-                );
+                return $this->createUserModelFromArray($data);
             }
 
             return null;
@@ -165,9 +116,9 @@ class UserManager
                 'username' => $userData['username'],
                 'email' => $userData['email'],
                 'password' => $userData['password'],
-                'created_at' => date('Y-m-d H:i:s'), // Assuming you want to set the current date and time
-                'role' => $userData['role'] ?? 'ROLE_USER', // Set the default role if not provided
-                'avatar' => $userData['avatar'] ?? 'https:// i.pravatar.cc/150?img=6', // Set the default avatar if not provided
+                'created_at' => date('Y-m-d H:i:s'),
+                'role' => $userData['role'] ?? 'ROLE_USER',
+                'avatar' => $userData['avatar'] ?? 'https:// i.pravatar.cc/150?img=6',
                 'bio' => $userData['bio'] ?? '',
                 'twitter' => $userData['twitter'] ?? '',
                 'facebook' => $userData['facebook'] ?? '',
@@ -179,20 +130,11 @@ class UserManager
             $lastInsertId = $this->db->lastInsertId();
 
             // Return the newly created user object
-            return new UserModel(
-                (int) $lastInsertId,
-                $userData['username'],
-                $userData['email'],
-                $userData['password'],
-                $params['created_at'],
-                $params['role'],
-                $params['avatar'],
-                $params['bio'],
-                $params['twitter'],
-                $params['facebook'],
-                $params['linkedin'],
-                $params['github']
-            );
+            $user = $this->find((int) $lastInsertId);
+
+            if (null !== $user) {
+                return $user;
+            }
         } catch (\PDOException $e) {
             return null;
         }
@@ -237,5 +179,27 @@ class UserManager
             ':linkedin' => $data['linkedin'] ?? $user->getLinkedin(),
             ':id' => $user->getId(),
         ]);
+    }
+
+    private function createUserModelFromArray(array $data): UserModel
+    {
+        return new UserModel(
+            (int) $data['id'],
+            $data['username'],
+            $data['email'],
+            $data['password'],
+            $data['created_at'],
+            $data['role'],
+            $data['avatar'],
+            $data['bio'],
+            $data['remember_me_token'],
+            $data['remember_me_expires_at'],
+            $data['firstName'],
+            $data['lastName'],
+            $data['twitter'] ?? '',
+            $data['facebook'] ?? '',
+            $data['linkedin'] ?? '',
+            $data['github'] ?? ''
+        );
     }
 }
