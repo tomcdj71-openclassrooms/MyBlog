@@ -14,19 +14,22 @@ class RegisterFormValidator
             $errors['email'] = 'Please enter a valid email address!';
         }
 
-        if (empty($data['username'])) {
+        if (!isset($data['username']) || empty($data['username'])) {
             $valid = false;
-            $errors['username'] = 'Please choose a username.';
+            $errors['username'] = 'Please enter a username.';
         }
 
-        if (empty($data['password'])) {
+        if (!isset($data['password']) || empty($data['password'])) {
             $valid = false;
-            $errors['password'] = 'Please enter your password!';
+            $errors['password'] = 'Please enter a password.';
         }
 
-        if ($data['password'] !== $data['passwordConfirm']) {
+        if (!isset($data['passwordConfirm']) || empty($data['passwordConfirm'])) {
             $valid = false;
-            $errors['passwordConfirm'] = 'Please confirm your password!';
+            $errors['passwordConfirm'] = 'Please confirm your password.';
+        } elseif (isset($data['password']) && $data['password'] !== $data['passwordConfirm']) {
+            $valid = false;
+            $errors['passwordConfirm'] = 'The password confirmation does not match.';
         }
 
         return [

@@ -19,8 +19,8 @@ class LoginFormValidator
     {
         $errors = [];
 
-        if (empty($data['username'])) {
-            $errors['username'] = 'Please enter a username';
+        if (empty($data['email'])) {
+            $errors['email'] = 'Please enter a email address';
         }
 
         if (empty($data['password'])) {
@@ -28,7 +28,7 @@ class LoginFormValidator
         }
 
         if (empty($errors)) {
-            $user = $this->userManager->findBy(['username' => $data['username']]);
+            $user = $this->userManager->findBy(['email' => $data['email']]);
             // Persist the user in the session
 
             if (!$user) {
@@ -39,5 +39,10 @@ class LoginFormValidator
         }
 
         return $errors;
+    }
+
+    public function shouldRemember(array $data): bool
+    {
+        return isset($data['remember']) && 'true' === $data['remember'];
     }
 }

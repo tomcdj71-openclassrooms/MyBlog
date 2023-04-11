@@ -1,180 +1,281 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Helper;
 
 use App\Config\DatabaseConnexion;
 use App\Manager\UserManager;
 use App\Model\UserModel;
+use App\Validator\LoginFormValidator;
 use App\Validator\RegisterFormValidator;
 
-/**
- * This helper class provides methods for authenticating users.
- * This handles the login and registration process.
- * And also handle the user session.
- */
 class SecurityHelper
 {
-    private $userManager;
-    private $db;
+    protected $userManager;
+    protected $registerValidator;
+    protected $loginValidator;
 
     public function __construct()
     {
-        $this->db = new DatabaseConnexion();
-        $this->userManager = new UserManager($this->db);
+        $db = new DatabaseConnexion();
+        $this->userManager = new UserManager($db);
+        $this->registerValidator = new RegisterFormValidator();
+        $this->loginValidator = new LoginFormValidator($this->userManager);
     }
 
-    /**
-     * Attempt to authenticate a user with the provided username and password.
-     */
-    public function authenticate(string $username, string $password): bool
-    {
-        // Find the user by username
-        $user = $this->userManager->findBy(['username' => $username]);
-
-        // Verify the password
-        if ($user && password_verify($password, $user->getPassword())) {
-            // Log the user in
-            $this->login($user);
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Register a new user with the provided data.
-     *
-     * @param array $userData
-     *
-     * @return mixed User object on success, string error message on failure
-     */
-    public function register(array $data)
-    {
-        // Create an instance of the RegisterFormValidator
-        $validator = new RegisterFormValidator($data);
-
-        // Validate the form data
-        if ($validator->validate($data)) {
-            // Check if the email already exists
-            $existingEmail = $this->userManager->findBy(['email' => $data['email']]);
-            if ($existingEmail) {
-                throw new \Exception('Email is already in use.');
-            }
-
-            // Check if the username already exists
-            $existingUsername = $this->userManager->findBy(['username' => $data['username']]);
-            if ($existingUsername) {
-                throw new \Exception('Username is already in use.');
-            }
-
-            // Hash the password
-            $hashedPassword = password_hash($data['password'], PASSWORD_DEFAULT);
-
-            // Prepare user data
-            $userData = [
-                'username' => $data['username'],
-                'email' => $data['email'],
-                'password' => $hashedPassword,
-            ];
-
-            // Create the new user
-            $newUser = $this->userManager->createUser($userData);
-
-            if ($newUser) {
-                // Log the user in by starting a session
-                session_start();
-                $_SESSION['user'] = [
-                    'id' => $newUser->getId(),
-                    'username' => $newUser->getUsername(),
-                    'email' => $newUser->getEmail(),
-                    'role' => $newUser->getRole(),
-                ];
-
-                return true;
-            }
-
-            throw new \Exception('An error occurred during registration.');
-        }
-
-        throw new \Exception('Invalid form data.');
-    }
-
-    /**
-     * Start the session if it's not already started.
-     */
-    public function startSession()
+    public function startSession(): void
     {
         if (PHP_SESSION_NONE === session_status()) {
             session_start();
         }
     }
 
-    /**
-     * Destroy the current session.
-     */
-    public function destroySession()
+    public function register(array $postData): bool
     {
-        if (PHP_SESSION_ACTIVE === session_status()) {
-            session_unset();
-            session_destroy();
+        // Validate the user input
+        $response = $this->registerValidator->validate($postData);
+        if (!empty($response['errors'] || false === $response['valid'])) {
+            return false;
         }
+
+        // Create a new user
+        $userData = [
+            'username' => $postData['username'],
+            'email' => $postData['email'],
+            'password' => password_hash($postData['password'], PASSWORD_DEFAULT),
+            'role' => 'ROLE_USER',
+            'avatar' => 'https://i.pravatar.cc/150?img=6',
+        ];
+
+        $user = $this->userManager->createUser($userData);
+
+        if (!$user instanceof UserModel) {
+            return false;
+        }
+
+        $authErrors = $this->authenticate([
+            'email' => $user->getEmail(),
+            'password' => $postData['password'],
+            'remember' => 'true',
+        ]);
+
+        if (!$authErrors) {
+            header('Location: /blog');
+
+            exit;
+        }
+
+        return true;
     }
 
-    /**
-     * Deny access to a page until a specific role is granted.
-     */
-    public function denyAccessUntilGranted(string $role, callable $callback)
+    public function authenticate(array $data, bool $remember = false): ?UserModel
     {
-        $this->startSession();
+        // Validate the login form data
 
-        if (!$this->isAuthenticated() || !$this->hasRole($role)) {
+        $errors = $this->loginValidator->validate([
+            'email' => $data['email'],
+            'password' => $data['password'],
+            'remember' => $remember ? 'true' : 'false',
+        ]);
+
+        if (!empty($errors)) {
+            return $errors;
+        }
+
+        // Find the user in the database
+        $user = $this->userManager->findBy(['email' => $data['email']]);
+
+        if (!$user || !password_verify($data['password'], $user->getPassword())) {
+            return null;
+        }
+
+        // Set the user ID in the session
+
+        $this->setSessionValue('user', $user);
+
+        if ($this->loginValidator->shouldRemember(['email' => $data['email'], 'password' => $data['password'], 'remember' => $remember ? 'true' : 'false'])) {
+            $this->rememberMe($user);
+        }
+
+        return $user;
+    }
+
+    public function rememberMe(UserModel $user): void
+    {
+        $token = bin2hex(random_bytes(16));
+        $expiresAt = time() + 3600 * 24 * 30; // 30 days
+
+        $this->userManager->setRememberMeToken($user->getId(), $token, $expiresAt);
+
+        setcookie('remember_me_token', $token, $expiresAt, '/', '', false, true);
+    }
+
+    public function setSessionValue(string $key, $value): void
+    {
+        if (!isset($_SESSION)) {
+            session_start();
+        }
+
+        $_SESSION[$key] = $value;
+    }
+
+    public function getSessionValue(string $key)
+    {
+        if (!isset($_SESSION)) {
+            session_start();
+        }
+
+        return $_SESSION[$key] ?? null;
+    }
+
+    public function removeSessionValue(string $key): void
+    {
+        if (!isset($_SESSION)) {
+            session_start();
+        }
+
+        unset($_SESSION[$key]);
+    }
+
+    public function destroySession(): void
+    {
+        if (!isset($_SESSION)) {
+            session_start();
+        }
+
+        session_destroy();
+    }
+
+    public function denyAccessUntilGranted(string $role, callable $callback): void
+    {
+        if (!$this->isGranted($role)) {
             header('Location: /login');
 
             exit;
         }
 
-        return $callback();
+        $callback();
     }
 
-    /**
-     * Check if the user has a specific role.
-     */
-    public function hasRole(string $role): bool
+    public function isGranted(string $role): bool
     {
+        if (!isset($_SESSION)) {
+            session_start();
+        }
+
         if (!isset($_SESSION['user'])) {
             return false;
         }
 
-        $user = $_SESSION['user'];
-        $roles = explode(',', $user->getRole());
-
-        return in_array($role, $roles, true);
+        return $role === $_SESSION['user']->getRole();
     }
 
-    /**
-     * Check if a user is authenticated (logged in).
-     */
-    public function isAuthenticated(): bool
+    public function getUser(): ?UserModel
     {
-        $message = isset($_SESSION['user']) && $_SESSION['user'] instanceof UserModel ? 'You are logged in' : 'You are not logged in';
+        if (!isset($_SESSION)) {
+            session_start();
+        }
 
-        return isset($_SESSION['user'], $message);
+        if (!isset($_SESSION['user'])) {
+            return null;
+        }
+
+        return $_SESSION['user'];
     }
 
-    public function login(UserModel $user)
+    public function getSession(): ?array
     {
-        // Start a session if it hasn't been started already
         if (PHP_SESSION_NONE === session_status()) {
             session_start();
         }
 
-        // Set the session user data
-        $_SESSION['user'] = $user;
+        return $_SESSION ?? null;
     }
 
-    public function getSession()
+    public function isAuthenticated(): bool
     {
-        return $_SESSION;
+        return null !== $this->getSessionValue('user_id');
+    }
+
+    public function getAuthenticatedUser()
+    {
+        $userId = $this->getSessionValue('user_id');
+
+        if ($userId) {
+            $user = $this->userManager->findBy(['id' => $userId]);
+
+            if ($user) {
+                return new UserModel(
+                    $user['id'],
+                    $user['username'],
+                    $user['email'],
+                    $user['password'],
+                    $user['created_at'],
+                    $user['role'],
+                    $user['firstName'],
+                    $user['lastName'],
+                    $user['avatar'],
+                    $user['bio'],
+                    $user['twitter'],
+                    $user['facebook'],
+                    $user['github'],
+                    $user['linkedin'],
+                    $user['remember_me_token'],
+                    $user['remember_me_expires_at']
+                );
+            }
+        }
+
+        return null;
+    }
+
+    public function createRememberMeToken(): array
+    {
+        $token = bin2hex(random_bytes(32));
+        $expiresAt = time() + 86400 * 7; // 7 days from now
+
+        return ['token' => $token, 'expiresAt' => $expiresAt];
+    }
+
+    public function getRememberMeToken(): ?string
+    {
+        if (isset($_COOKIE['remember_me_token'])) {
+            if (empty($_COOKIE['remember_me_token'])) {
+                throw new \InvalidArgumentException('Cookie is empty');
+            }
+
+            return $_COOKIE['remember_me_token'];
+        }
+
+        throw new \InvalidArgumentException('Cookie is not set');
+    }
+
+    public function checkRememberMeToken(string $token): ?UserModel
+    {
+        $token = $this->getRememberMeToken();
+
+        if (!$token) {
+            throw new \Exception('No token found.');
+        }
+
+        $user = $this->userManager->findBy(['remember_me_token' => $token]);
+
+        if (!$user) {
+            throw new \Exception('No user found.');
+        }
+
+        $expiresAt = $user->getRememberMeExpiresAt();
+        $expiresAt = strtotime($expiresAt);
+        if ($expiresAt < time()) {
+            throw new \Exception('Token expired.');
+        }
+
+        $this->setSessionValue('user', $user);
+        header('Location: /blog');
+
+        exit;
+
+        return $user;
     }
 }

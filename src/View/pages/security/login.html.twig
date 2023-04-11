@@ -7,8 +7,8 @@
 					<div class="card mb-3">
 						<div class="card-body">
 							<div class="pt-4 pb-2">
-								<h5 class="card-title text-center pb-0 fs-4">Login to Your Account</h5>
-								<p class="text-center small">Enter your username &amp; password to login</p>
+								<h5 class="card-title text-center pb-0 fs-4">Connectez-vous à votre compte</h5>
+								<p class="text-center small">Entrez votre email &amp; mot de passe pour se connecter</p>
 							</div>
 							<form class="row g-3 needs-validation" action="/login" method="POST" novalidate="" data-np-autofill-type="login" data-np-checked="1" data-np-watching="1">
 								<input type="hidden" name="login" value="1">
@@ -18,13 +18,13 @@
 									{% endfor %}
 								{% endif %}
 								<div class="col-12">
-									<label for="yourUsername" class="form-label">Username</label>
+									<label for="email" class="form-label">Email</label>
 									<div class="input-group has-validation">
 										<span class="input-group-text" id="inputGroupPrepend">
 											<i class="bi bi-person"></i>
 										</span>
-										<input type="text" name="username" class="form-control" id="yourUsername" required="" data-np-autofill-type="identity_email" data-np-uid="850aa6be-7cf7-404e-a1e3-f2fe0d6c238d" autocomplete="off" data-np-checked="1">
-										<div class="invalid-feedback">Please choose a username.</div>
+										<input type="email" name="email" class="form-control" id="email" required="" data-np-autofill-type="identity_email" data-np-uid="850aa6be-7cf7-404e-a1e3-f2fe0d6c238d" autocomplete="off" data-np-checked="1">
+										<div class="invalid-feedback">Veuillez entrer votre email.</div>
 										<span data-np-uid="850aa6be-7cf7-404e-a1e3-f2fe0d6c238d" style="width: 24px; min-width: 24px; height: 24px; background-image: url(&quot;moz-extension://fd2768e8-0512-443f-a150-1b711559b771/assets/manifestIcons/icon.svg&quot;); background-repeat: no-repeat; background-position: left center; background-size: auto; border: medium none; display: inline-block; visibility: visible; position: absolute; cursor: pointer; z-index: 998; padding: 0px; transition: none 0s ease 0s; pointer-events: all; right: 0px; left: 324px; top: 6px; min-height: 24px;"></span>
 									</div>
 
@@ -33,13 +33,13 @@
 									<div class="text-danger small">{{ errors.username }}</div>
 								{% endif %}
 								<div class="col-12">
-									<label for="yourPassword" class="form-label">Password</label>
+									<label for="password" class="form-label">Mot de passe</label>
 									<div class="input-group has-validation">
 										<span class="input-group-text" id="inputGroupPrepend">
 											<i class="bi bi-lock"></i>
 										</span>
-										<input type="password" name="password" class="form-control" id="yourPassword" required="" data-np-autofill-type="generate" data-np-uid="5f4060e7-5886-4d69-b094-f77470665e27" autocomplete="off" data-np-checked="1">
-										<div class="invalid-feedback">Please enter your password!</div>
+										<input type="password" name="password" class="form-control" id="password" required="" data-np-autofill-type="generate" data-np-uid="5f4060e7-5886-4d69-b094-f77470665e27" autocomplete="off" data-np-checked="1">
+										<div class="invalid-feedback">Veuillez entrer votre mot de passe</div>
 										<span data-np-uid="5f4060e7-5886-4d69-b094-f77470665e27" style="width: 24px; min-width: 24px; height: 24px; background-image: url(&quot;moz-extension://fd2768e8-0512-443f-a150-1b711559b771/assets/manifestIcons/icon.svg&quot;); background-repeat: no-repeat; background-position: left center; background-size: auto; border: medium none; display: inline-block; visibility: visible; position: absolute; cursor: pointer; z-index: 998; padding: 0px; transition: none 0s ease 0s; pointer-events: all; right: 0px; left: 343px; top: 421.8px; min-height: 24px;"></span>
 									</div>
 								</div>
@@ -48,16 +48,16 @@
 								{% endif %}
 								<div class="col-12">
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" name="remember" value="true" id="rememberMe" data-np-checked="1">
-										<label class="form-check-label" for="rememberMe">Remember me</label>
+										<input class="form-check-input" type="checkbox" name="remember" value="true" id="remember" data-np-checked="1" value="true">
+										<label class="form-check-label" for="remember">Se souvenir de moi</label>
 									</div>
 								</div>
 								<div class="col-12">
-									<button class="btn btn-primary w-100" type="submit">Login</button>
+									<button class="btn btn-primary w-100" type="submit">Connexion</button>
 								</div>
 								<div class="col-12">
-									<p class="small mb-0">Don't have account?
-										<a href="/register">Create an account</a>
+									<p class="small mb-0">Pas de compte?
+										<a href="/register">Créez un compte !</a>
 									</p>
 								</div>
 							</form>

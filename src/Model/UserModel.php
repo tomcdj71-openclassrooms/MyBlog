@@ -14,6 +14,14 @@ class UserModel
     private $role;
     private $avatar;
     private $bio;
+    private $remember_me_token;
+    private $remember_me_expires_at;
+    private $firstName;
+    private $lastName;
+    private $twitter;
+    private $facebook;
+    private $linkedin;
+    private $github;
 
     public function __construct(
         int $id,
@@ -22,8 +30,16 @@ class UserModel
         string $password,
         string $created_at,
         string $role,
-        string $avatar,
-        string $bio = null
+        string $avatar = '',
+        string $bio = '',
+        string $remember_me_token = null,
+        string $remember_me_expires_at = null,
+        string $firstName = '',
+        string $lastName = '',
+        string $twitter = '',
+        string $facebook = '',
+        string $linkedin = '',
+        string $github = ''
     ) {
         $this->id = $id;
         $this->username = $username;
@@ -33,6 +49,14 @@ class UserModel
         $this->role = $role;
         $this->avatar = $avatar ?? '';
         $this->bio = $bio ?? '';
+        $this->remember_me_token = $remember_me_token ?? '';
+        $this->remember_me_expires_at = $remember_me_expires_at ?? '';
+        $this->firstName = $firstName ?? '';
+        $this->lastName = $lastName ?? '';
+        $this->twitter = $twitter ?? '';
+        $this->facebook = $facebook ?? '';
+        $this->linkedin = $linkedin ?? '';
+        $this->github = $github ?? '';
     }
 
     public function getId(): int
@@ -113,5 +137,85 @@ class UserModel
     public function setBio(string $bio): void
     {
         $this->bio = $bio;
+    }
+
+    public function getRememberMeToken(): string
+    {
+        return $this->remember_me_token;
+    }
+
+    public function setRememberMeToken(string $remember_me_token): void
+    {
+        $this->remember_me_token = $remember_me_token;
+    }
+
+    public function getRememberMeExpiresAt(): string
+    {
+        return $this->remember_me_expires_at;
+    }
+
+    public function setRememberMeExpiresAt(string $remember_me_expires_at): void
+    {
+        $this->remember_me_expires_at = $remember_me_expires_at;
+    }
+
+    public function getFirstName(): string
+    {
+        return $this->firstName;
+    }
+
+    public function getLastName(): string
+    {
+        return $this->lastName;
+    }
+
+    public function getTwitter(): string
+    {
+        return $this->twitter;
+    }
+
+    public function getFacebook(): string
+    {
+        return $this->facebook;
+    }
+
+    public function getLinkedin(): string
+    {
+        return $this->linkedin;
+    }
+
+    public function getGithub(): string
+    {
+        return $this->github;
+    }
+
+    public function setFirstName(string $firstName): void
+    {
+        $this->firstName = $firstName;
+    }
+
+    public function setLastName(string $lastName): void
+    {
+        $this->lastName = $lastName;
+    }
+
+    public function setTwitter(string $twitter): void
+    {
+        $this->twitter = $twitter;
+    }
+
+    public function setFacebook(string $facebook): void
+    {
+        $this->facebook = $facebook;
+    }
+
+    public function setLinkedin(string $linkedin): void
+    {
+        $this->linkedin = $linkedin;
+    }
+
+    public function setGithub(string $github): void
+    {
+        $this->github = $github;
     }
 }

@@ -79,9 +79,9 @@ class Router
     public function run(): void
     {
         $routeItem = new Route();
-        $sessionHelper = new SecurityHelper();
+        $securityHelper = new SecurityHelper();
 
-        $sessionHelper->startSession();
+        $securityHelper->startSession();
 
         $this->routes = $routeItem->getRoutes();
 

@@ -19,7 +19,7 @@ class Route
     public function getRoutes()
     {
         return [
-            'home' => ['', HomeController::class, 'index', 'GET'],
+            'home' => ['/', HomeController::class, 'index', 'GET'],
             'blog' => ['/blog', BlogController::class, 'blogIndex', 'GET'],
             'not_found' => ['404', ErrorController::class, 'not_found', 'GET'],
             'blog_post' => ['/blog/post/{slug}', BlogController::class, 'blogPost', 'GET'],
@@ -27,7 +27,7 @@ class Route
             'blog_tag' => ['/blog/tag/{slug}', BlogController::class, 'blogTag', 'GET'],
             'blog_author' => ['/blog/author/{slug}', BlogController::class, 'blogAuthor', 'GET'],
             'blog_date' => ['/blog/date/{date}', BlogController::class, 'blogDate', 'GET'],
-            'my_profile' => ['/profile', UserController::class, 'profile', 'GET'],
+            'my_profile' => ['/profile', UserController::class, 'profile', 'GET|POST'],
             'user_profile' => ['/profile/{slug}', UserController::class, 'userProfile', 'GET'],
             'login' => ['/login', UserController::class, 'login', 'GET|POST'],
             'logout' => ['/logout', UserController::class, 'logout', 'GET'],

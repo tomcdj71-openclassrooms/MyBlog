@@ -38,9 +38,14 @@ class UserManager
                     $data['created_at'],
                     $data['role'],
                     $data['avatar'],
-                    $data['posts'],
-                    $data['comments'],
-                    $data['bio']
+                    $data['bio'],
+                    $data['remember_me_token'],
+                    $data['first_name'],
+                    $data['last_name'],
+                    $data['twitter'],
+                    $data['facebook'],
+                    $data['linkedin'],
+                    $data['github']
                 );
             }
         } catch (\PDOException $e) {
@@ -66,15 +71,22 @@ class UserManager
                     $data['created_at'],
                     $data['role'],
                     $data['avatar'],
-                    $data['posts'],
-                    $data['comments'],
-                    $data['bio']
+                    $data['bio'],
+                    $data['remember_me_token'],
+                    $data['first_name'],
+                    $data['last_name'],
+                    $data['twitter'],
+                    $data['facebook'],
+                    $data['linkedin'],
+                    $data['github']
                 );
             }
 
             return $users;
         } catch (\PDOException $e) {
             echo $e->getMessage();
+
+            return [];
         }
     }
 
@@ -101,6 +113,11 @@ class UserManager
                 $params['role'] = $criteria['role'];
             }
 
+            if (isset($criteria['remember_me_token'])) {
+                $conditions[] = 'remember_me_token = :remember_me_token';
+                $params['remember_me_token'] = $criteria['remember_me_token'];
+            }
+
             if (!empty($conditions)) {
                 $sql .= ' WHERE '.implode(' AND ', $conditions);
             }
@@ -111,14 +128,22 @@ class UserManager
 
             if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
                 return new UserModel(
-                    $data['id'],
+                    (int) $data['id'],
                     $data['username'],
                     $data['email'],
                     $data['password'],
                     $data['created_at'],
                     $data['role'],
                     $data['avatar'],
-                    $data['bio']
+                    $data['bio'],
+                    $data['remember_me_token'],
+                    $data['remember_me_expires_at'],
+                    $data['firstName'],
+                    $data['lastName'],
+                    $data['twitter'] ?? '',
+                    $data['facebook'] ?? '',
+                    $data['linkedin'] ?? '',
+                    $data['github'] ?? '',
                 );
             }
 
@@ -144,10 +169,13 @@ class UserManager
                 'role' => $userData['role'] ?? 'ROLE_USER', // Set the default role if not provided
                 'avatar' => $userData['avatar'] ?? 'https:// i.pravatar.cc/150?img=6', // Set the default avatar if not provided
                 'bio' => $userData['bio'] ?? '',
+                'twitter' => $userData['twitter'] ?? '',
+                'facebook' => $userData['facebook'] ?? '',
+                'linkedin' => $userData['linkedin'] ?? '',
+                'github' => $userData['github'] ?? '',
             ];
 
             $statement->execute($params);
-
             $lastInsertId = $this->db->lastInsertId();
 
             // Return the newly created user object
@@ -159,10 +187,55 @@ class UserManager
                 $params['created_at'],
                 $params['role'],
                 $params['avatar'],
-                $params['bio']
+                $params['bio'],
+                $params['twitter'],
+                $params['facebook'],
+                $params['linkedin'],
+                $params['github']
             );
         } catch (\PDOException $e) {
             return null;
         }
+    }
+
+    public function setRememberMeToken(int $userId, string $token, int $expiresAt): void
+    {
+        $sql = 'UPDATE user SET remember_me_token = :token, remember_me_expires_at = :expires_at WHERE id = :id';
+        $statement = $this->db->prepare($sql);
+        $statement->execute([
+            'id' => $userId,
+            'token' => $token,
+            'expires_at' => date('Y-m-d H:i:s', $expiresAt),
+        ]);
+    }
+
+    public function updateProfile(UserModel $user, array $data): bool
+    {
+        $stmt = $this->db->prepare('
+        UPDATE user 
+        SET 
+            email = :email,
+            firstName = :firstName,
+            lastName = :lastName,
+            bio = :bio,
+            twitter = :twitter,
+            facebook = :facebook,
+            github = :github,
+            linkedin = :linkedin
+        WHERE 
+            id = :id
+    ');
+
+        return $stmt->execute([
+            ':email' => $data['email'] ?? $user->getEmail(),
+            ':firstName' => $data['firstName'] ?? $user->getFirstName(),
+            ':lastName' => $data['lastName'] ?? $user->getLastName(),
+            ':bio' => $data['bio'] ?? $user->getBio(),
+            ':twitter' => $data['twitter'] ?? $user->getTwitter(),
+            ':facebook' => $data['facebook'] ?? $user->getFacebook(),
+            ':github' => $data['github'] ?? $user->getGithub(),
+            ':linkedin' => $data['linkedin'] ?? $user->getLinkedin(),
+            ':id' => $user->getId(),
+        ]);
     }
 }
