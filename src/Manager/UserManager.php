@@ -153,7 +153,7 @@ class UserManager
 
     public function updateProfile(UserModel $user, array $data): bool
     {
-        $stmt = $this->db->prepare('
+        $sql = '
         UPDATE user 
         SET 
             email = :email,
@@ -163,26 +163,35 @@ class UserManager
             twitter = :twitter,
             facebook = :facebook,
             github = :github,
-            linkedin = :linkedin
-        WHERE 
-            id = :id
-    ');
+            avatar = :avatar,
+            linkedin = :linkedin';
 
-        return $stmt->execute([
+        $params = [
             ':email' => $data['email'] ?? $user->getEmail(),
             ':firstName' => $data['firstName'] ?? $user->getFirstName(),
             ':lastName' => $data['lastName'] ?? $user->getLastName(),
             ':bio' => $data['bio'] ?? $user->getBio(),
+            ':avatar' => $data['avatar'] ?? $user->getAvatar(),
             ':twitter' => $data['twitter'] ?? $user->getTwitter(),
             ':facebook' => $data['facebook'] ?? $user->getFacebook(),
             ':github' => $data['github'] ?? $user->getGithub(),
             ':linkedin' => $data['linkedin'] ?? $user->getLinkedin(),
             ':id' => $user->getId(),
-        ]);
+        ];
+
+        $sql .= ' WHERE id = :id';
+
+        $stmt = $this->db->prepare($sql);
+
+        return $stmt->execute($params);
     }
 
     private function createUserModelFromArray(array $data): UserModel
     {
+        if (null === $data['avatar']) {
+            $avatar = '';
+        }
+
         return new UserModel(
             (int) $data['id'],
             $data['username'],
@@ -190,7 +199,7 @@ class UserManager
             $data['password'],
             $data['created_at'],
             $data['role'],
-            $data['avatar'],
+            $data['avatar'] ?? '',
             $data['bio'],
             $data['remember_me_token'],
             $data['remember_me_expires_at'],

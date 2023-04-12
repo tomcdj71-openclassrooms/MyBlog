@@ -233,7 +233,7 @@ class SecurityHelper
     public function createRememberMeToken(): array
     {
         $token = bin2hex(random_bytes(32));
-        $expiresAt = time() + 86400 * 7; // 7 days from now
+        $expiresAt = time() + 86400 * 7;
 
         return ['token' => $token, 'expiresAt' => $expiresAt];
     }

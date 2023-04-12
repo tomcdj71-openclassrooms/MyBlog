@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Config\DatabaseConnexion;
+use App\Helper\ImageHelper;
 use App\Helper\SecurityHelper;
 use App\Helper\TwigHelper;
 use App\Manager\UserManager;
@@ -12,7 +13,6 @@ use App\Model\UserModel;
 use App\Validator\EditProfileFormValidator;
 use App\Validator\LoginFormValidator;
 use App\Validator\RegisterFormValidator;
-use Tracy\Debugger;
 
 class UserController extends TwigHelper
 {
@@ -22,6 +22,7 @@ class UserController extends TwigHelper
     protected $securityHelper;
     private $session;
     private $editProfileFormValidator;
+    private $imageHelper;
 
     public function __construct()
     {
@@ -32,6 +33,7 @@ class UserController extends TwigHelper
         $this->securityHelper = new SecurityHelper();
         $this->session = $this->securityHelper->getSession();
         $this->editProfileFormValidator = new EditProfileFormValidator($this->userManager);
+        $this->imageHelper = new ImageHelper('uploads/avatars/', 200, 200);
     }
 
     /*
@@ -42,59 +44,103 @@ class UserController extends TwigHelper
     public function profile($message = null)
     {
         $twig = new TwigHelper();
-        $securityHelper = new SecurityHelper();
+        $errors = [];
 
         // Get the user from the $_SESSION
+        if (null === $this->securityHelper->getUser()) {
+            header('Location: /login');
+
+            exit;
+        }
+
         $user = $this->securityHelper->getUser();
-        Debugger::barDump($user);
+        $userId = $user->getId();
 
-        $securityHelper->denyAccessUntilGranted('ROLE_USER', function () use ($user) {
-            if (!$user instanceof UserModel) {
-                header('Location: /login');
+        $userManager = new UserManager(new DatabaseConnexion());
+        $user = $userManager->find($userId);
 
-                exit;
-            }
+        if (!$user instanceof UserModel) {
+            header('Location: /login');
 
-            $validator = new EditProfileFormValidator();
+            exit;
+        }
 
-            if ('POST' === $_SERVER['REQUEST_METHOD']) {
-                $postData = [
-                    'firstName' => $_POST['firstName'] ?? '',
-                    'lastName' => $_POST['lastName'] ?? '',
-                    'email' => $_POST['email'] ?? '',
-                    'username' => $_POST['username'] ?? '',
-                    'bio' => $_POST['bio'] ?? '',
-                    'avatar' => $_POST['avatar'] ?? '',
-                    'twitter' => $_POST['twitter'] ?? '',
-                    'facebook' => $_POST['facebook'] ?? '',
-                    'github' => $_POST['github'] ?? '',
-                    'linkedin' => $_POST['linkedin'] ?? '',
-                ];
+        $validator = new EditProfileFormValidator();
 
-                $errors = $validator->validate($postData);
-                Debugger::barDump($errors);
+        if ('POST' === $_SERVER['REQUEST_METHOD']) {
+            $postData = [
+                'firstName' => $_POST['firstName'] ?? '',
+                'lastName' => $_POST['lastName'] ?? '',
+                'email' => $_POST['email'] ?? '',
+                'username' => $_POST['username'] ?? '',
+                'bio' => $_POST['bio'] ?? '',
+                'avatar' => $_FILES['avatar'] ?? null,
+                'twitter' => $_POST['twitter'] ?? '',
+                'facebook' => $_POST['facebook'] ?? '',
+                'github' => $_POST['github'] ?? '',
+                'linkedin' => $_POST['linkedin'] ?? '',
+            ];
 
-                exit;
+            $response = $validator->validate($postData);
 
-                if (empty($errors)) {
-                    $this->userManager->updateProfile($user, $postData);
+            if ($response['valid']) {
+                $data = $response['data'];
 
-                    header('Location: /profile');
+                if (null !== $data['avatar']) {
+                    $filename = $this->imageHelper->uploadImage($data['avatar'], 200, 200);
+
+                    if (0 === strpos($filename, 'Error')) {
+                        throw new \RuntimeException($filename);
+                    }
+
+                    $filename = explode('.', $filename)[0];
+                    $data['avatar'] = $filename;
+                    $user->setAvatar($filename);
+                }
+
+                // Update other user information
+                $user->setFirstName($data['firstName']);
+                $user->setLastName($data['lastName']);
+                $user->setEmail($data['email']);
+                $user->setBio($data['bio']);
+                $user->setTwitter($data['twitter']);
+                $user->setFacebook($data['facebook']);
+                $user->setGithub($data['github']);
+                $user->setLinkedin($data['linkedin']);
+
+                if ($userManager->updateProfile($user, $data)) {
+                    $user = $userManager->find($userId);
+                    $message = 'Your profile has been updated successfully!';
+                    $data = [
+                        'title' => 'MyBlog - Profile',
+                        'route' => 'profile',
+                        'user' => $user,
+                        'message' => $message,
+                        'errors' => $errors,
+                    ];
+
+                    $twig->render('pages/profile/profile.html.twig', $data);
 
                     exit;
                 }
+
+                $errors = $response['errors'];
             } else {
-                $errors = [];
+                $errors = $response['errors'];
             }
-        });
+        } else {
+            $errors = [];
+        }
+
+        $user = $this->userManager->find($userId);
 
         $data = [
             'title' => 'MyBlog - Profile',
             'route' => 'profile',
             'user' => $user,
             'message' => $message,
+            'errors' => $errors,
         ];
-
         $twig->render('pages/profile/profile.html.twig', $data);
     }
 
@@ -208,7 +254,6 @@ class UserController extends TwigHelper
 
             $twig->render('pages/security/register.html.twig', array_merge($data, ['errors' => $errors]));
         } else {
-            Debugger::barDump('I am pas here pas bien');
             $data = [
                 'title' => 'MyBlog - Creer un compte',
                 'route' => 'register',

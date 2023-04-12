@@ -1,0 +1,83 @@
+<form data-np-autofill-type="register" data-np-checked="1" method="POST" action="/profile" enctype="multipart/form-data">
+	{% if errors.updateError is defined %}
+		<div class="alert alert-danger">{{ errors.updateError }}</div>
+	{% endif %}
+	<div class="row mb-3">
+		<label for="avatar" class="col-md-4 col-lg-3 col-form-label">Avatar</label>
+		<div class="col-md-8 col-lg-9">
+			<img src="{{ asset('../uploads/avatars/' ~ user.avatar ~ '.jpg') }}" alt="avatar">
+			<div class="pt-2">
+				<a href="#" class="btn btn-primary btn-sm" title="Upload new profile image" onclick="document.getElementById('avatar').click();">
+					<i class="bi bi-upload"></i>
+				</a>
+				<input type="file" id="avatar" name="avatar" style="display:none;">
+				<a href="#" class="btn btn-danger btn-sm" title="Remove my profile image">
+					<i class="bi bi-trash"></i>
+				</a>
+			</div>
+		</div>
+	</div>
+
+	<div class="row mb-3">
+		<label for="fullName" class="col-md-4 col-lg-3 col-form-label">Prénom</label>
+		<div class="col-md-8 col-lg-9">
+			<input name="firstName" type="text" class="form-control" id="firstName" value="{{ user.firstName ? user.firstName : ''}}" data-np-checked="1" data-np-autofill-type="name_first" data-np-uid="a48efa26-a21b-494b-ba7f-bad794797820" autocomplete="off">
+			<span data-np-uid="a48efa26-a21b-494b-ba7f-bad794797820" style="width: 24px; min-width: 24px; height: 24px; background-image: url(&quot;moz-extension://fd2768e8-0512-443f-a150-1b711559b771/assets/manifestIcons/icon.svg&quot;); background-repeat: no-repeat; background-position: left center; background-size: auto; border: medium none; display: inline-block; visibility: visible; position: absolute; cursor: pointer; z-index: 998; padding: 0px; transition: none 0s ease 0s; pointer-events: all; right: 0px; left: 967px; top: 263px; min-height: 24px;"></span>
+		</div>
+	</div>
+
+	<div class="row mb-3">
+		<label for="fullName" class="col-md-4 col-lg-3 col-form-label">Nom</label>
+		<div class="col-md-8 col-lg-9">
+			<input name="lastName" type="text" class="form-control" id="lastName" value="{{ user.lastName ? user.lastName : ''}}" data-np-checked="1" data-np-autofill-type="name_last" data-np-uid="a48efa26-a21b-494b-ba7f-bad794797820" autocomplete="off">
+			<span data-np-uid="a48efa26-a21b-494b-ba7f-bad794797820" style="width: 24px; min-width: 24px; height: 24px; background-image: url(&quot;moz-extension://fd2768e8-0512-443f-a150-1b711559b771/assets/manifestIcons/icon.svg&quot;); background-repeat: no-repeat; background-position: left center; background-size: auto; border: medium none; display: inline-block; visibility: visible; position: absolute; cursor: pointer; z-index: 998; padding: 0px; transition: none 0s ease 0s; pointer-events: all; right: 0px; left: 967px; top: 263px; min-height: 24px;"></span>
+		</div>
+	</div>
+
+
+	<div class="row mb-3">
+		<label for="bio" class="col-md-4 col-lg-3 col-form-label">Biographie</label>
+		<div class="col-md-8 col-lg-9">
+			<textarea name="bio" class="form-control" id="bio" style="height: 100px">{{ user.bio }}</textarea>
+		</div>
+	</div>
+
+	<div class="row mb-3">
+		<label for="Email" class="col-md-4 col-lg-3 col-form-label">Email</label>
+		<div class="col-md-8 col-lg-9">
+			<input name="email" type="email" class="form-control" id="email" value="{{ user.email }}" data-np-checked="1" data-np-autofill-type="identity_email" data-np-uid="0b305ad8-18f0-4a36-b077-b414269b6d49" autocomplete="off">
+			<span data-np-uid="0b305ad8-18f0-4a36-b077-b414269b6d49" style="width: 24px; min-width: 24px; height: 24px; background-image: url(&quot;moz-extension://fd2768e8-0512-443f-a150-1b711559b771/assets/manifestIcons/icon.svg&quot;); background-repeat: no-repeat; background-position: left center; background-size: auto; border: medium none; display: inline-block; visibility: visible; position: absolute; cursor: pointer; z-index: 998; padding: 0px; transition: none 0s ease 0s; pointer-events: all; right: 0px; left: 967px; top: 703px; min-height: 24px;"></span>
+		</div>
+	</div>
+
+	<div class="row mb-3">
+		<label for="Twitter" class="col-md-4 col-lg-3 col-form-label">Profil Twitter</label>
+		<div class="col-md-8 col-lg-9">
+			<input name="twitter" type="text" class="form-control" id="Twitter" placeholder="{{ user.twitter ? user.twitter : 'https://twitter.com/username' }}" value="{{ user.twitter ? user.twitter : 'https://twitter.com/username' }}" data-np-checked="1">
+		</div>
+	</div>
+	<div class="row mb-3">
+		<label for="Facebook" class="col-md-4 col-lg-3 col-form-label">Profil Facebook</label>
+		<div class="col-md-8 col-lg-9">
+			<input name="facebook" type="text" class="form-control" id="Facebook" placeholder="{{ user.facebook ? user.facebook : 'https://facebook.com/username' }}" value="{{ user.facebook ? user.facebook : 'https://facebook.com/username' }}" data-np-checked="1">
+		</div>
+	</div>
+
+	<div class="row mb-3">
+		<label for="Github" class="col-md-4 col-lg-3 col-form-label">Profil GitHub</label>
+		<div class="col-md-8 col-lg-9">
+			<input name="github" type="text" class="form-control" id="Github" placeholder="{{ user.github ? user.github : 'https://github.com/username' }}" value="{{ user.github ? user.github : 'https://github.com/username' }}" data-np-checked=" 1">
+		</div>
+	</div>
+
+	<div class="row mb-3">
+		<label for="Linkedin" class="col-md-4 col-lg-3 col-form-label">Profil Linkedin</label>
+		<div class="col-md-8 col-lg-9">
+			<input name="linkedin" type="text" class="form-control" id="Linkedin" placeholder="{{ user.linkedin ? user.linkedin : 'https://linkedin.com/in/' }}" value="{{ user.linkedin ? user.linkedin : 'https://linkedin.com/in/' }}" data-np-checked="1">
+		</div>
+	</div>
+
+	<div class="text-center">
+		<button type="submit" class="btn btn-primary">Sauvegarder</button>
+	</div>
+</form>
