@@ -45,33 +45,5 @@
 		{% endfor %}
 	{% endmacro %}
 
-
-	<div class="reply-form">
-		<h4>Leave a Reply</h4>
-		<p>Your email address will not be published. Required fields are marked *
-		</p>
-		<form action="" data-np-autofill-type="identity" data-np-checked="1">
-			<div class="row">
-				<div class="col-md-6 form-group">
-					<input name="name" type="text" class="form-control" placeholder="Your Name*" data-np-autofill-type="name_first" data-np-uid="af8c64ba-4b0c-4004-9035-fad5f08c0ee5" autocomplete="off" data-np-checked="1">
-					<span data-np-uid="af8c64ba-4b0c-4004-9035-fad5f08c0ee5" style="width: 24px; min-width: 24px; height: 24px; background-image: url(&quot;moz-extension://fd2768e8-0512-443f-a150-1b711559b771/assets/manifestIcons/icon.svg&quot;); background-repeat: no-repeat; background-position: left center; background-size: auto; border: medium none; display: inline-block; visibility: visible; position: absolute; cursor: pointer; z-index: 998; padding: 0px; transition: none 0s ease 0s; pointer-events: all; right: 0px; left: 683px; top: 4003.7px; min-height: 24px;"></span>
-				</div>
-				<div class="col-md-6 form-group">
-					<input name="email" type="text" class="form-control" placeholder="Your Email*" data-np-autofill-type="identity_email" data-np-uid="3d6dbd23-a10b-4f3f-8225-3616d7fd3754" autocomplete="off" data-np-checked="1">
-					<span data-np-uid="3d6dbd23-a10b-4f3f-8225-3616d7fd3754" style="width: 24px; min-width: 24px; height: 24px; background-image: url(&quot;moz-extension://fd2768e8-0512-443f-a150-1b711559b771/assets/manifestIcons/icon.svg&quot;); background-repeat: no-repeat; background-position: left center; background-size: auto; border: medium none; display: inline-block; visibility: visible; position: absolute; cursor: pointer; z-index: 998; padding: 0px; transition: none 0s ease 0s; pointer-events: all; right: 0px; left: 1093px; top: 4003.7px; min-height: 24px;"></span>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col form-group">
-					<input name="website" type="text" class="form-control" placeholder="Your Website" data-np-checked="1">
-				</div>
-			</div>
-			<div class="row">
-				<div class="col form-group">
-					<textarea name="comment" class="form-control" placeholder="Your Comment*"></textarea>
-				</div>
-			</div>
-			<button type="submit" class="btn btn-primary">Post Comment</button>
-		</form>
-	</div>
+	{% include "_partials/comment_form.html.twig" %}
 </div>

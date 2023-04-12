@@ -1,0 +1,28 @@
+{% import _self as macros %}
+{{ macros.renderCommentsForm(loggedUser) }}
+
+{% macro renderCommentsForm(loggedUser) %}
+
+	<div class="reply-form">
+		<h4>Laisser un commentaire</h4>
+		{% if not loggedUser %}
+			<div class="alert alert-info" role="alert">
+				<p>Vous devez être connecté pour pouvoir poster un commentaire.</p>
+				<p>
+					<a href="/login">Se connecter</a>
+					ou
+					<a href="/register">Créer un compte</a>
+				</p>
+			</div>
+		{% else %}
+			<form action="" data-np-autofill-type="identity" data-np-checked="1">
+				<div class="row">
+					<div class="col form-group">
+						<textarea name="comment" class="form-control" placeholder="Your Comment*"></textarea>
+					</div>
+				</div>
+				<button type="submit" class="btn btn-primary">Envoyer</button>
+			</form>
+		{% endif %}
+	</div>
+{% endmacro %}
