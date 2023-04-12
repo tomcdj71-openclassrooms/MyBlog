@@ -20,7 +20,7 @@
 								</li>
 								<li class="d-flex align-items-center">
 									<i class="bi bi-clock"></i>
-									<a href="/blog/date/{{ post.createdAt|date("y-m-d") }}">
+									<a href="/blog/date/{{ post.createdAt|date(" y-m-d") }}">
 										<time datetime="{{ post.createdAt|date("d/m/Y") }}">
 											{{ post.createdAt|date("d/m/Y") }}</time>
 									</a>
@@ -55,7 +55,7 @@
 					</article>
 					<!-- End blog entry -->
 					<div class="blog-author d-flex align-items-center">
-						<img src="{{ author.avatar }}" class="rounded-circle float-left" alt="avater of the author {{ post.author }}">
+						<img src="{{ author.avatar }}" class="rounded-circle float-left" alt="avatar of the author {{ post.author }}">
 						<div>
 							<h4>
 								{{ post.author }}

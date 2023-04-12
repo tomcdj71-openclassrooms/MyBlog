@@ -3,31 +3,45 @@
 <div id="comment-section" class="blog-comments">
 	<h4 class="comments-count">{{ post.numberOfComments }}
 		Commentaire{{ post.numberOfComments > 1 ? 's' : '' }}</h4>
-	{{ macros.renderComments(post.comments) }}
-	{% macro renderComments(comments) %}
-		{% for comment in comments %}
-			<div id="comment-{{ loop.index }}" class="comment">
-				<div class="d-flex">
-					<div class="comment-img"><img src="{{ comment.avatar }}" alt="avatar of user {{ comment.author_name }}"></div>
+	{{ macros.renderComments(post.comments, loggedUser) }}
 
-					<div>
-						<h5>
-							<a href="/users/{{ comment.author_name }}">{{ comment.author_name }}</a>
-							<a href="#" class="reply">
-								<i class="bi bi-reply-fill"></i>
-                                <small>Répondre</small>
-                            </a>
-						</h5>
-						<time datetime="{{ comment.created_at }}">{{ comment.created_at|date("d/m/Y") }}</time>
-						<p>{{ comment.content }}</p>
+	{% macro renderComments(comments, user) %}
+		{% for comment in comments %}
+			{% if comment.isEnabled or (user is defined and user is not null and comment.author_name == user.username) %}
+				<div id="comment-{{ loop.index }}" class="comment {% if not comment.isEnabled %}comment-not-validated{% endif %}">
+					<div class="d-flex">
+						<div class="comment-img">
+							{% if comment.avatar starts with 'http://' or comment.avatar starts with 'https://' %}
+								<img src="{{ comment.avatar }}" alt="avatar of user {{ comment.author_name }}">
+							{% else %}
+								<img src="{{ asset('../uploads/avatars/' ~ comment.avatar ~ '.jpg') }}" alt="avatar of user {{ comment.author_name }}">
+							{% endif %}
+						</div>
+						<div>
+							<h5>
+								<a href="/users/{{ comment.author_name }}">{{ comment.author_name }}</a>
+								<a href="#" class="reply">
+									<i class="bi bi-reply-fill"></i>
+									<small>Répondre</small>
+								</a>
+							</h5>
+							<time datetime="{{ comment.created_at }}">{{ comment.created_at|date("d/m/Y") }}</time>
+							{% if not comment.isEnabled %}
+								<div class="alert alert-warning fade show" role="alert">
+									<strong>Commentaire en attente de validation</strong>
+								</div>
+							{% endif %}
+							<p class="{% if not comment.isEnabled %}comment-not-validated-content{% endif %}">
+								{{ comment.content }}</p>
+						</div>
 					</div>
+					{% if comment.children|length > 0 %}
+						<div id="comment-reply-{{ loop.index }}" class="comment comment-reply">
+							{{ macros.renderComments(comment.children, user) }}
+						</div>
+					{% endif %}
 				</div>
-				{% if comment.children|length > 0 %}
-					<div id="comment-reply-{{ loop.index }}" class="comment comment-reply">
-						{{ macros.renderComments(comment.children) }}
-					</div>
-				{% endif %}
-			</div>
+			{% endif %}
 		{% endfor %}
 	{% endmacro %}
 

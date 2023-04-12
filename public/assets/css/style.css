@@ -528,6 +528,14 @@ body {
     background-color: var(--bs-white);
 }
 
+.blog .blog-comments .comment .comment-not-validated {
+    border:rgba(0, 0, 0, 0.3) 2px dashed;
+}
+
+.blog .blog-comments .comment .comment-not-validated-content {
+    filter: opacity(0.5);
+}
+
 .blog .blog-comments .comment .comment-img {
     margin-right: 14px;
 }

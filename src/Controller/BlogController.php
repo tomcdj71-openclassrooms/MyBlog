@@ -87,9 +87,18 @@ class BlogController extends TwigHelper
         $post = $this->postManager->findBy(['slug' => $slug]);
         $post = (object) $post[0];
         $author = $this->userManager->findBy(['username' => $post->getAuthor()]);
+
+        if (null === $this->securityHelper->getUser()) {
+            $user = null;
+        } else {
+            $user = $this->securityHelper->getUser();
+        }
+
+        Debugger::barDump($user);
         $data = [
             'title' => 'MyBlog - Blog',
             'route' => 'blog',
+            'loggedUser' => $user,
             'message' => $message,
             'post' => $post,
             'author' => $author,
@@ -98,6 +107,8 @@ class BlogController extends TwigHelper
             'recentPosts' => $this->recentPosts,
             'session' => $this->session,
         ];
+        Debugger::barDump($data);
+
         $twig = new TwigHelper();
         $twig->render('pages/blog/post.html.twig', $data);
     }

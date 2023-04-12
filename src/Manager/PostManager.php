@@ -25,10 +25,10 @@ class PostManager
     {
         try {
             $sql = 'SELECT p.*, u.username as author_name, c.name as category_name, c.slug as category_slug, GROUP_CONCAT(t.name) as tag_names,
-               (SELECT json_group_array(json_object(\'id\', cm.id, \'content\', cm.content, \'author_id\', cm.author_id, \'author_name\', cmu.username, \'created_at\', cm.created_at, \'parent_id\', cm.parent_id, \'avatar\', cmu.avatar))
+               (SELECT json_group_array(json_object(\'id\', cm.id, \'content\', cm.content, \'isEnabled\', cm.is_enabled, \'author_id\', cm.author_id, \'author_name\', cmu.username, \'created_at\', cm.created_at, \'parent_id\', cm.parent_id, \'avatar\', cmu.avatar))
                 FROM comment cm
                 LEFT JOIN user cmu ON cm.author_id = cmu.id
-                WHERE cm.post_id = p.id AND cm.is_enabled = 1) as comments,
+                WHERE cm.post_id = p.id) as comments,
                 (SELECT COUNT(*) FROM comment cm WHERE cm.post_id = p.id AND cm.is_enabled = 1) as number_of_comments
                 FROM post p
                 LEFT JOIN user u ON p.author_id = u.id
