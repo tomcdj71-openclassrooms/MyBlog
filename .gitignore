@@ -5,4 +5,4 @@
 /var/node_modules
 /var/faker.js
 /var/pnpm*
-/public/assets/uploads/
+/public/uploads/
