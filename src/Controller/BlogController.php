@@ -14,7 +14,6 @@ use App\Manager\PostManager;
 use App\Manager\TagManager;
 use App\Manager\UserManager;
 use App\Validator\CommentFormValidator;
-use Tracy\Debugger;
 
 class BlogController extends TwigHelper
 {
@@ -90,7 +89,6 @@ class BlogController extends TwigHelper
         $slug = $sh->getLastUrlPart($url);
         $post = $this->postManager->findOneBy(['slug' => $slug, 'limit' => 1]);
         $author = $this->userManager->findBy(['username' => $post->getAuthor()]);
-        Debugger::barDump($author);
         $comments = $post->getComments();
         foreach ($comments as $comment) {
             $commentAuthor = $this->userManager->find($comment->getAuthor());

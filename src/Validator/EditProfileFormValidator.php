@@ -4,6 +4,13 @@ namespace App\Validator;
 
 class EditProfileFormValidator
 {
+    private $securityHelper;
+
+    public function __construct($securityHelper)
+    {
+        $this->securityHelper = $securityHelper;
+    }
+
     public function validate(array $data): array
     {
         $valid = true;
@@ -62,8 +69,17 @@ class EditProfileFormValidator
             }
         }
 
-        if (isset($_FILES['avatar']) && UPLOAD_ERR_OK === $_FILES['avatar']['error']) {
+        if (isset($_FILES['avatar']) && UPLOAD_ERR_OK === $_FILES['avatar']['error'] && !empty($_FILES['avatar']['name'])) {
             $postData['avatar'] = $_FILES['avatar'];
+        }
+
+        if (!isset($data['csrf_token'])) {
+            $valid = false;
+            $errors['csrf_token'] = 'CSRF token missing.';
+        }
+        if (!$this->securityHelper->checkCsrfToken('editProfile', $data['csrf_token'])) {
+            $valid = false;
+            $errors['csrf_token'] = 'Invalid CSRF token.';
         }
 
         return [

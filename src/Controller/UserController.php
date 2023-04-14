@@ -46,34 +46,32 @@ class UserController extends TwigHelper
     {
         $twig = new TwigHelper();
         $errors = [];
-
         // Get the user from the $_SESSION
         if (null === $this->securityHelper->getUser()) {
             header('Location: /login');
 
             exit;
         }
-
         $user = $this->securityHelper->getUser();
         $userId = $user->getId();
-
         $userManager = new UserManager(new DatabaseConnexion());
         $user = $userManager->find($userId);
-
         $loggedUser = null;
         if (isset($_SESSION['user'])) {
             $loggedUser = $_SESSION['user'];
         }
-
         if (!$user instanceof UserModel) {
             header('Location: /login');
 
             exit;
         }
+        $validator = new EditProfileFormValidator($this->securityHelper);
+        if ('POST' === $_SERVER['REQUEST_METHOD'] && $_POST['csrf_token']) {
+            $csrf_token = $_POST['csrf_token'];
+            if ($this->securityHelper->checkCsrfToken('editProfile', $csrf_token)) {
+                $errors[] = 'Invalid CSRF token';
+            }
 
-        $validator = new EditProfileFormValidator();
-
-        if ('POST' === $_SERVER['REQUEST_METHOD']) {
             $postData = [
                 'firstName' => $_POST['firstName'] ?? '',
                 'lastName' => $_POST['lastName'] ?? '',
@@ -85,25 +83,25 @@ class UserController extends TwigHelper
                 'facebook' => $_POST['facebook'] ?? '',
                 'github' => $_POST['github'] ?? '',
                 'linkedin' => $_POST['linkedin'] ?? '',
+                'csrf_token' => $_POST['csrf_token'],
             ];
 
-            $response = $validator->validate($postData);
+            if (!empty($_FILES['avatar'] || null === $_FILES['avatar'])) {
+                unset($postData['avatar']);
+            }
 
+            $response = $validator->validate($postData);
             if ($response['valid']) {
                 $data = $response['data'];
-
-                if (null !== $data['avatar']) {
+                if (isset($data['avatar']) && null !== $data['avatar']) {
                     $filename = $this->imageHelper->uploadImage($data['avatar'], 200, 200);
-
                     if (0 === strpos($filename, 'Error')) {
                         throw new \RuntimeException($filename);
                     }
-
                     $filename = explode('.', $filename)[0];
                     $data['avatar'] = $filename;
                     $user->setAvatar($filename);
                 }
-
                 // Update other user information
                 $user->setFirstName($data['firstName']);
                 $user->setLastName($data['lastName']);
@@ -113,10 +111,11 @@ class UserController extends TwigHelper
                 $user->setFacebook($data['facebook']);
                 $user->setGithub($data['github']);
                 $user->setLinkedin($data['linkedin']);
-
                 if ($userManager->updateProfile($user, $data)) {
                     $user = $userManager->find($userId);
                     $message = 'Your profile has been updated successfully!';
+                    // generate new CSRF token to prevent multiple submissions
+                    $csrf_token = $this->securityHelper->generateCsrfToken('editProfile');
                     $data = [
                         'title' => 'MyBlog - Profile',
                         'route' => 'profile',
@@ -124,13 +123,11 @@ class UserController extends TwigHelper
                         'message' => $message,
                         'errors' => $errors,
                         'loggedUser' => $loggedUser,
+                        'csrf_token' => $csrf_token,
                     ];
 
-                    $twig->render('pages/profile/profile.html.twig', $data);
-
-                    exit;
+                    return $this->profile($message, $data, $csrf_token);
                 }
-
                 $errors = $response['errors'];
             } else {
                 $errors = $response['errors'];
@@ -138,9 +135,8 @@ class UserController extends TwigHelper
         } else {
             $errors = [];
         }
-
+        $csrf_token = $this->securityHelper->generateCsrfToken('editProfile');
         $user = $this->userManager->find($userId);
-
         $data = [
             'title' => 'MyBlog - Profile',
             'route' => 'profile',
@@ -148,6 +144,7 @@ class UserController extends TwigHelper
             'message' => $message,
             'errors' => $errors,
             'loggedUser' => $loggedUser,
+            'csrf_token' => $csrf_token,
         ];
         $twig->render('pages/profile/profile.html.twig', $data);
     }
