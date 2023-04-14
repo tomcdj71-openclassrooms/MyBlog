@@ -90,6 +90,7 @@ class BlogController extends TwigHelper
         $slug = $sh->getLastUrlPart($url);
         $post = $this->postManager->findOneBy(['slug' => $slug, 'limit' => 1]);
         $author = $this->userManager->findBy(['username' => $post->getAuthor()]);
+        Debugger::barDump($author);
         $comments = $post->getComments();
         foreach ($comments as $comment) {
             $commentAuthor = $this->userManager->find($comment->getAuthor());
@@ -164,8 +165,6 @@ class BlogController extends TwigHelper
             'session' => $this->session,
             'csrf_token' => $csrfToken,
         ];
-
-        Debugger::barDump($data, 'data');
         $twig->render('pages/blog/post.html.twig', $data);
     }
 

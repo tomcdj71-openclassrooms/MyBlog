@@ -37,9 +37,11 @@
 								<li class="nav-item" role="presentation">
 									<button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview" aria-selected="false" role="tab" tabindex="-1">Résumé</button>
 								</li>
-								<li class="nav-item" role="presentation">
-									<button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit" aria-selected="true" role="tab">Modifier Profil</button>
-								</li>
+								{% if loggedUser is not null and loggedUser.id == user.id %}
+									<li class="nav-item" role="presentation">
+										<button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit" aria-selected="true" role="tab">Modifier Profil</button>
+									</li>
+								{% endif %}
 								{% if user.role == "ROLE_ADMIN" %}
 									<li class="nav-item" role="presentation">
 										<button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-comments" aria-selected="false" role="tab" tabindex="-1">Mes Commentaires</button>

@@ -6,6 +6,7 @@ namespace App\Manager;
 
 use App\Config\DatabaseConnexion;
 use App\Model\UserModel;
+use Tracy\Debugger;
 
 class UserManager
 {
@@ -191,6 +192,8 @@ class UserManager
         if (null === $data['avatar']) {
             $avatar = '';
         }
+
+        Debugger::barDump($data, 'data');
 
         return new UserModel(
             (int) $data['id'],

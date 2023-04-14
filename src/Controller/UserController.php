@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Config\DatabaseConnexion;
 use App\Helper\ImageHelper;
 use App\Helper\SecurityHelper;
+use App\Helper\StringHelper;
 use App\Helper\TwigHelper;
 use App\Manager\UserManager;
 use App\Model\UserModel;
@@ -58,6 +59,11 @@ class UserController extends TwigHelper
 
         $userManager = new UserManager(new DatabaseConnexion());
         $user = $userManager->find($userId);
+
+        $loggedUser = null;
+        if (isset($_SESSION['user'])) {
+            $loggedUser = $_SESSION['user'];
+        }
 
         if (!$user instanceof UserModel) {
             header('Location: /login');
@@ -117,6 +123,7 @@ class UserController extends TwigHelper
                         'user' => $user,
                         'message' => $message,
                         'errors' => $errors,
+                        'loggedUser' => $loggedUser,
                     ];
 
                     $twig->render('pages/profile/profile.html.twig', $data);
@@ -140,6 +147,7 @@ class UserController extends TwigHelper
             'user' => $user,
             'message' => $message,
             'errors' => $errors,
+            'loggedUser' => $loggedUser,
         ];
         $twig->render('pages/profile/profile.html.twig', $data);
     }
@@ -271,13 +279,23 @@ class UserController extends TwigHelper
      */
     public function userProfile($username, $message = null)
     {
+        $twig = new TwigHelper();
+        $sh = new StringHelper();
+        $url = $_SERVER['REQUEST_URI'];
+        $username = $sh->getLastUrlPart($url);
+
         $user = $this->userManager->findBy(['username' => $username]);
+        $loggedUser = null;
+        if (isset($_SESSION['user'])) {
+            $loggedUser = $_SESSION['user'];
+        }
         $data = [
             'title' => 'MyBlog - Profile',
             'route' => 'profile',
             'user' => $user,
+            'loggedUser' => $loggedUser,
         ];
-        $twig = new TwigHelper();
+
         $twig->render('pages/profile/profile.html.twig', $data);
     }
 
