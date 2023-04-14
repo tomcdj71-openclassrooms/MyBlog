@@ -6,6 +6,7 @@ namespace App\Model;
 
 class PostModel
 {
+    public $author;
     private $id;
     private $title;
     private $content;
@@ -14,7 +15,6 @@ class PostModel
     private $updatedAt;
     private $isEnabled;
     private $featuredImage;
-    private $author;
     private $category;
     private $slug;
     private string $categorySlug;
@@ -36,8 +36,8 @@ class PostModel
         string $slug,
         string $categorySlug,
         array $tags,
-        array $comments,
-        int $numberOfComments
+        array $comments = [],
+        ?int $numberOfComments = null
     ) {
         $this->id = $id;
         $this->title = $title;
@@ -78,7 +78,6 @@ class PostModel
             'categorySlug' => $this->categorySlug,
             'tags' => $this->tags,
             'comments' => $this->comments,
-            'numberOfComments' => $this->numberOfComments,
         ];
     }
 
@@ -250,9 +249,32 @@ class PostModel
         return $this;
     }
 
+    public function addComment(array $comment): self
+    {
+        $this->comments[] = $comment;
+
+        return $this;
+    }
+
+    public function removeComment(array $comment): self
+    {
+        $this->comments = array_filter($this->comments, function ($c) use ($comment) {
+            return $c['id'] !== $comment['id'];
+        });
+
+        return $this;
+    }
+
     public function getNumberOfComments(): int
     {
-        return $this->numberOfComments;
+        return count($this->comments);
+    }
+
+    public function getNumberOfEnabledComments(): int
+    {
+        return count(array_filter($this->comments, function ($comment) {
+            return $comment['isEnabled'];
+        }));
     }
 
     public function setNumberOfComments(int $numberOfComments): self
