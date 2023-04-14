@@ -1,8 +1,7 @@
 {% import _self as macros %}
-{{ macros.renderCommentsForm(loggedUser) }}
+{{ macros.renderCommentsForm(loggedUser, post, csrf_token) }}
 
-{% macro renderCommentsForm(loggedUser) %}
-
+{% macro renderCommentsForm(loggedUser, post, csrf_token) %}
 	<div class="reply-form">
 		<h4>Laisser un commentaire</h4>
 		{% if not loggedUser %}
@@ -15,14 +14,75 @@
 				</p>
 			</div>
 		{% else %}
-			<form action="" data-np-autofill-type="identity" data-np-checked="1">
+			<form method="POST" action="/blog/post/{{ post.slug }}" data-np-autofill-type="identity" data-np-checked="1">
+				<input type="hidden" name="parentId" value="">
 				<div class="row">
 					<div class="col form-group">
-						<textarea name="comment" class="form-control" placeholder="Your Comment*"></textarea>
+						<textarea name="content" class="form-control" placeholder="Votre commentaire*"></textarea>
 					</div>
 				</div>
+				<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 				<button type="submit" class="btn btn-primary">Envoyer</button>
 			</form>
 		{% endif %}
 	</div>
 {% endmacro %}
+<script>
+	const replyButtons = document.querySelectorAll('.reply');
+
+replyButtons.forEach((button) => {
+button.addEventListener('click', (event) => {
+event.preventDefault();
+
+const commentId = button.getAttribute('data-comment-id');
+const author = button.getAttribute('data-author');
+let content = button.getAttribute('data-content');
+
+if (content.length > 200) {
+content = content.substring(0, 200) + '...';
+}
+
+const parentIdInput = document.querySelector('input[name="parentId"]');
+const replyPreview = document.querySelector('#reply-preview') || createReplyPreview();
+
+if (parentIdInput) {
+parentIdInput.value = commentId;
+const alert = createAlert(author, content);
+replyPreview.innerHTML = '';
+replyPreview.appendChild(alert);
+} else {
+const input = document.createElement('input');
+input.setAttribute('type', 'hidden');
+input.setAttribute('name', 'parentId');
+input.setAttribute('value', commentId);
+document.querySelector('form').appendChild(input);
+replyPreview.innerHTML = '';
+} replyPreview.classList.remove('d-none');
+const formGroup = document.querySelector('.form-group');
+formGroup.parentNode.insertBefore(replyPreview, formGroup);
+
+// Scroll to the reply form
+const replyForm = document.querySelector('.reply-form');
+replyForm.scrollIntoView({behavior: 'smooth'});
+
+function createReplyPreview() {
+const replyPreview = document.createElement('div');
+replyPreview.setAttribute('id', 'reply-preview');
+const formGroup = document.querySelector('.form-group');
+formGroup.parentNode.insertBefore(replyPreview, formGroup.nextSibling);
+return replyPreview;
+}
+
+function createAlert(author, content) {
+const alert = document.createElement('div');
+alert.setAttribute('class', 'alert alert-info fade show');
+alert.setAttribute('role', 'alert');
+alert.innerHTML = `
+    <small class="fst-italic fw-lighter text-muted">Vous répondez à ${author}:</small>
+    <p class="lead text-black">${content}</p>
+  `;
+return alert;
+}
+});
+});
+</script>

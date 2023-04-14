@@ -278,4 +278,38 @@ class SecurityHelper
 
         return $user;
     }
+
+    public function checkCsrfToken(string $key, string $token): bool
+    {
+        if (!isset($_SESSION)) {
+            session_start();
+        }
+
+        if (!isset($_SESSION['csrf_tokens'])) {
+            $_SESSION['csrf_tokens'] = [];
+        }
+
+        $tokens = &$_SESSION['csrf_tokens'];
+
+        if (!isset($tokens[$key])) {
+            $tokens[$key] = bin2hex(random_bytes(32));
+        }
+
+        $expected = $tokens[$key];
+
+        return hash_equals($expected, $token);
+    }
+
+    public function generateCsrfToken(string $key): string
+    {
+        if (!isset($_SESSION)) {
+            session_start();
+        }
+
+        $token = bin2hex(random_bytes(32));
+
+        $_SESSION['csrf_tokens'][$key] = $token;
+
+        return $token;
+    }
 }

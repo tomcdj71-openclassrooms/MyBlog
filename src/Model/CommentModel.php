@@ -4,72 +4,94 @@ declare(strict_types=1);
 
 namespace App\Model;
 
-use App\Config\DatabaseConnexion;
-use App\Entity\Comment;
-
 class CommentModel
 {
-    private $db;
+    public $author;
+    public $createdAt;
+    private $id;
+    private $content;
+    private $isEnabled;
+    private $parentId;
+    private $postId;
 
-    public function __construct(DatabaseConnexion $databaseConnexion)
+    public function __construct(int $id, string $content, string $createdAt, int $author, int $postId, bool $isEnabled, int $parentId)
     {
-        $this->db = $databaseConnexion->connect();
+        $this->id = $id;
+        $this->content = $content;
+        $this->createdAt = $createdAt;
+        $this->author = $author;
+        $this->postId = $postId;
+        $this->isEnabled = $isEnabled;
+        $this->parentId = $parentId;
     }
 
-    public function findAll(): array
+    public function getId(): int
     {
-        $stmt = $this->db->prepare('SELECT * FROM comment');
-        $stmt->execute();
-
-        return $stmt->fetchAll(\PDO::FETCH_CLASS, Comment::class);
+        return $this->id;
     }
 
-    public function find(int $id): ?Comment
+    public function getContent(): string
     {
-        $stmt = $this->db->prepare('SELECT * FROM comment WHERE id = :id');
-        $stmt->bindValue(':id', $id, \PDO::PARAM_INT);
-        $stmt->execute();
-
-        return $stmt->fetchObject(Comment::class);
+        return $this->content;
     }
 
-    public function create(Comment $comment): bool
+    public function getCreatedAt(): string
     {
-        $stmt = $this->db->prepare('
-            INSERT INTO comment (author, content, post_id, created_at)
-            VALUES (:author, :content, :post_id, :created_at)
-        ');
-
-        $stmt->bindValue(':author', $comment->getAuthor());
-        $stmt->bindValue(':content', $comment->getContent());
-        $stmt->bindValue(':post_id', $comment->getPost(), \PDO::PARAM_INT);
-        $stmt->bindValue(':created_at', $comment->getCreatedAt()->format('Y-m-d H:i:s'));
-
-        return $stmt->execute();
+        return $this->createdAt;
     }
 
-    public function update(Comment $comment): bool
+    public function getAuthor(): int
     {
-        $stmt = $this->db->prepare('
-            UPDATE comment
-            SET author = :author, content = :content, post_id = :post_id, created_at = :created_at
-            WHERE id = :id
-        ');
-
-        $stmt->bindValue(':author', $comment->getAuthor());
-        $stmt->bindValue(':content', $comment->getContent());
-        $stmt->bindValue(':post_id', $comment->getPost(), \PDO::PARAM_INT);
-        $stmt->bindValue(':created_at', $comment->getCreatedAt()->format('Y-m-d H:i:s'));
-        $stmt->bindValue(':id', $comment->getId(), \PDO::PARAM_INT);
-
-        return $stmt->execute();
+        return $this->author;
     }
 
-    public function delete(int $id): bool
+    public function getPostId(): int
     {
-        $stmt = $this->db->prepare('DELETE FROM comment WHERE id = :id');
-        $stmt->bindValue(':id', $id, \PDO::PARAM_INT);
+        return $this->postId;
+    }
 
-        return $stmt->execute();
+    public function getIsEnabled(): bool
+    {
+        return (bool) $this->isEnabled;
+    }
+
+    public function getParentId(): int
+    {
+        return $this->parentId;
+    }
+
+    public function setId(int $id): void
+    {
+        $this->id = $id;
+    }
+
+    public function setContent(string $content): void
+    {
+        $this->content = $content;
+    }
+
+    public function setCreatedAt(string $createdAt): void
+    {
+        $this->createdAt = $createdAt;
+    }
+
+    public function setAuthor(string $author): void
+    {
+        $this->author = $author;
+    }
+
+    public function setPostId(int $postId): void
+    {
+        $this->postId = $postId;
+    }
+
+    public function setIsEnabled(bool $isEnabled): void
+    {
+        $this->isEnabled = $isEnabled;
+    }
+
+    public function setParentId(int $parentId): void
+    {
+        $this->parentId = $parentId;
     }
 }

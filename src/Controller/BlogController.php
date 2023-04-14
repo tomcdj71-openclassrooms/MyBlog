@@ -9,9 +9,11 @@ use App\Helper\SecurityHelper;
 use App\Helper\StringHelper;
 use App\Helper\TwigHelper;
 use App\Manager\CategoryManager;
+use App\Manager\CommentManager;
 use App\Manager\PostManager;
 use App\Manager\TagManager;
 use App\Manager\UserManager;
+use App\Validator\CommentFormValidator;
 use Tracy\Debugger;
 
 class BlogController extends TwigHelper
@@ -27,6 +29,7 @@ class BlogController extends TwigHelper
     private $posts;
     private $date;
     private $recentPosts;
+    private $commentManager;
 
     public function __construct()
     {
@@ -42,6 +45,7 @@ class BlogController extends TwigHelper
         $this->posts = $this->postManager->findAll();
         $this->date = date('Y-m-d', strtotime('-30 days'));
         $this->recentPosts = $this->postManager->findBy(['recent' => $this->date, 'limit' => 5, 'order' => 'ASC']);
+        $this->commentManager = new CommentManager($db);
     }
 
     /**
@@ -67,7 +71,6 @@ class BlogController extends TwigHelper
             'recentPosts' => $this->recentPosts,
             'session' => $this->session,
         ];
-        Debugger::barDump($data);
 
         $twig = new TwigHelper();
         $twig->render('pages/blog/index.html.twig', $data);
@@ -81,20 +84,73 @@ class BlogController extends TwigHelper
      */
     public function blogPost($slug, $message = null)
     {
+        $twig = new TwigHelper();
         $sh = new StringHelper();
         $url = $_SERVER['REQUEST_URI'];
         $slug = $sh->getLastUrlPart($url);
-        $post = $this->postManager->findBy(['slug' => $slug]);
-        $post = (object) $post[0];
+        $post = $this->postManager->findOneBy(['slug' => $slug, 'limit' => 1]);
         $author = $this->userManager->findBy(['username' => $post->getAuthor()]);
-
+        $comments = $post->getComments();
+        foreach ($comments as $comment) {
+            $commentAuthor = $this->userManager->find($comment->getAuthor());
+            $comment->author = $commentAuthor;
+        }
         if (null === $this->securityHelper->getUser()) {
             $user = null;
         } else {
             $user = $this->securityHelper->getUser();
         }
+        $validator = new CommentFormValidator($this->securityHelper);
+        if ('POST' === $_SERVER['REQUEST_METHOD'] && isset($_POST['content'], $_POST['csrf_token'])) {
+            $csrfToken = $_POST['csrf_token'];
+            if ($this->securityHelper->checkCsrfToken('comment', $csrfToken)) {
+                if (isset($_POST['parentId'])) {
+                    $postData = [
+                        'content' => $_POST['content'],
+                        'author_id' => $user->getId(),
+                        'post_id' => $post->getId(),
+                        'parent_id' => $_POST['parentId'],
+                        'csrf_token' => $_POST['csrf_token'],
+                    ];
+                } else {
+                    $postData = [
+                        'content' => $_POST['content'],
+                        'author_id' => $user->getId(),
+                        'post_id' => $post->getId(),
+                        'csrf_token' => $_POST['csrf_token'],
+                    ];
+                }
+                $validation = $validator->validate($postData);
+                if ($validation['valid']) {
+                    $date = new \DateTime();
+                    $postData['created_at'] = $date->format('Y-m-d H:i:s');
+                    $postData['is_enabled'] = ('ROLE_ADMIN' === $user->getRole()) ? 1 : 0;
+                    $this->commentManager->create($postData);
+                    $message = 'Your comment has been added';
+                    // generate new CSRF token to prevent multiple submissions
+                    $csrfToken = $this->securityHelper->generateCsrfToken('comment');
+                    $data = [
+                        'title' => 'MyBlog - Blog',
+                        'route' => 'blog',
+                        'loggedUser' => $user,
+                        'message' => $message,
+                        'post' => $post,
+                        'author' => $author,
+                        'tags' => $this->tags,
+                        'categories' => $this->popularCategories,
+                        'recentPosts' => $this->recentPosts,
+                        'session' => $this->session,
+                        'csrf_token' => $csrfToken,
+                    ];
 
-        Debugger::barDump($user);
+                    return $this->blogPost($slug, $message, $data, $csrfToken);
+                }
+                $message = 'Your comment has not been added';
+            } else {
+                $message = 'Invalid CSRF token';
+            }
+        }
+        $csrfToken = $this->securityHelper->generateCsrfToken('comment');
         $data = [
             'title' => 'MyBlog - Blog',
             'route' => 'blog',
@@ -106,10 +162,10 @@ class BlogController extends TwigHelper
             'categories' => $this->popularCategories,
             'recentPosts' => $this->recentPosts,
             'session' => $this->session,
+            'csrf_token' => $csrfToken,
         ];
-        Debugger::barDump($data);
 
-        $twig = new TwigHelper();
+        Debugger::barDump($data, 'data');
         $twig->render('pages/blog/post.html.twig', $data);
     }
 
