@@ -79,8 +79,7 @@ alert.setAttribute('class', 'alert alert-info fade show');
 alert.setAttribute('role', 'alert');
 alert.innerHTML = `
     <small class="fst-italic fw-lighter text-muted">Vous répondez à ${author}:</small>
-    <p class="lead text-black">${content}</p>
-  `;
+    <p class="lead text-black text-break">${content}</p>`;
 return alert;
 }
 });

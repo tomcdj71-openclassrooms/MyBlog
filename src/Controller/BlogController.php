@@ -101,8 +101,8 @@ class BlogController extends TwigHelper
         }
         $validator = new CommentFormValidator($this->securityHelper);
         if ('POST' === $_SERVER['REQUEST_METHOD'] && isset($_POST['content'], $_POST['csrf_token'])) {
-            $csrfToken = $_POST['csrf_token'];
-            if ($this->securityHelper->checkCsrfToken('comment', $csrfToken)) {
+            $csrf_token = $_POST['csrf_token'];
+            if ($this->securityHelper->checkCsrfToken('comment', $csrf_token)) {
                 if (isset($_POST['parentId'])) {
                     $postData = [
                         'content' => $_POST['content'],
@@ -127,7 +127,7 @@ class BlogController extends TwigHelper
                     $this->commentManager->create($postData);
                     $message = 'Your comment has been added';
                     // generate new CSRF token to prevent multiple submissions
-                    $csrfToken = $this->securityHelper->generateCsrfToken('comment');
+                    $csrf_token = $this->securityHelper->generateCsrfToken('comment');
                     $data = [
                         'title' => 'MyBlog - Blog',
                         'route' => 'blog',
@@ -139,17 +139,17 @@ class BlogController extends TwigHelper
                         'categories' => $this->popularCategories,
                         'recentPosts' => $this->recentPosts,
                         'session' => $this->session,
-                        'csrf_token' => $csrfToken,
+                        'csrf_token' => $csrf_token,
                     ];
 
-                    return $this->blogPost($slug, $message, $data, $csrfToken);
+                    return $this->blogPost($slug, $message, $data, $csrf_token);
                 }
                 $message = 'Your comment has not been added';
             } else {
                 $message = 'Invalid CSRF token';
             }
         }
-        $csrfToken = $this->securityHelper->generateCsrfToken('comment');
+        $csrf_token = $this->securityHelper->generateCsrfToken('comment');
         $data = [
             'title' => 'MyBlog - Blog',
             'route' => 'blog',
@@ -161,7 +161,7 @@ class BlogController extends TwigHelper
             'categories' => $this->popularCategories,
             'recentPosts' => $this->recentPosts,
             'session' => $this->session,
-            'csrf_token' => $csrfToken,
+            'csrf_token' => $csrf_token,
         ];
         $twig->render('pages/blog/post.html.twig', $data);
     }
