@@ -1,0 +1,7 @@
+.bi.bi-chevron-down.rotate {
+    transform: rotate(180deg);
+}
+
+.pagination-detail{
+    display: none;
+}

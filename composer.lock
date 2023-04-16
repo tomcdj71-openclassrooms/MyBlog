@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1b7b1c1dcd10370784cfd542d077c7e2",
+    "content-hash": "bb3e12f44f534d1cd3e4fa75e81f8225",
     "packages": [
         {
             "name": "doctrine/lexer",
@@ -1358,6 +1358,56 @@
             "time": "2023-03-01T10:32:47+00:00"
         },
         {
+            "name": "twbs/bootstrap",
+            "version": "v5.2.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/twbs/bootstrap.git",
+                "reference": "cb021439c683d9805e2864c58095b92d405e9b11"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/twbs/bootstrap/zipball/cb021439c683d9805e2864c58095b92d405e9b11",
+                "reference": "cb021439c683d9805e2864c58095b92d405e9b11",
+                "shasum": ""
+            },
+            "replace": {
+                "twitter/bootstrap": "self.version"
+            },
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Mark Otto",
+                    "email": "markdotto@gmail.com"
+                },
+                {
+                    "name": "Jacob Thornton",
+                    "email": "jacobthornton@gmail.com"
+                }
+            ],
+            "description": "The most popular front-end framework for developing responsive, mobile first projects on the web.",
+            "homepage": "https://getbootstrap.com/",
+            "keywords": [
+                "JS",
+                "css",
+                "framework",
+                "front-end",
+                "mobile-first",
+                "responsive",
+                "sass",
+                "web"
+            ],
+            "support": {
+                "issues": "https://github.com/twbs/bootstrap/issues",
+                "source": "https://github.com/twbs/bootstrap/tree/v5.2.3"
+            },
+            "time": "2022-11-21T18:19:01+00:00"
+        },
+        {
             "name": "twbs/bootstrap-icons",
             "version": "v1.10.4",
             "source": {
@@ -1471,6 +1521,69 @@
                 }
             ],
             "time": "2023-02-08T07:49:20+00:00"
+        },
+        {
+            "name": "wenzhixin/bootstrap-table",
+            "version": "1.21.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wenzhixin/bootstrap-table.git",
+                "reference": "9a93bd8d35de8d6dea43ace4de48413ded643068"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wenzhixin/bootstrap-table/zipball/9a93bd8d35de8d6dea43ace4de48413ded643068",
+                "reference": "9a93bd8d35de8d6dea43ace4de48413ded643068",
+                "shasum": ""
+            },
+            "require": {
+                "twitter/bootstrap": ">=2.3.0"
+            },
+            "type": "component",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "wenzhixin2010",
+                    "email": "wenzhixin2010@gmail.com"
+                }
+            ],
+            "description": "An extended table to integration with some of the most widely used CSS frameworks. (Supports Bootstrap, Semantic UI, Bulma, Material Design, Foundation)",
+            "homepage": "https://github.com/wenzhixin/bootstrap-table",
+            "keywords": [
+                "CSS-Framework",
+                "bootstrap",
+                "bulma",
+                "checkbox",
+                "css",
+                "datatables",
+                "foundation",
+                "material",
+                "material-design",
+                "materialize",
+                "pagination",
+                "radio",
+                "semantic",
+                "semantic-ui",
+                "table"
+            ],
+            "support": {
+                "issues": "https://github.com/wenzhixin/bootstrap-table/issues",
+                "source": "https://github.com/wenzhixin/bootstrap-table/tree/1.21.4"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/wenzhixin",
+                    "type": "github"
+                },
+                {
+                    "url": "https://opencollective.com/bootstrap-table",
+                    "type": "open_collective"
+                }
+            ],
+            "time": "2023-04-01T07:33:44+00:00"
         }
     ],
     "packages-dev": [
