@@ -1,0 +1,42 @@
+<nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+	<div class="position-sticky">
+		<ul class="nav flex-column">
+			<li class="nav-item">
+				<a class="nav-link" href="{{ path('admin_index') }}">
+					<i class="bi bi-house-door"></i>
+					<span class="ms-2">Dashboard</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="{{ path('admin_posts') }}">
+					<i class="bi bi-file-text"></i>
+					<span class="ms-2">Articles</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="{{ path('admin_categories') }}">
+					<i class="bi bi-card-list"></i>
+					<span class="ms-2">Catégories</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="{{ path('admin_comments') }}">
+					<i class="bi bi-chat-right-text"></i>
+					<span class="ms-2">Commentaires</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="{{ path('admin_tags') }}">
+					<i class="bi bi-tag"></i>
+					<span class="ms-2">Tags</span>
+				</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="{{ path('admin_users') }}">
+					<i class="bi bi-people"></i>
+					<span class="ms-2">Utilisateurs</span>
+				</a>
+			</li>
+		</ul>
+	</div>
+</nav>

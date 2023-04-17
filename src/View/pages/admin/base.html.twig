@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="">
+		<meta name="author" content="">
+		<title>{{ title }}</title>
+		{% block stylesheets %}
+			<link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
+			<link href="{{ asset('font/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+			<link href="{{ asset('css/bootstrap-table.min.css') }}" rel="stylesheet">
+			<link href="{{ asset('css/admin-style.css') }}" rel="stylesheet">
+			<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+			<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700">
+
+		{% endblock %}
+		{% block javascripts %}
+			<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+			<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.min.js" integrity="sha384-oesi62hOLfzrys4LxRF63OJCXdXDipiYWBnvTl9Y9/TRlw5xlKIEHpNyvvDShgf/" crossorigin="anonymous"></script>
+			<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+			<script src="{{ asset('js/bootstrap-table.min.js') }}"></script>
+			<script src="{{asset('js/bootstrap-table-fr-FR.min.js')}}"></script>
+			<script>
+				function actionFormatter(value, row, index, field) {
+return ['<a class="btn btn-sm btn-primary" href=" {{ path('blog') }}">', '<i class="material-icons-round">visibility</i>', '</a>'].join('')
+}
+
+function actionEvents(value, row, index, field) {
+return {
+'click .btn-primary': function (e, value, row, index) {
+window.location.href = row['url'];
+}
+}
+}
+			</script>
+		{% endblock %}
+	</head>
+	<body>{% include "_partials/admin_navbar.html.twig" %}<div class="container-fluid"></head>
+		<div class="row">
+			{% include "_partials/admin_sidebar.html.twig" %}
+			<main class="col-md-9 ml-sm-auto col-lg-10 px-md-4 py-4"> {% block body %}{% endblock %}
+				</main>
+			</div>
+		</body>
+	</html>
