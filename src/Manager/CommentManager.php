@@ -47,6 +47,25 @@ class CommentManager
         }
     }
 
+    public function findAll(): array
+    {
+        try {
+            $sql = 'SELECT * FROM comment';
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute();
+            $comments = $stmt->fetchAll();
+
+            $commentModels = [];
+            foreach ($comments as $comment) {
+                $commentModels[] = $this->createCommentModelFromArray($comment);
+            }
+
+            return $commentModels;
+        } catch (\PDOException $e) {
+            echo 'Error: '.$e->getMessage();
+        }
+    }
+
     public function find(int $id): CommentModel
     {
         try {
@@ -102,6 +121,11 @@ class CommentManager
         $id = isset($data['id']) ? (int) $data['id'] : 0;
         $author = isset($data['author_id']) ? (int) $data['author_id'] : null;
         $parentId = isset($data['parent_id']) ? (int) $data['parent_id'] : null;
+
+        // if parent_id is null, set it to 0
+        if (null === $parentId) {
+            $parentId = 0;
+        }
 
         return new CommentModel(
             $id,

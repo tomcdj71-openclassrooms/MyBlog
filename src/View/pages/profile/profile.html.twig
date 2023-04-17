@@ -6,20 +6,24 @@
 				<div class="col-lg-4">
 					<div class="card">
 						<div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
-							<img src="{{ asset('../uploads/avatars/' ~ user.avatar ~ '.jpg') }}" alt="avatar of {{ user.username }}" class="rounded-circle">
+							{% if user.avatar starts with 'http://' or user.avatar starts with 'https://' %}
+								<img src="{{ user.avatar }}" alt="avatar of user {{ user.username }}" class="rounded-circle">
+							{% else %}
+								<img src="{{ asset('../uploads/avatars/' ~ user.avatar ~ '.jpg') }}" alt="avatar of user {{ user.username }}" class="rounded-circle">
+							{% endif %}
 							<h2>{{ user.firstName ? user.firstName : '' }}
 								{{ user.lastName ? user.lastName : ''}}</h2>
 							<h3>{{ user.role == 'ROLE_USER' ? 'Utilisateur' : 'Administrateur' }}</h3>
 							{% set socialLinks = [
-							{'name': 'twitter', 'url': user.twitter, 'icon': 'bi bi-twitter'},
-							{'name': 'facebook', 'url': user.facebook, 'icon': 'bi bi-facebook'},
-							{'name': 'github', 'url': user.github, 'icon': 'bi bi-github'},
-							{'name': 'linkedin', 'url': user.linkedin, 'icon': 'bi bi-linkedin'}
+							{'name': 'twitter', 'website': 'https://twitter.com/', 'username': user.twitter, 'icon': 'bi bi-twitter'},
+							{'name': 'facebook', 'website': 'https://facebook.com/','username': user.facebook, 'icon': 'bi bi-facebook'},
+							{'name': 'github', 'website': 'https://github.com/','username': user.github, 'icon': 'bi bi-github'},
+							{'name': 'linkedin', 'website': 'https://linkedin.com/in/','username': user.linkedin, 'icon': 'bi bi-linkedin'}
 						] %}
 							<div class="social-links">
 								{% for link in socialLinks %}
-									{% if link.url is not empty %}
-										<a href="{{ link.url }}">
+									{% if link.username is not empty %}
+										<a href="{{ link.website ~ link.username }}">
 											<i class="{{ link.icon }}"></i>
 										</a>
 									{% endif %}
@@ -77,8 +81,9 @@
 								<div
 									class="tab-pane fade profile-edit pt-3" id="profile-edit" role="tabpanel">
 									<!-- Profile Edit Form -->
-
-									{% include "_partials/profile_form.html.twig" with {'csrf_token': csrf_token} %}
+									{% if csrf_token is defined %}
+										{% include "_partials/profile_form.html.twig" with {'csrf_token': csrf_token} %}
+									{% endif %}
 
 									<!-- End Profile Edit Form -->
 								</div>

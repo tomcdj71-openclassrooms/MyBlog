@@ -11,34 +11,32 @@
 								<img src="{{ post.featuredImage }}" alt="Illustration of the post {{ post.slug }}" class="img-fluid">
 							</div>
 							<h2 class="entry-title">
-								<a href="/blog/post/{{ post.slug }}">{{ post.title }}</a>
+								<a href="{{ path('blog_post', {'slug': post.slug}) }}">{{ post.title }}</a>
 							</h2>
 							<div class="entry-meta">
 								<ul>
 									<li class="d-flex align-items-center">
 										<i class="bi bi-person"></i>
-										<a href="/blog/author/{{ post.author }}">
-											{{ post.author }}
-										</a>
+										<a href="{{ path('blog_author', {'author': post.author}) }}">
+											{{ post.author }}</a>
 									</li>
 									<li class="d-flex align-items-center">
 										<i class="bi bi-clock"></i>
-										<a href="/blog/date/{{ post.createdAt|date("Y-m-d") }}">
+										<a href="{{ path('blog_date', {'date': post.createdAt|date("y-m-d")}) }}">
 											<time datetime="{{ post.createdAt|date("d/m/Y") }}">
 												{{ post.createdAt|date("d/m/Y") }}</time>
 										</a>
 									</li>
 									<li class="d-flex align-items-center">
 										<i class="bi bi-folder"></i>
-										<ul class="categories">
-											<li>
-												<a href="/blog/category/{{ post.categorySlug }}">{{ post.category }}</a>
-											</li>
-										</ul>
+										<a href="{{ path('blog_category', {'category': post.category}) }}">
+											{{ post.category }}</a>
 									</li>
 									<li class="d-flex align-items-center">
 										<i class="bi bi-chat-dots"></i>
-										<a href="/blog/post/{{ post.slug }}#comment-section">{{ post.numberOfComments }} Commentaire{{ post.numberOfComments > 1 ? 's' : '' }}</a>
+										<a href="{{ path('blog_post', {'slug': post.slug}) }}#comment-section">
+											{{ post.numberOfComments }}
+											Commentaire{{ post.numberOfComments > 1 ? 's' : '' }}</a>
 									</li>
 								</ul>
 							</div>

@@ -14,9 +14,11 @@ use App\Manager\PostManager;
 use App\Manager\TagManager;
 use App\Manager\UserManager;
 use App\Validator\CommentFormValidator;
+use Tracy\Debugger;
 
 class BlogController extends TwigHelper
 {
+    protected $twig;
     private $postManager;
     private $tagManager;
     private $categoryManager;
@@ -29,6 +31,7 @@ class BlogController extends TwigHelper
     private $date;
     private $recentPosts;
     private $commentManager;
+    private $stringHelper;
 
     public function __construct()
     {
@@ -45,6 +48,8 @@ class BlogController extends TwigHelper
         $this->date = date('Y-m-d', strtotime('-30 days'));
         $this->recentPosts = $this->postManager->findBy(['recent' => $this->date, 'limit' => 5, 'order' => 'ASC']);
         $this->commentManager = new CommentManager($db);
+        $this->twig = new TwigHelper();
+        $this->stringHelper = new StringHelper();
     }
 
     /**
@@ -55,9 +60,6 @@ class BlogController extends TwigHelper
      */
     public function blogIndex($message = null)
     {
-        // If the user is logged then $message is set to 'You are logged in'
-        // If the user is not logged then $message is set to 'You are not logged in'
-
         $isAuthenticated = $this->securityHelper->isAuthenticated();
         $message = $isAuthenticated ? 'You are logged in' : 'You are not logged in';
         $data = [
@@ -71,8 +73,7 @@ class BlogController extends TwigHelper
             'session' => $this->session,
         ];
 
-        $twig = new TwigHelper();
-        $twig->render('pages/blog/index.html.twig', $data);
+        $this->twig->render('pages/blog/index.html.twig', $data);
     }
 
     /**
@@ -83,10 +84,8 @@ class BlogController extends TwigHelper
      */
     public function blogPost($slug, $message = null)
     {
-        $twig = new TwigHelper();
-        $sh = new StringHelper();
         $url = $_SERVER['REQUEST_URI'];
-        $slug = $sh->getLastUrlPart($url);
+        $slug = $this->stringHelper->getLastUrlPart($url);
         $post = $this->postManager->findOneBy(['slug' => $slug, 'limit' => 1]);
         $author = $this->userManager->findBy(['username' => $post->getAuthor()]);
         $comments = $post->getComments();
@@ -163,7 +162,9 @@ class BlogController extends TwigHelper
             'session' => $this->session,
             'csrf_token' => $csrf_token,
         ];
-        $twig->render('pages/blog/post.html.twig', $data);
+        Debugger::barDump($post);
+
+        $this->twig->render('pages/blog/post.html.twig', $data);
     }
 
     /**
@@ -175,9 +176,8 @@ class BlogController extends TwigHelper
      */
     public function blogCategory($categorySlug, $message = null)
     {
-        $sh = new StringHelper();
         $url = $_SERVER['REQUEST_URI'];
-        $categorySlug = $sh->getLastUrlPart($url);
+        $categorySlug = $this->stringHelper->getLastUrlPart($url);
         $posts = $this->postManager->findBy(['category' => "{$categorySlug}"]);
 
         $data = [
@@ -193,21 +193,19 @@ class BlogController extends TwigHelper
             'session' => $this->session,
         ];
 
-        $twig = new TwigHelper();
-        $twig->render('pages/blog/index.html.twig', $data);
+        $this->twig->render('pages/blog/index.html.twig', $data);
     }
 
     public function blogTag($tagSlug, $message = null)
     {
-        $sh = new StringHelper();
         $url = $_SERVER['REQUEST_URI'];
-        $tagSlug = $sh->getLastUrlPart($url);
+        $tagSlug = $this->stringHelper->getLastUrlPart($url);
         $posts = $this->postManager->findBy(['tag' => "{$tagSlug}"]);
 
         $data = [
             'title' => 'MyBlog - Blog',
             'route' => 'blog',
-            'searchType' => 'Categorie',
+            'searchType' => 'Tag',
             'search' => $tagSlug,
             'message' => $message,
             'posts' => $posts,
@@ -217,15 +215,13 @@ class BlogController extends TwigHelper
             'session' => $this->session,
         ];
 
-        $twig = new TwigHelper();
-        $twig->render('pages/blog/index.html.twig', $data);
+        $this->twig->render('pages/blog/index.html.twig', $data);
     }
 
     public function blogAuthor($username, $message = null)
     {
-        $sh = new StringHelper();
         $url = $_SERVER['REQUEST_URI'];
-        $username = $sh->getLastUrlPart($url);
+        $username = $this->stringHelper->getLastUrlPart($url);
         $author = $this->userManager->findBy(['username' => $username]);
         $authorId = $author->getId();
         $posts = $this->postManager->findBy(['author' => $authorId]);
@@ -243,8 +239,7 @@ class BlogController extends TwigHelper
             'session' => $this->session,
         ];
 
-        $twig = new TwigHelper();
-        $twig->render('pages/blog/index.html.twig', $data);
+        $this->twig->render('pages/blog/index.html.twig', $data);
     }
 
     /**
@@ -255,9 +250,8 @@ class BlogController extends TwigHelper
      */
     public function blogDate($date, $message = null)
     {
-        $sh = new StringHelper();
         $url = $_SERVER['REQUEST_URI'];
-        $date = $sh->getLastUrlPart($url);
+        $date = $this->stringHelper->getLastUrlPart($url);
         $fromDate = date('Y-m-d', strtotime($date.' -15 days'));
         $posts = $this->postManager->findBy(['from_date' => $fromDate, 'to_date' => $date]);
 
@@ -274,7 +268,6 @@ class BlogController extends TwigHelper
             'session' => $this->session,
         ];
 
-        $twig = new TwigHelper();
-        $twig->render('pages/blog/index.html.twig', $data);
+        $this->twig->render('pages/blog/index.html.twig', $data);
     }
 }

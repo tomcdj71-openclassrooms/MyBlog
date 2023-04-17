@@ -8,13 +8,13 @@
 			<div class="alert alert-info" role="alert">
 				<p>Vous devez être connecté pour pouvoir poster un commentaire.</p>
 				<p>
-					<a href="/login">Se connecter</a>
+					<a href="{{ path ('login') }}">Se connecter</a>
 					ou
-					<a href="/register">Créer un compte</a>
+					<a href="{{ path ('register') }}">Créer un compte</a>
 				</p>
 			</div>
 		{% else %}
-			<form method="POST" action="/blog/post/{{ post.slug }}" data-np-autofill-type="identity" data-np-checked="1">
+			<form method="POST" action="{{ path('blog_post', {'slug': post.slug}) }}" data-np-autofill-type="identity" data-np-checked="1">
 				<input type="hidden" name="parentId" value="">
 				<div class="row">
 					<div class="col form-group">

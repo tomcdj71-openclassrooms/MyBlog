@@ -22,7 +22,7 @@
 						</div>
 						<div class="w-100">
 							<h5>
-								<a href="/profile/{{ comment.author.username }}">{{ comment.author.username }}</a>
+								<a href="{{ path('user_profile', {'slug': comment.author.username }) }}">{{ comment.author.username }}</a>
 								<a href="#" class="reply" data-comment-id="{{ comment.id }}" data-author="{{ comment.author.username }}" data-content="{{ comment.content }}">
 									<i class="bi bi-reply-fill"></i>
 									<small>Répondre</small>
@@ -41,7 +41,7 @@
 									<figure class="alert fade show text-muted border-bottom border-start pb-0">
 										<figcaption class="blockquote-footer">
 											<small>En réponse à
-												<a href="/profile/{{ parentComment.author.username }}">{{ parentComment.author.username }}</a>
+												<a href="{{ path('user_profile', {'slug': parentComment.author.username }) }}">{{ parentComment.author.username }}</a>
 											</small>
 											<p class="fst-italic">
 												{{ preview }}...
