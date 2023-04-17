@@ -21,7 +21,7 @@ class AuthenticationMiddleware
 
         // if user is not logged in or is not an admin or user
         if (!$user || !$this->isUserOrAdmin()) {
-            header('Location: /login');
+            header('Location: /blog');
 
             exit;
         }

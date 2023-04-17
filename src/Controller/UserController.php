@@ -10,6 +10,7 @@ use App\Helper\SecurityHelper;
 use App\Helper\StringHelper;
 use App\Helper\TwigHelper;
 use App\Manager\UserManager;
+use App\Middleware\AuthenticationMiddleware;
 use App\Model\UserModel;
 use App\Validator\EditProfileFormValidator;
 use App\Validator\LoginFormValidator;
@@ -18,23 +19,27 @@ use App\Validator\RegisterFormValidator;
 class UserController extends TwigHelper
 {
     protected $userManager;
-    protected $loginValidator;
-    protected $registerValidator;
+    protected $loginFormValidator;
+    protected $registerFormValidator;
     protected $securityHelper;
+    protected $twig;
     private $session;
     private $editProfileFormValidator;
     private $imageHelper;
+    private $authenticationMiddleware;
 
     public function __construct()
     {
         $db = new DatabaseConnexion();
         $this->userManager = new UserManager($db);
-        $this->loginValidator = new LoginFormValidator($this->userManager);
-        $this->registerValidator = new RegisterFormValidator($this->userManager);
+        $this->loginFormValidator = new LoginFormValidator($this->userManager);
+        $this->registerFormValidator = new RegisterFormValidator($this->userManager);
         $this->securityHelper = new SecurityHelper();
         $this->session = $this->securityHelper->getSession();
         $this->editProfileFormValidator = new EditProfileFormValidator($this->userManager);
         $this->imageHelper = new ImageHelper('uploads/avatars/', 200, 200);
+        $this->authenticationMiddleware = new AuthenticationMiddleware($this->securityHelper);
+        $this->twig = new TwigHelper();
     }
 
     /*
@@ -44,7 +49,6 @@ class UserController extends TwigHelper
     */
     public function profile($message = null)
     {
-        $twig = new TwigHelper();
         $errors = [];
         // Get the user from the $_SESSION
         if (null === $this->securityHelper->getUser()) {
@@ -65,7 +69,6 @@ class UserController extends TwigHelper
 
             exit;
         }
-        $validator = new EditProfileFormValidator($this->securityHelper);
         if ('POST' === $_SERVER['REQUEST_METHOD'] && $_POST['csrf_token']) {
             $csrf_token = $_POST['csrf_token'];
             if ($this->securityHelper->checkCsrfToken('editProfile', $csrf_token)) {
@@ -90,7 +93,7 @@ class UserController extends TwigHelper
                 unset($postData['avatar']);
             }
 
-            $response = $validator->validate($postData);
+            $response = $this->editProfileFormValidator->validate($postData);
             if ($response['valid']) {
                 $data = $response['data'];
                 if (isset($data['avatar']) && null !== $data['avatar']) {
@@ -145,8 +148,9 @@ class UserController extends TwigHelper
             'errors' => $errors,
             'loggedUser' => $loggedUser,
             'csrf_token' => $csrf_token,
+            'session' => $this->session,
         ];
-        $twig->render('pages/profile/profile.html.twig', $data);
+        $this->twig->render('pages/profile/profile.html.twig', $data);
     }
 
     /**
@@ -156,67 +160,54 @@ class UserController extends TwigHelper
      */
     public function login($message = null)
     {
-        $twig = new TwigHelper();
-        $securityHelper = new SecurityHelper();
-        $validator = new LoginFormValidator($this->userManager);
-
         try {
-            if (isset($_COOKIE['remember_me_token']) && !$securityHelper->isAuthenticated()) {
-                $securityHelper->checkRememberMeToken($_COOKIE['remember_me_token']);
+            if (isset($_COOKIE['remember_me_token']) && !$this->securityHelper->isAuthenticated()) {
+                $this->securityHelper->checkRememberMeToken($_COOKIE['remember_me_token']);
             }
         } catch (\Exception $e) {
             // If there is an issue with the remember_me_token (expired or invalid), remove it
             setcookie('remember_me_token', '', time() - 3600, '/', '', false, true);
         }
-
-        if ($securityHelper->isAuthenticated()) {
-            header('Location: /profile');
+        $this->authenticate();
+        if ($this->authenticationMiddleware->isUserOrAdmin()) {
+            header('Location: /blog');
 
             exit;
+        }
+        if ('POST' === $_SERVER['REQUEST_METHOD']) {
+            $postData = [
+                'email' => $_POST['email'],
+                'password' => $_POST['password'],
+                'remember' => isset($_POST['remember']) && 'true' === $_POST['remember'],
+            ];
 
+            $errors = $this->loginFormValidator->validate($postData, $postData['remember']);
+
+            if (empty($errors)) {
+                $user = $this->securityHelper->authenticate($postData);
+
+                if ($user instanceof UserModel) {
+                    if ($postData['remember']) {
+                        $this->securityHelper->rememberMe($user);
+                    }
+
+                    header('Location: /profile');
+
+                    exit;
+                }
+
+                $errors[] = 'Email or password is incorrect';
+            }
+
+            header('Location: /profile');
+        } else {
             $data = [
-                'title' => 'MyBlog - Profile',
-                'route' => 'profile',
+                'title' => 'MyBlog - Connexion',
+                'route' => 'login',
                 'message' => $message,
             ];
 
-            $twig->render('pages/profile/profile.html.twig', $data);
-        } else {
-            if ('POST' === $_SERVER['REQUEST_METHOD']) {
-                $postData = [
-                    'email' => $_POST['email'],
-                    'password' => $_POST['password'],
-                    'remember' => isset($_POST['remember']) && 'true' === $_POST['remember'],
-                ];
-
-                $errors = $validator->validate($postData, $postData['remember']);
-
-                if (empty($errors)) {
-                    $user = $securityHelper->authenticate($postData);
-
-                    if ($user instanceof UserModel) {
-                        if ($postData['remember']) {
-                            $securityHelper->rememberMe($user);
-                        }
-
-                        header('Location: /profile');
-
-                        exit;
-                    }
-
-                    $errors[] = 'Email or password is incorrect';
-                }
-
-                header('Location: /profile');
-            } else {
-                $data = [
-                    'title' => 'MyBlog - Connexion',
-                    'route' => 'login',
-                    'message' => $message,
-                ];
-
-                $twig->render('pages/security/login.html.twig', $data);
-            }
+            $this->twig->render('pages/security/login.html.twig', $data);
         }
     }
 
@@ -227,9 +218,11 @@ class UserController extends TwigHelper
      */
     public function register($message = null)
     {
-        $twig = new TwigHelper();
-        $validator = new RegisterFormValidator();
+        if ($this->authenticationMiddleware->isUserOrAdmin()) {
+            header('Location: /blog');
 
+            exit;
+        }
         if ('POST' === $_SERVER['REQUEST_METHOD']) {
             $postData = [
                 'email' => $_POST['email'],
@@ -238,7 +231,7 @@ class UserController extends TwigHelper
                 'passwordConfirm' => $_POST['passwordConfirm'],
             ];
 
-            $errors = $validator->validate($postData);
+            $errors = $this->registerFormValidator->validate($postData);
             $valid = $errors['valid'];
             if (true === $valid) {
                 $registered = $this->securityHelper->register($postData);
@@ -255,16 +248,18 @@ class UserController extends TwigHelper
                 'title' => 'MyBlog - Creer un compte',
                 'route' => 'register',
                 'message' => $message,
+                'session' => $this->session,
             ];
 
-            $twig->render('pages/security/register.html.twig', array_merge($data, ['errors' => $errors]));
+            $this->twig->render('pages/security/register.html.twig', array_merge($data, ['errors' => $errors]));
         } else {
             $data = [
                 'title' => 'MyBlog - Creer un compte',
                 'route' => 'register',
                 'message' => $message,
+                'session' => $this->session,
             ];
-            $twig->render('pages/security/register.html.twig', $data);
+            $this->twig->render('pages/security/register.html.twig', $data);
         }
     }
 
@@ -276,11 +271,9 @@ class UserController extends TwigHelper
      */
     public function userProfile($username, $message = null)
     {
-        $twig = new TwigHelper();
         $sh = new StringHelper();
         $url = $_SERVER['REQUEST_URI'];
         $username = $sh->getLastUrlPart($url);
-
         $user = $this->userManager->findBy(['username' => $username]);
         $loggedUser = null;
         if (isset($_SESSION['user'])) {
@@ -291,9 +284,10 @@ class UserController extends TwigHelper
             'route' => 'profile',
             'user' => $user,
             'loggedUser' => $loggedUser,
+            'session' => $this->session,
         ];
 
-        $twig->render('pages/profile/profile.html.twig', $data);
+        $this->twig->render('pages/profile/profile.html.twig', $data);
     }
 
     /**
@@ -301,10 +295,16 @@ class UserController extends TwigHelper
      */
     public function logout()
     {
-        $securityHelper = new SecurityHelper();
-        $securityHelper->destroySession();
+        $this->securityHelper->destroySession();
         header('Location: /blog');
 
         exit;
+    }
+
+    private function authenticate(): void
+    {
+        $middleware = new AuthenticationMiddleware($this->securityHelper);
+
+        $middleware();
     }
 }
