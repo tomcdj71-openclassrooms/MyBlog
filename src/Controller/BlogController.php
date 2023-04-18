@@ -16,7 +16,6 @@ use App\Manager\UserManager;
 use App\Middleware\AuthenticationMiddleware;
 use App\Router\Session;
 use App\Validator\CommentFormValidator;
-use Tracy\Debugger;
 
 class BlogController
 {
@@ -59,12 +58,6 @@ class BlogController
     public function blogIndex($message = null)
     {
         $this->resetData();
-        // return the status of the user (connected or not)
-        Debugger::barDump($this->authMiddleware->isUserOrAdmin());
-        // return the user object
-        Debugger::barDump($this->securityHelper->getUser());
-        // Return the user object from the session !
-        Debugger::barDump($this->session->get('user'));
         $posts = $this->postManager->findAll();
         $this->data['message'] = $message;
         $this->data['posts'] = $posts;
@@ -83,6 +76,11 @@ class BlogController
         $url = $_SERVER['REQUEST_URI'];
         $slug = $this->stringHelper->getLastUrlPart($url);
         $post = $this->postManager->findOneBy(['slug' => $slug, 'limit' => 1]);
+        if (null === $post) {
+            header('Location: /404');
+
+            exit;
+        }
         $author = $this->userManager->findBy(['username' => $post->getAuthor()]);
         $comments = $post->getComments();
         foreach ($comments as $comment) {
@@ -166,7 +164,7 @@ class BlogController
         $this->twig->render('pages/blog/index.html.twig', $this->data);
     }
 
-    public function tag($tagSlug, $message = null)
+    public function blogTag($tagSlug, $message = null)
     {
         $this->resetData();
         $url = $_SERVER['REQUEST_URI'];
@@ -222,7 +220,7 @@ class BlogController
             'message' => '',
             'posts' => [],
             'tags' => $this->tagManager->findAll(),
-            'categories' => $this->categoryManager->findPopularCategories(),
+            'categories' => $this->categoryManager->findByPopularity(),
             'recentPosts' => $this->postManager->findBy(['recent' => $this->date, 'limit' => 5, 'order' => 'ASC']),
             'session' => $this->session,
         ];

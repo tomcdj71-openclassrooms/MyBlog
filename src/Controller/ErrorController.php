@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\DependencyInjection\Container;
-use App\Helper\SecurityHelper;
 use App\Helper\TwigHelper;
+use App\Router\Session;
 
 class ErrorController
 {
     protected $twig;
     private $data;
-    private $securityHelper;
+    private $session;
 
     public function __construct(Container $container)
     {
         $this->twig = $container->get(TwigHelper::class);
-        $this->securityHelper = $container->get(SecurityHelper::class);
+        $this->session = $container->get(Session::class);
     }
 
     /**
@@ -25,7 +25,7 @@ class ErrorController
      *
      * @param null $message
      */
-    public function error_page($message = null)
+    public function error_page()
     {
         $this->resetData();
         // switch case to display the correct error page
@@ -98,7 +98,7 @@ class ErrorController
             'message_title' => '',
             'message' => '',
             'explanations' => '',
-            'session' => $this->securityHelper->getSession(),
+            'session' => $this->session,
         ];
     }
 }
