@@ -15,7 +15,6 @@ use App\Manager\TagManager;
 use App\Manager\UserManager;
 use App\Middleware\AuthenticationMiddleware;
 use App\Validator\CommentFormValidator;
-use Tracy\Debugger;
 
 class BlogController
 {
@@ -60,14 +59,8 @@ class BlogController
         $posts = $this->postManager->findAll();
         $isAuthenticated = $this->securityHelper->isAuthenticated();
         $message = $isAuthenticated ? 'You are logged in' : 'You are not logged in';
-
-        $this->data['title'] = 'MyBlog - Blog';
-        $this->data['route'] = 'blog';
         $this->data['message'] = $message;
         $this->data['posts'] = $posts;
-
-        Debugger::barDump($this->data);
-
         $this->twig->render('pages/blog/index.html.twig', $this->data);
     }
 
@@ -95,23 +88,23 @@ class BlogController
             $user = $this->securityHelper->getUser();
         }
         $validator = new CommentFormValidator($this->securityHelper);
-        if ('POST' === $_SERVER['REQUEST_METHOD'] && isset($_POST['content'], $_POST['csrf_token'])) {
-            $csrf_token = $_POST['csrf_token'];
+        if ('POST' === $_SERVER['REQUEST_METHOD'] && filter_input(INPUT_POST, 'content') && filter_input(INPUT_POST, 'csrf_token')) {
+            $csrf_token = filter_input(INPUT_POST, 'csrf_token');
             if ($this->securityHelper->checkCsrfToken('comment', $csrf_token)) {
-                if (isset($_POST['parentId'])) {
+                if (filter_input(INPUT_POST, 'parentId')) {
                     $postData = [
-                        'content' => $_POST['content'],
+                        'content' => filter_input(INPUT_POST, 'content'),
                         'author_id' => $user->getId(),
                         'post_id' => $post->getId(),
-                        'parent_id' => $_POST['parentId'],
-                        'csrf_token' => $_POST['csrf_token'],
+                        'parent_id' => filter_input(INPUT_POST, 'parentId'),
+                        'csrf_token' => filter_input(INPUT_POST, 'csrf_token'),
                     ];
                 } else {
                     $postData = [
-                        'content' => $_POST['content'],
+                        'content' => filter_input(INPUT_POST, 'content'),
                         'author_id' => $user->getId(),
                         'post_id' => $post->getId(),
-                        'csrf_token' => $_POST['csrf_token'],
+                        'csrf_token' => filter_input(INPUT_POST, 'csrf_token'),
                     ];
                 }
                 $validation = $validator->validate($postData);
@@ -137,7 +130,6 @@ class BlogController
             }
         }
         $csrf_token = $this->securityHelper->generateCsrfToken('comment');
-
         $this->data['csrf_token'] = $csrf_token;
         $this->data['message'] = $message;
         $this->data['post'] = $post;
@@ -157,31 +149,22 @@ class BlogController
     public function blogCategory($categorySlug, $message = null)
     {
         $this->resetData();
-
         $url = $_SERVER['REQUEST_URI'];
         $categorySlug = $this->stringHelper->getLastUrlPart($url);
         $posts = $this->postManager->findBy(['category' => "{$categorySlug}"]);
-
-        $this->data['title'] = 'MyBlog - Blog';
-        $this->data['route'] = 'blog';
         $this->data['searchType'] = 'Catégorie';
         $this->data['search'] = $categorySlug;
         $this->data['message'] = $message;
         $this->data['posts'] = $posts;
-
         $this->twig->render('pages/blog/index.html.twig', $this->data);
     }
 
     public function tag($tagSlug, $message = null)
     {
         $this->resetData();
-
         $url = $_SERVER['REQUEST_URI'];
         $tagSlug = $this->stringHelper->getLastUrlPart($url);
         $posts = $this->postManager->findBy(['tag' => "{$tagSlug}"]);
-
-        $this->data['title'] = 'MyBlog - Blog';
-        $this->data['route'] = 'blog';
         $this->data['searchType'] = 'Tag';
         $this->data['search'] = $tagSlug;
         $this->data['message'] = $message;
@@ -192,20 +175,15 @@ class BlogController
     public function blogAuthor($username, $message = null)
     {
         $this->resetData();
-
         $url = $_SERVER['REQUEST_URI'];
         $username = $this->stringHelper->getLastUrlPart($url);
         $author = $this->userManager->findBy(['username' => $username]);
         $authorId = $author->getId();
         $posts = $this->postManager->findBy(['author' => $authorId]);
-
-        $this->data['title'] = 'MyBlog - Blog';
-        $this->data['route'] = 'blog';
         $this->data['searchType'] = 'Auteur';
         $this->data['search'] = $username;
         $this->data['message'] = $message;
         $this->data['posts'] = $posts;
-
         $this->twig->render('pages/blog/index.html.twig', $this->data);
     }
 
@@ -218,27 +196,22 @@ class BlogController
     public function blogDate($date, $message = null)
     {
         $this->resetData();
-
         $url = $_SERVER['REQUEST_URI'];
         $date = $this->stringHelper->getLastUrlPart($url);
         $fromDate = date('Y-m-d', strtotime($date.' -15 days'));
         $posts = $this->postManager->findBy(['from_date' => $fromDate, 'to_date' => $date]);
-
-        $this->data['title'] = 'MyBlog - Blog';
-        $this->data['route'] = 'blog';
         $this->data['searchType'] = 'Date';
         $this->data['search'] = 'Postés entre le '.date('d-m-Y', strtotime($fromDate)).' et le '.date('d-m-Y', strtotime($date));
         $this->data['message'] = $message;
         $this->data['posts'] = $posts;
-
         $this->twig->render('pages/blog/index.html.twig', $this->data);
     }
 
     private function resetData()
     {
         $this->data = [
-            'title' => '',
-            'route' => '',
+            'title' => 'MyBlog - Blog',
+            'route' => 'blog',
             'message' => '',
             'posts' => [],
             'tags' => $this->tagManager->findAll(),

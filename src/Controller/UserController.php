@@ -15,6 +15,7 @@ use App\Model\UserModel;
 use App\Validator\EditProfileFormValidator;
 use App\Validator\LoginFormValidator;
 use App\Validator\RegisterFormValidator;
+use Tracy\Debugger;
 
 class UserController extends TwigHelper
 {
@@ -69,24 +70,24 @@ class UserController extends TwigHelper
 
             exit;
         }
-        if ('POST' === $_SERVER['REQUEST_METHOD'] && $_POST['csrf_token']) {
-            $csrf_token = $_POST['csrf_token'];
+
+        if ('POST' === $_SERVER['REQUEST_METHOD'] && $csrf_token = filter_input(INPUT_POST, 'csrf_token', FILTER_SANITIZE_SPECIAL_CHARS)) {
             if ($this->securityHelper->checkCsrfToken('editProfile', $csrf_token)) {
                 $errors[] = 'Invalid CSRF token';
             }
 
             $postData = [
-                'firstName' => $_POST['firstName'] ?? '',
-                'lastName' => $_POST['lastName'] ?? '',
-                'email' => $_POST['email'] ?? '',
-                'username' => $_POST['username'] ?? '',
-                'bio' => $_POST['bio'] ?? '',
+                'firstName' => filter_input(INPUT_POST, 'firstName', FILTER_SANITIZE_SPECIAL_CHARS) ?? '',
+                'lastName' => filter_input(INPUT_POST, 'lastName', FILTER_SANITIZE_SPECIAL_CHARS) ?? '',
+                'email' => filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL) ?? '',
+                'username' => filter_input(INPUT_POST, 'username', FILTER_SANITIZE_SPECIAL_CHARS) ?? '',
+                'bio' => filter_input(INPUT_POST, 'bio', FILTER_SANITIZE_SPECIAL_CHARS) ?? '',
                 'avatar' => $_FILES['avatar'] ?? null,
-                'twitter' => $_POST['twitter'] ?? '',
-                'facebook' => $_POST['facebook'] ?? '',
-                'github' => $_POST['github'] ?? '',
-                'linkedin' => $_POST['linkedin'] ?? '',
-                'csrf_token' => $_POST['csrf_token'],
+                'twitter' => filter_input(INPUT_POST, 'twitter', FILTER_SANITIZE_SPECIAL_CHARS) ?? '',
+                'facebook' => filter_input(INPUT_POST, 'facebook', FILTER_SANITIZE_SPECIAL_CHARS) ?? '',
+                'github' => filter_input(INPUT_POST, 'github', FILTER_SANITIZE_SPECIAL_CHARS) ?? '',
+                'linkedin' => filter_input(INPUT_POST, 'linkedin', FILTER_SANITIZE_SPECIAL_CHARS) ?? '',
+                'csrf_token' => $csrf_token,
             ];
 
             if (!empty($_FILES['avatar'] || null === $_FILES['avatar'])) {
@@ -138,6 +139,7 @@ class UserController extends TwigHelper
         } else {
             $errors = [];
         }
+
         $csrf_token = $this->securityHelper->generateCsrfToken('editProfile');
         $user = $this->userManager->find($userId);
         $data = [
@@ -175,10 +177,14 @@ class UserController extends TwigHelper
             exit;
         }
         if ('POST' === $_SERVER['REQUEST_METHOD']) {
+            $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
+            $password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS);
+            $remember = filter_input(INPUT_POST, 'remember', FILTER_SANITIZE_SPECIAL_CHARS);
+            $remember = $remember && 'true' === $remember ? true : false;
             $postData = [
-                'email' => $_POST['email'],
-                'password' => $_POST['password'],
-                'remember' => isset($_POST['remember']) && 'true' === $_POST['remember'],
+                'email' => $email,
+                'password' => $password,
+                'remember' => $remember,
             ];
 
             $errors = $this->loginFormValidator->validate($postData, $postData['remember']);
@@ -223,12 +229,13 @@ class UserController extends TwigHelper
 
             exit;
         }
+
         if ('POST' === $_SERVER['REQUEST_METHOD']) {
             $postData = [
-                'email' => $_POST['email'],
-                'username' => $_POST['username'],
-                'password' => $_POST['password'],
-                'passwordConfirm' => $_POST['passwordConfirm'],
+                'email' => filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL),
+                'username' => filter_input(INPUT_POST, 'username', FILTER_SANITIZE_SPECIAL_CHARS),
+                'password' => filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS),
+                'passwordConfirm' => filter_input(INPUT_POST, 'passwordConfirm', FILTER_SANITIZE_SPECIAL_CHARS),
             ];
 
             $errors = $this->registerFormValidator->validate($postData);
@@ -274,6 +281,7 @@ class UserController extends TwigHelper
         $sh = new StringHelper();
         $url = $_SERVER['REQUEST_URI'];
         $username = $sh->getLastUrlPart($url);
+        Debugger::barDump($username);
         $user = $this->userManager->findBy(['username' => $username]);
         $loggedUser = null;
         if (isset($_SESSION['user'])) {

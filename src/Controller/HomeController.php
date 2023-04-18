@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\DependencyInjection\Container;
 use App\Helper\SecurityHelper;
 use App\Helper\TwigHelper;
 
-class HomeController extends TwigHelper
+class HomeController
 {
     private $securityHelper;
 
-    public function __construct()
+    public function __construct(Container $container)
     {
-        $this->securityHelper = new SecurityHelper();
+        $this->securityHelper = $container->get(SecurityHelper::class);
     }
 
     /**
