@@ -31,7 +31,7 @@ class BlogController
     private $recentPosts;
     private $commentManager;
     private $stringHelper;
-    private $authenticationMiddleware;
+    private $authMiddleware;
     private $data;
 
     public function __construct(Container $container)
@@ -44,7 +44,7 @@ class BlogController
         $this->twig = $container->get(TwigHelper::class);
         $this->stringHelper = $container->get(StringHelper::class);
         $this->commentManager = $container->get(CommentManager::class);
-        $this->authenticationMiddleware = $container->get(AuthenticationMiddleware::class);
+        $this->authMiddleware = $container->get(AuthenticationMiddleware::class);
     }
 
     /**

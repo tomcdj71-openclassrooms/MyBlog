@@ -27,7 +27,7 @@ class UserController extends TwigHelper
     private $session;
     private $editProfileFormValidator;
     private $imageHelper;
-    private $authenticationMiddleware;
+    private $authMiddleware;
 
     public function __construct()
     {
@@ -39,7 +39,7 @@ class UserController extends TwigHelper
         $this->session = $this->securityHelper->getSession();
         $this->editProfileFormValidator = new EditProfileFormValidator($this->userManager);
         $this->imageHelper = new ImageHelper('uploads/avatars/', 200, 200);
-        $this->authenticationMiddleware = new AuthenticationMiddleware($this->securityHelper);
+        $this->authMiddleware = new AuthenticationMiddleware($this->securityHelper);
         $this->twig = new TwigHelper();
     }
 
@@ -171,7 +171,7 @@ class UserController extends TwigHelper
             setcookie('remember_me_token', '', time() - 3600, '/', '', false, true);
         }
         $this->authenticate();
-        if ($this->authenticationMiddleware->isUserOrAdmin()) {
+        if ($this->authMiddleware->isUserOrAdmin()) {
             header('Location: /blog');
 
             exit;
@@ -224,7 +224,7 @@ class UserController extends TwigHelper
      */
     public function register($message = null)
     {
-        if ($this->authenticationMiddleware->isUserOrAdmin()) {
+        if ($this->authMiddleware->isUserOrAdmin()) {
             header('Location: /blog');
 
             exit;

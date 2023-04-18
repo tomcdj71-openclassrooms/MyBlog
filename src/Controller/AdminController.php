@@ -19,13 +19,12 @@ class AdminController extends TwigHelper
 {
     protected $twig;
     private $securityHelper;
-    private $db;
     private $userManager;
     private $postManager;
     private $commentManager;
     private $categoryManager;
     private $tagManager;
-    private $authenticationMiddleware;
+    private $authMiddleware;
     private $stringHelper;
 
     public function __construct()
@@ -38,14 +37,14 @@ class AdminController extends TwigHelper
         $this->commentManager = new CommentManager($db);
         $this->categoryManager = new CategoryManager($db);
         $this->tagManager = new TagManager($db);
-        $this->authenticationMiddleware = new AuthenticationMiddleware($this->securityHelper);
+        $this->authMiddleware = new AuthenticationMiddleware($this->securityHelper);
         $this->stringHelper = new StringHelper();
     }
 
     public function index($message = null)
     {
         $this->authenticate();
-        if (!$this->authenticationMiddleware->isUser()) {
+        if (!$this->authMiddleware->isUser()) {
             header('Location: /');
 
             exit;
@@ -84,7 +83,7 @@ class AdminController extends TwigHelper
     public function categories($message = null)
     {
         $this->authenticate();
-        if (!$this->authenticationMiddleware->isUser()) {
+        if (!$this->authMiddleware->isUser()) {
             header('Location: /');
 
             exit;
@@ -106,7 +105,7 @@ class AdminController extends TwigHelper
     public function comments($message = null)
     {
         $this->authenticate();
-        if (!$this->authenticationMiddleware->isUser()) {
+        if (!$this->authMiddleware->isUser()) {
             header('Location: /');
 
             exit;
@@ -138,7 +137,7 @@ class AdminController extends TwigHelper
     public function posts($message = null)
     {
         $this->authenticate();
-        if (!$this->authenticationMiddleware->isUser()) {
+        if (!$this->authMiddleware->isUser()) {
             header('Location: /');
 
             exit;
@@ -160,7 +159,7 @@ class AdminController extends TwigHelper
     public function tags($message = null)
     {
         $this->authenticate();
-        if (!$this->authenticationMiddleware->isUser()) {
+        if (!$this->authMiddleware->isUser()) {
             header('Location: /');
 
             exit;
@@ -182,7 +181,7 @@ class AdminController extends TwigHelper
     public function users($message = null)
     {
         $this->authenticate();
-        if (!$this->authenticationMiddleware->isUser()) {
+        if (!$this->authMiddleware->isUser()) {
             header('Location: /');
 
             exit;
