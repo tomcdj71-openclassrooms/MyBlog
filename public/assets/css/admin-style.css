@@ -5,3 +5,10 @@
 .pagination-detail{
     display: none;
 }
+
+#table-comment td:nth-child(3) {
+    width: 30px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    
+}

@@ -4,153 +4,71 @@ declare(strict_types=1);
 
 namespace App\Router;
 
-use App\Helper\SecurityHelper;
+use App\DependencyInjection\Container;
 
 class Router
 {
     private $url;
-    private $route;
-    private $param;
-    private $routeArr;
-    private $routes = [];
+    private $container;
+    private $routes;
 
-    public function __construct(string $url)
+    public function __construct(string $url, Container $container)
     {
         $this->url = $url;
+        $this->container = $container;
+
+        $route = new Route();
+        $this->routes = $route->getRoutes();
     }
 
-    /*
-    * Handles GET requests
-    *
-    * @param array $paramList List of parameters
-    *
-    * @throws \Exception If the key of the array doesn't exist or the function is not found
-    */
-    public function get(array $paramList = []): void
+    public function run()
     {
-        // Checks if the given key exists in the array
-        if (!isset($paramList[1]) || !isset($paramList[2])) {
-            throw new \Exception("GET: The key of the array doesn't exist");
+        $parsedUrl = $this->parseUrl($this->url);
+        $matchedRoute = $this->matchRoute($parsedUrl['path']);
+
+        if (!$matchedRoute) {
+            throw new RouterException('No matching route found');
         }
 
-        $class = $paramList[1];
-        $paramMethod = $paramList[2];
-        $methodArr = get_class_methods($class);
+        $controllerClass = $matchedRoute[1];
+        $controllerMethod = $matchedRoute[2];
+        $controller = $this->container->get($controllerClass);
+        $params = $parsedUrl['params'];
 
-        if (in_array($paramMethod, $methodArr)) {
-            call_user_func([new $class(), $paramMethod], $this->param);
-        } else {
-            throw new \Exception('Function not found');
-        }
+        call_user_func_array([$controller, $controllerMethod], $params);
     }
 
-    /*
-    * Handles POST requests
-    *
-    * @param array $paramList List of parameters
-    * @param array $data      POST data
-    *
-    * @throws \Exception If the key of the array doesn't exist or the function is not found
-    */
-    public function post(array $paramList = [], array $data = []): void
+    public function parseUrl(string $url): array
     {
-        if (!isset($paramList[1]) || !isset($paramList[2])) {
-            throw new \Exception("POST: The key of the array doesn't exist");
-        }
+        $urlComponents = parse_url($url);
+        $urlPath = $urlComponents['path'];
+        $urlPath = trim($urlPath, '/');
+        $urlPath = explode('/', $urlPath);
 
-        $class = $paramList[1];
-        $paramMethod = $paramList[2];
-        $methodArr = get_class_methods($class);
-        $data = $_POST;
-        $id = $this->param;
+        $controllerName = ucfirst($urlPath[0] ?? 'Blog');
+        $methodName = $urlPath[1] ?? 'index';
+        $params = array_slice($urlPath, 2);
 
-        if (in_array($paramMethod, $methodArr)) {
-            call_user_func([new $class(), $paramMethod], $data, $id);
-        } else {
-            throw new \Exception('Function not found');
-        }
+        return [
+            'path' => '/'.implode('/', $urlPath),
+            'controller' => $controllerName,
+            'method' => $methodName,
+            'params' => $params,
+        ];
     }
 
-    /*
-    * Runs the router
-    *
-    * @throws \RouterException If no routes matches
-    */
-    public function run(): void
+    private function matchRoute(string $path): ?array
     {
-        $routeItem = new Route();
-        $securityHelper = new SecurityHelper();
+        foreach ($this->routes as $route) {
+            $pattern = '@^'.preg_replace('@\\\{[^/]+@', '([^/]+)', preg_quote($route[0], '@')).'$@D';
+            if (preg_match($pattern, $path, $matches)) {
+                array_shift($matches);
+                $route['params'] = $matches;
 
-        $securityHelper->startSession();
-
-        $this->routes = $routeItem->getRoutes();
-
-        if (empty($this->routes)) {
-            $request = new Request();
-            $request->redirectToRoute('not_found');
-        }
-
-        try {
-            if ($this->match()) {
-                $this->call();
-            } else {
-                throw new RouterException('No routes matches');
-            }
-        } catch (RouterException $e) {
-            $request = new Request();
-            $request->redirectToRoute('not_found');
-        }
-    }
-
-    /*
-    * Matches the URL with the available routes
-    *
-    * @return bool Whether there is a match or not
-    */
-    public function match(): bool
-    {
-        $urlPath = rtrim($this->url, '/');
-        $explodeUrl = explode('/', $urlPath);
-
-        foreach ($this->routes as $routeArr) {
-            $route = $routeArr[0];
-            $explodeRoute = explode('/', $route);
-
-            if (count($explodeUrl) === count($explodeRoute)) {
-                $match = true;
-                $this->param = [];
-                foreach ($explodeUrl as $key => $urlPart) {
-                    if (preg_match('/^{.*}$/', $explodeRoute[$key])) {
-                        $this->param[] = $urlPart;
-                    } elseif ($urlPart !== $explodeRoute[$key]) {
-                        $match = false;
-
-                        break;
-                    }
-                }
-
-                if ($match) {
-                    $this->route = $route;
-                    $this->routeArr = $routeArr;
-
-                    return true;
-                }
+                return $route;
             }
         }
 
-        return false;
-    }
-
-    // Calls the controller and the method
-    public function call(): void
-    {
-        $controller = $_SERVER['REQUEST_URI'];
-        $method = $_SERVER['REQUEST_METHOD'];
-
-        if ('GET' === $method) {
-            $this->get($this->routeArr);
-        } elseif ('POST' === $method) {
-            $this->post($this->routeArr);
-        }
+        return null;
     }
 }
