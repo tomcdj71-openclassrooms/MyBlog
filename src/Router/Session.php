@@ -9,6 +9,9 @@ class Session
     public function __construct()
     {
         if (!isset($_SESSION)) {
+            ini_set('session.cookie_secure', '1');
+            ini_set('session.cookie_httponly', '1');
+            ini_set('session.use_strict_mode', '1');
             session_start();
         }
     }
@@ -50,5 +53,10 @@ class Session
     public function getUserFromSession()
     {
         return $this->get('user');
+    }
+
+    public function regenerateId(): void
+    {
+        session_regenerate_id(true);
     }
 }

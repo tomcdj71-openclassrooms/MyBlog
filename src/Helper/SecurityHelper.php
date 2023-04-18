@@ -82,6 +82,7 @@ class SecurityHelper
             return null;
         }
 
+        $this->session->regenerateId();
         $this->session->set('user', $user);
 
         if ($this->loginValidator->shouldRemember($data)) {
