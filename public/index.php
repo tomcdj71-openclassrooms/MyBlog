@@ -17,6 +17,7 @@ use App\Manager\UserManager;
 use App\Middleware\AuthenticationMiddleware;
 use App\Router\Router;
 use App\Router\RouterException;
+use App\Router\Session;
 use Tracy\Debugger;
 
 Debugger::enable();
@@ -33,13 +34,11 @@ $container->set(SecurityHelper::class);
 $container->set(StringHelper::class);
 $container->set(TwigHelper::class);
 $container->set(AuthenticationMiddleware::class);
+$container->set(SecurityHelper::class, new SecurityHelper($container->get(Session::class)));
 
 try {
     $router = new Router($_SERVER['REQUEST_URI'], $container);
     $router->run();
-    // start the session
-    $security = new SecurityHelper();
-    $security->startSession();
 } catch (RouterException $e) {
     // Set the error code to 404 by default
     http_response_code($e->getCode() ?: 404);

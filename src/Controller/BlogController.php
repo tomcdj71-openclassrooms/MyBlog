@@ -14,7 +14,9 @@ use App\Manager\PostManager;
 use App\Manager\TagManager;
 use App\Manager\UserManager;
 use App\Middleware\AuthenticationMiddleware;
+use App\Router\Session;
 use App\Validator\CommentFormValidator;
+use Tracy\Debugger;
 
 class BlogController
 {
@@ -24,7 +26,6 @@ class BlogController
     private $categoryManager;
     private $userManager;
     private $securityHelper;
-    private $session;
     private $popularCategories;
     private $tags;
     private $date;
@@ -33,6 +34,7 @@ class BlogController
     private $stringHelper;
     private $authMiddleware;
     private $data;
+    private $session;
 
     public function __construct(Container $container)
     {
@@ -45,6 +47,7 @@ class BlogController
         $this->stringHelper = $container->get(StringHelper::class);
         $this->commentManager = $container->get(CommentManager::class);
         $this->authMiddleware = $container->get(AuthenticationMiddleware::class);
+        $this->session = $container->get(Session::class);
     }
 
     /**
@@ -56,9 +59,13 @@ class BlogController
     public function blogIndex($message = null)
     {
         $this->resetData();
+        // return the status of the user (connected or not)
+        Debugger::barDump($this->authMiddleware->isUserOrAdmin());
+        // return the user object
+        Debugger::barDump($this->securityHelper->getUser());
+        // Return the user object from the session !
+        Debugger::barDump($this->session->get('user'));
         $posts = $this->postManager->findAll();
-        $isAuthenticated = $this->securityHelper->isAuthenticated();
-        $message = $isAuthenticated ? 'You are logged in' : 'You are not logged in';
         $this->data['message'] = $message;
         $this->data['posts'] = $posts;
         $this->twig->render('pages/blog/index.html.twig', $this->data);
@@ -217,7 +224,7 @@ class BlogController
             'tags' => $this->tagManager->findAll(),
             'categories' => $this->categoryManager->findPopularCategories(),
             'recentPosts' => $this->postManager->findBy(['recent' => $this->date, 'limit' => 5, 'order' => 'ASC']),
-            'session' => $this->securityHelper->getSession(),
+            'session' => $this->session,
         ];
     }
 }

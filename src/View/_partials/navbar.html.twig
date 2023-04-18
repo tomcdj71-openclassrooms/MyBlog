@@ -26,9 +26,9 @@
 			</ul>
 		</div>
 		<div class="navbar-nav ml-auto">
-			{% if session.user is not defined %}
+			{% if session.get('user') is not defined %}
 				<a class="nav-item nav-link" href="{{ path('login') }}">Connexion</a>
-			{% elseif session.user is not null %}
+			{% elseif session.get('user') is not null %}
 				<a class="nav-item nav-link" href="{{ path('logout') }}">Déconnexion</a>
 			{% endif %}
 		</div>

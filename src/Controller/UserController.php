@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Config\DatabaseConnexion;
-use App\Helper\ImageHelper;
+use App\DependencyInjection\Container;
 use App\Helper\SecurityHelper;
 use App\Helper\StringHelper;
 use App\Helper\TwigHelper;
@@ -19,28 +19,30 @@ use Tracy\Debugger;
 
 class UserController extends TwigHelper
 {
-    protected $userManager;
-    protected $loginFormValidator;
-    protected $registerFormValidator;
-    protected $securityHelper;
     protected $twig;
-    private $session;
-    private $editProfileFormValidator;
-    private $imageHelper;
+    private $postManager;
+    private $tagManager;
+    private $categoryManager;
+    private $userManager;
+    private $securityHelper;
+    private $popularCategories;
+    private $tags;
+    private $date;
+    private $recentPosts;
+    private $commentManager;
+    private $stringHelper;
     private $authMiddleware;
+    private $data;
+    private $session;
+    private $imageHelper;
 
-    public function __construct()
+    public function __construct(Container $container)
     {
-        $db = new DatabaseConnexion();
-        $this->userManager = new UserManager($db);
-        $this->loginFormValidator = new LoginFormValidator($this->userManager);
-        $this->registerFormValidator = new RegisterFormValidator($this->userManager);
-        $this->securityHelper = new SecurityHelper();
-        $this->session = $this->securityHelper->getSession();
-        $this->editProfileFormValidator = new EditProfileFormValidator($this->userManager);
-        $this->imageHelper = new ImageHelper('uploads/avatars/', 200, 200);
-        $this->authMiddleware = new AuthenticationMiddleware($this->securityHelper);
-        $this->twig = new TwigHelper();
+        $this->userManager = $container->get(UserManager::class);
+        $this->securityHelper = $container->get(SecurityHelper::class);
+        $this->twig = $container->get(TwigHelper::class);
+        $this->stringHelper = $container->get(StringHelper::class);
+        $this->authMiddleware = $container->get(AuthenticationMiddleware::class);
     }
 
     /*
@@ -93,8 +95,8 @@ class UserController extends TwigHelper
             if (!empty($_FILES['avatar'] || null === $_FILES['avatar'])) {
                 unset($postData['avatar']);
             }
-
-            $response = $this->editProfileFormValidator->validate($postData);
+            $editProfileFV = new EditProfileFormValidator($this->securityHelper);
+            $response = $editProfileFV->validate($postData);
             if ($response['valid']) {
                 $data = $response['data'];
                 if (isset($data['avatar']) && null !== $data['avatar']) {
@@ -163,7 +165,7 @@ class UserController extends TwigHelper
     public function login($message = null)
     {
         try {
-            if (isset($_COOKIE['remember_me_token']) && !$this->securityHelper->isAuthenticated()) {
+            if (isset($_COOKIE['remember_me_token']) && !$this->authMiddleware->isUserOrAdmin()) {
                 $this->securityHelper->checkRememberMeToken($_COOKIE['remember_me_token']);
             }
         } catch (\Exception $e) {
@@ -187,7 +189,8 @@ class UserController extends TwigHelper
                 'remember' => $remember,
             ];
 
-            $errors = $this->loginFormValidator->validate($postData, $postData['remember']);
+            $loginFV = new LoginFormValidator($this->securityHelper);
+            $errors = $loginFV->validate($postData, $postData['remember']);
 
             if (empty($errors)) {
                 $user = $this->securityHelper->authenticate($postData);
@@ -238,7 +241,8 @@ class UserController extends TwigHelper
                 'passwordConfirm' => filter_input(INPUT_POST, 'passwordConfirm', FILTER_SANITIZE_SPECIAL_CHARS),
             ];
 
-            $errors = $this->registerFormValidator->validate($postData);
+            $registerFV = new RegisterFormValidator($this->securityHelper);
+            $errors = $registerFV->validate($postData);
             $valid = $errors['valid'];
             if (true === $valid) {
                 $registered = $this->securityHelper->register($postData);
@@ -303,7 +307,7 @@ class UserController extends TwigHelper
      */
     public function logout()
     {
-        $this->securityHelper->destroySession();
+        $this->session->destroySession();
         header('Location: /blog');
 
         exit;

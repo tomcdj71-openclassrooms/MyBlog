@@ -7,39 +7,34 @@ namespace App\Helper;
 use App\Config\DatabaseConnexion;
 use App\Manager\UserManager;
 use App\Model\UserModel;
+use App\Router\Session;
 use App\Validator\LoginFormValidator;
 use App\Validator\RegisterFormValidator;
 
 class SecurityHelper
 {
-    protected $userManager;
-    protected $registerValidator;
-    protected $loginValidator;
+    private UserManager $userManager;
+    private RegisterFormValidator $registerValidator;
+    private LoginFormValidator $loginValidator;
+    private $session;
 
-    public function __construct()
+    public function __construct(Session $session)
     {
         $db = new DatabaseConnexion();
+        $this->session = $session;
         $this->userManager = new UserManager($db);
         $this->registerValidator = new RegisterFormValidator();
         $this->loginValidator = new LoginFormValidator($this->userManager);
     }
 
-    public function startSession(): void
-    {
-        if (PHP_SESSION_NONE === session_status()) {
-            session_start();
-        }
-    }
-
     public function register(array $postData): bool
     {
-        // Validate the user input
         $response = $this->registerValidator->validate($postData);
-        if (!empty($response['errors'] || false === $response['valid'])) {
+
+        if (!empty($response['errors']) || false === $response['valid']) {
             return false;
         }
 
-        // Create a new user
         $userData = [
             'username' => $postData['username'],
             'email' => $postData['email'],
@@ -71,8 +66,6 @@ class SecurityHelper
 
     public function authenticate(array $data, bool $remember = false): ?UserModel
     {
-        // Validate the login form data
-
         $errors = $this->loginValidator->validate([
             'email' => $data['email'],
             'password' => $data['password'],
@@ -83,22 +76,24 @@ class SecurityHelper
             return $errors;
         }
 
-        // Find the user in the database
         $user = $this->userManager->findBy(['email' => $data['email']]);
 
         if (!$user || !password_verify($data['password'], $user->getPassword())) {
             return null;
         }
 
-        // Set the user ID in the session
+        $this->session->set('user', $user);
 
-        $this->setSessionValue('user', $user);
-
-        if ($this->loginValidator->shouldRemember(['email' => $data['email'], 'password' => $data['password'], 'remember' => $remember ? 'true' : 'false'])) {
+        if ($this->loginValidator->shouldRemember($data)) {
             $this->rememberMe($user);
         }
 
         return $user;
+    }
+
+    public function getUser(): ?UserModel
+    {
+        return $this->session->get('user');
     }
 
     public function rememberMe(UserModel $user): void
@@ -111,126 +106,7 @@ class SecurityHelper
         setcookie('remember_me_token', $token, $expiresAt, '/', '', false, true);
     }
 
-    public function setSessionValue(string $key, $value): void
-    {
-        if (!isset($_SESSION)) {
-            session_start();
-        }
-
-        $_SESSION[$key] = $value;
-    }
-
-    public function getSessionValue(string $key)
-    {
-        if (!isset($_SESSION)) {
-            session_start();
-        }
-
-        return $_SESSION[$key] ?? null;
-    }
-
-    public function removeSessionValue(string $key): void
-    {
-        if (!isset($_SESSION)) {
-            session_start();
-        }
-
-        unset($_SESSION[$key]);
-    }
-
-    public function destroySession(): void
-    {
-        if (!isset($_SESSION)) {
-            session_start();
-        }
-
-        session_destroy();
-    }
-
-    public function denyAccessUntilGranted(string $role, callable $callback): void
-    {
-        if (!$this->isGranted($role)) {
-            header('Location: /login');
-
-            exit;
-        }
-
-        $callback();
-    }
-
-    public function isGranted(string $role): bool
-    {
-        if (!isset($_SESSION)) {
-            session_start();
-        }
-
-        if (!isset($_SESSION['user'])) {
-            return false;
-        }
-
-        return $role === $_SESSION['user']->getRole();
-    }
-
-    public function getUser(): ?UserModel
-    {
-        if (!isset($_SESSION)) {
-            session_start();
-        }
-
-        if (!isset($_SESSION['user'])) {
-            return null;
-        }
-
-        return $_SESSION['user'];
-    }
-
-    public function getSession(): ?array
-    {
-        if (PHP_SESSION_NONE === session_status()) {
-            session_start();
-        }
-
-        return $_SESSION ?? null;
-    }
-
-    public function isAuthenticated(): bool
-    {
-        return null !== $this->getSessionValue('user_id');
-    }
-
-    public function getAuthenticatedUser()
-    {
-        $userId = $this->getSessionValue('user_id');
-
-        if ($userId) {
-            $user = $this->userManager->findBy(['id' => $userId]);
-
-            if ($user) {
-                return new UserModel(
-                    $user['id'],
-                    $user['username'],
-                    $user['email'],
-                    $user['password'],
-                    $user['created_at'],
-                    $user['role'],
-                    $user['firstName'],
-                    $user['lastName'],
-                    $user['avatar'],
-                    $user['bio'],
-                    $user['twitter'],
-                    $user['facebook'],
-                    $user['github'],
-                    $user['linkedin'],
-                    $user['remember_me_token'],
-                    $user['remember_me_expires_at']
-                );
-            }
-        }
-
-        return null;
-    }
-
-    public function createRememberMeToken(): array
+    public function generateRememberMeToken(): array
     {
         $token = bin2hex(random_bytes(32));
         $expiresAt = time() + 86400 * 7;
@@ -238,26 +114,13 @@ class SecurityHelper
         return ['token' => $token, 'expiresAt' => $expiresAt];
     }
 
-    public function getRememberMeToken(): ?string
+    public function checkRememberMeToken(): ?UserModel
     {
-        if (isset($_COOKIE['remember_me_token'])) {
-            if (empty($_COOKIE['remember_me_token'])) {
-                throw new \InvalidArgumentException('Cookie is empty');
-            }
-
-            return $_COOKIE['remember_me_token'];
+        if (!isset($_COOKIE['remember_me_token']) || empty($_COOKIE['remember_me_token'])) {
+            throw new \InvalidArgumentException('Remember me token is not set or empty.');
         }
 
-        throw new \InvalidArgumentException('Cookie is not set');
-    }
-
-    public function checkRememberMeToken(string $token): ?UserModel
-    {
-        $token = $this->getRememberMeToken();
-
-        if (!$token) {
-            throw new \Exception('No token found.');
-        }
+        $token = $this->session->getCookie('remember_me_token');
 
         $user = $this->userManager->findBy(['remember_me_token' => $token]);
 
@@ -271,45 +134,28 @@ class SecurityHelper
             throw new \Exception('Token expired.');
         }
 
-        $this->setSessionValue('user', $user);
+        $this->session->set('user', $user);
         header('Location: /blog');
-
-        exit;
 
         return $user;
     }
 
-    public function checkCsrfToken(string $key, string $token): bool
-    {
-        if (!isset($_SESSION)) {
-            session_start();
-        }
-
-        if (!isset($_SESSION['csrf_tokens'])) {
-            $_SESSION['csrf_tokens'] = [];
-        }
-
-        $tokens = &$_SESSION['csrf_tokens'];
-
-        if (!isset($tokens[$key])) {
-            $tokens[$key] = bin2hex(random_bytes(32));
-        }
-
-        $expected = $tokens[$key];
-
-        return hash_equals($expected, $token);
-    }
-
     public function generateCsrfToken(string $key): string
     {
-        if (!isset($_SESSION)) {
-            session_start();
-        }
-
         $token = bin2hex(random_bytes(32));
-
-        $_SESSION['csrf_tokens'][$key] = $token;
+        $this->session->set("csrf_tokens.{$key}", $token);
 
         return $token;
+    }
+
+    public function checkCsrfToken(string $key, string $token): bool
+    {
+        if (!$this->session->has('csrf_tokens') || !$this->session->has("csrf_tokens.{$key}")) {
+            throw new \InvalidArgumentException('No CSRF token found for the given key.');
+        }
+
+        $expected = $this->session->get("csrf_tokens.{$key}");
+
+        return hash_equals($expected, $token);
     }
 }
