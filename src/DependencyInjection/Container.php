@@ -98,7 +98,7 @@ class Container
         $dependencies = [];
         foreach ($parameters as $parameter) {
             // get the type hinted class
-            $dependency = $parameter->getClass();
+            $dependency = $parameter->getType() && !$parameter->getType()->isBuiltin() ? new \ReflectionClass($parameter->getType()->getName()) : null;
             if (null === $dependency) {
                 // check if default value for a parameter is available
                 if ($parameter->isDefaultValueAvailable()) {
