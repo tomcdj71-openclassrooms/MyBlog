@@ -35,7 +35,7 @@ class Router
         $controller = $this->container->get($controllerClass);
         $params = $parsedUrl['params'];
 
-        call_user_func_array([$controller, $controllerMethod], $params);
+        call_user_func_array([$controller, $controllerMethod], $matchedRoute['params']);
     }
 
     public function parseUrl(string $url): array
