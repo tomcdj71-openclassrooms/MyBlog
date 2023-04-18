@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__.'/../vendor/autoload.php';
 
+use App\Controller\ErrorController;
 use App\DependencyInjection\Container;
 use App\Helper\SecurityHelper;
 use App\Helper\StringHelper;
@@ -35,11 +36,13 @@ $container->set(AuthenticationMiddleware::class);
 
 try {
     $router = new Router($_SERVER['REQUEST_URI'], $container);
-
     $router->run();
     // start the session
     $security = new SecurityHelper();
     $security->startSession();
 } catch (RouterException $e) {
-    echo 'Error Routing:'.$e;
+    // Set the error code to 404 by default
+    http_response_code($e->getCode() ?: 404);
+    $errorController = new ErrorController($container);
+    $errorController->error_page($e->getMessage());
 }

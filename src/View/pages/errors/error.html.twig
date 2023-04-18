@@ -3,12 +3,12 @@
 {% block body %}
 	<div class="d-flex align-items-center justify-content-center vh-100">
 		<div class="text-center">
-			<h1 class="display-1 fw-bold">404</h1>
+			<h1 class="display-1 fw-bold">{{ title }}</h1>
 			<p class="fs-3">
-				<span class="text-danger">Oops!</span>
-				Page non trouvée.</p>
+				<span class="text-danger">{{ message }}!</span>
+				{{ message_title }}</p>
 			<p class="lead">
-				La page que vous cherchez n'existe pas (encore).
+				{{ explanations }}
 			</p>
 			<a href="{{ path('home') }}" class="btn btn-primary">Retour à l'accueil</a>
 		</div>
