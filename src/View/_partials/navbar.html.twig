@@ -8,16 +8,16 @@
 			<ul class="navbar-nav">
 				<div class="centered-pill">
 					<li class="nav-item">
-					{# Due to my routing system, I need to make this if/esle statement in order to always redirect to / the "home" route #}
-					{# If I don't do that, if I'm on 'blog_post' for example, the 'home' route generated will be 'blog_post' too ! #}
-					{% set home = path('home' ) %}
-					{% if home == '' %}
-						{% set home = '/' %}
-					{% else %}
+						{# Due to my routing system, I need to make this if/esle statement in order to always redirect to / the "home" route #}
+						{# If I don't do that, if I'm on 'blog_post' for example, the 'home' route generated will be 'blog_post' too ! #}
+						{% set home = path('home' ) %}
+							{% if home == '' %}
+							{% set home = '/' %}
+						{% else %}
 							{% set home = '/' ~ home %}
-					{% endif %}
-					
-						<a class="nav-link centered-pill-button {{ route == 'portfolio' ? 'active' : '' }}" href="{{ home }}">Accueil</a>
+						{% endif %}
+
+						<a class="nav-link centered-pill-button {{ route == 'portfolio' ? 'active' : '' }}" href="{{ path('home') }}">Accueil</a>
 					</li>
 					<li class="nav-item">
 						<a class="nav-link centered-pill-button {{ route == 'blog' ? 'active' : '' }}" href="{{ path('blog') }}">Blog</a>
