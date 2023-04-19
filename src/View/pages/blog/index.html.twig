@@ -29,7 +29,7 @@
 									</li>
 									<li class="d-flex align-items-center">
 										<i class="bi bi-folder"></i>
-										<a href="{{ path('blog_category', {'category': post.category}) }}">
+										<a href="{{ path('blog_category', {'slug': post.categorySlug}) }}">
 											{{ post.category }}</a>
 									</li>
 									<li class="d-flex align-items-center">
