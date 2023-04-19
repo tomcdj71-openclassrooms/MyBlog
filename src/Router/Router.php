@@ -33,7 +33,7 @@ class Router
         $controllerClass = $matchedRoute[1];
         $controllerMethod = $matchedRoute[2];
         $controller = $this->container->get($controllerClass);
-        $params = $parsedUrl['params'];
+        $this->container->injectProperties($controller);
 
         call_user_func_array([$controller, $controllerMethod], $matchedRoute['params']);
     }
@@ -70,5 +70,12 @@ class Router
         }
 
         return null;
+    }
+
+    private function executeController($controller, $method): void
+    {
+        $controllerObject = new $controller($this->container);
+        $this->container->injectProperties($controllerObject);
+        $controllerObject->{$method}();
     }
 }

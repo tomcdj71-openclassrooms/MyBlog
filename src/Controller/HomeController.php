@@ -7,14 +7,25 @@ namespace App\Controller;
 use App\DependencyInjection\Container;
 use App\Helper\SecurityHelper;
 use App\Helper\TwigHelper;
+use App\Manager\UserManager;
+use App\Middleware\AuthenticationMiddleware;
+use App\Router\Request;
+use App\Router\ServerRequest;
+use App\Router\Session;
 
 class HomeController
 {
-    private $securityHelper;
+    protected TwigHelper $twig;
+    private UserManager $userManager;
+    private SecurityHelper $securityHelper;
+    private AuthenticationMiddleware $authMiddleware;
+    private Session $session;
+    private ServerRequest $serverRequest;
+    private Request $request;
 
     public function __construct(Container $container)
     {
-        $this->securityHelper = $container->get(SecurityHelper::class);
+        $container->injectProperties($this);
     }
 
     /**
@@ -28,10 +39,9 @@ class HomeController
             'title' => 'MyBlog - Portfolio',
             'message' => $message,
             'route' => 'portfolio',
-            'session' => $this->securityHelper->getSession(),
+            'session' => $this->session,
         ];
 
-        $twig = new TwigHelper();
-        $twig->render('pages/portfolio/index.html.twig', $data);
+        $this->twig->render('pages/portfolio/index.html.twig', $data);
     }
 }

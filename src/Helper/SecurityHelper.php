@@ -57,8 +57,6 @@ class SecurityHelper
 
         if (!$authErrors) {
             header('Location: /blog');
-
-            exit;
         }
 
         return true;
@@ -144,18 +142,20 @@ class SecurityHelper
     public function generateCsrfToken(string $key): string
     {
         $token = bin2hex(random_bytes(32));
-        $this->session->set("csrf_tokens.{$key}", $token);
+        $csrf_tokens = $this->session->get('csrf_tokens') ?? [];
+        $csrf_tokens[$key] = $token;
+        $this->session->set('csrf_tokens', $csrf_tokens);
 
         return $token;
     }
 
     public function checkCsrfToken(string $key, string $token): bool
     {
-        if (!$this->session->has('csrf_tokens') || !$this->session->has("csrf_tokens.{$key}")) {
+        $csrf_tokens = $this->session->get('csrf_tokens');
+        $expected = $csrf_tokens[$key] ?? null;
+        if (null === $expected) {
             throw new \InvalidArgumentException('No CSRF token found for the given key.');
         }
-
-        $expected = $this->session->get("csrf_tokens.{$key}");
 
         return hash_equals($expected, $token);
     }

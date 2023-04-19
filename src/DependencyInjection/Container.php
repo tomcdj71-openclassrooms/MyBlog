@@ -115,4 +115,22 @@ class Container
 
         return $dependencies;
     }
+
+    public function injectProperties(object $object): void
+    {
+        $reflectionClass = new \ReflectionClass($object);
+        $properties = $reflectionClass->getProperties();
+
+        foreach ($properties as $property) {
+            $dependency = $property->getType()->getName();
+
+            try {
+                $dependencyInstance = $this->get($dependency);
+                $property->setAccessible(true);
+                $property->setValue($object, $dependencyInstance);
+            } catch (\Exception $e) {
+                echo $e->getMessage();
+            }
+        }
+    }
 }

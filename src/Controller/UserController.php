@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Config\DatabaseConnexion;
 use App\DependencyInjection\Container;
 use App\Helper\SecurityHelper;
 use App\Helper\StringHelper;
@@ -12,37 +11,28 @@ use App\Helper\TwigHelper;
 use App\Manager\UserManager;
 use App\Middleware\AuthenticationMiddleware;
 use App\Model\UserModel;
-use App\Validator\EditProfileFormValidator;
+use App\Router\Request;
+use App\Router\ServerRequest;
+use App\Router\Session;
+use App\Service\ProfileService;
 use App\Validator\LoginFormValidator;
 use App\Validator\RegisterFormValidator;
-use Tracy\Debugger;
 
-class UserController extends TwigHelper
+class UserController
 {
-    protected $twig;
-    private $postManager;
-    private $tagManager;
-    private $categoryManager;
-    private $userManager;
-    private $securityHelper;
-    private $popularCategories;
-    private $tags;
-    private $date;
-    private $recentPosts;
-    private $commentManager;
-    private $stringHelper;
-    private $authMiddleware;
-    private $data;
-    private $session;
-    private $imageHelper;
+    protected TwigHelper $twig;
+    private UserManager $userManager;
+    private SecurityHelper $securityHelper;
+    private AuthenticationMiddleware $authMiddleware;
+    private Session $session;
+    private ServerRequest $serverRequest;
+    private ProfileService $profileService;
+    private Request $request;
+    private StringHelper $stringHelper;
 
     public function __construct(Container $container)
     {
-        $this->userManager = $container->get(UserManager::class);
-        $this->securityHelper = $container->get(SecurityHelper::class);
-        $this->twig = $container->get(TwigHelper::class);
-        $this->stringHelper = $container->get(StringHelper::class);
-        $this->authMiddleware = $container->get(AuthenticationMiddleware::class);
+        $container->injectProperties($this);
     }
 
     /*
@@ -50,107 +40,27 @@ class UserController extends TwigHelper
     *
     * @param null $message
     */
-    public function profile($message = null)
+    public function profile()
     {
-        $errors = [];
-        // Get the user from the $_SESSION
-        if (null === $this->securityHelper->getUser()) {
-            header('Location: /login');
-
-            exit;
+        if (!$this->authMiddleware->isUserOrAdmin()) {
+            return $this->request->redirectToRoute('login', ['message' => 'You must be logged in to access this page.']);
         }
+
         $user = $this->securityHelper->getUser();
-        $userId = $user->getId();
-        $userManager = new UserManager(new DatabaseConnexion());
-        $user = $userManager->find($userId);
-        $loggedUser = null;
-        if (isset($_SESSION['user'])) {
-            $loggedUser = $_SESSION['user'];
-        }
-        if (!$user instanceof UserModel) {
-            header('Location: /login');
+        $errors = [];
+        $message = null;
 
-            exit;
-        }
-
-        if ('POST' === $_SERVER['REQUEST_METHOD'] && $csrf_token = filter_input(INPUT_POST, 'csrf_token', FILTER_SANITIZE_SPECIAL_CHARS)) {
-            if ($this->securityHelper->checkCsrfToken('editProfile', $csrf_token)) {
-                $errors[] = 'Invalid CSRF token';
-            }
-
-            $postData = [
-                'firstName' => filter_input(INPUT_POST, 'firstName', FILTER_SANITIZE_SPECIAL_CHARS) ?? '',
-                'lastName' => filter_input(INPUT_POST, 'lastName', FILTER_SANITIZE_SPECIAL_CHARS) ?? '',
-                'email' => filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL) ?? '',
-                'username' => filter_input(INPUT_POST, 'username', FILTER_SANITIZE_SPECIAL_CHARS) ?? '',
-                'bio' => filter_input(INPUT_POST, 'bio', FILTER_SANITIZE_SPECIAL_CHARS) ?? '',
-                'avatar' => $_FILES['avatar'] ?? null,
-                'twitter' => filter_input(INPUT_POST, 'twitter', FILTER_SANITIZE_SPECIAL_CHARS) ?? '',
-                'facebook' => filter_input(INPUT_POST, 'facebook', FILTER_SANITIZE_SPECIAL_CHARS) ?? '',
-                'github' => filter_input(INPUT_POST, 'github', FILTER_SANITIZE_SPECIAL_CHARS) ?? '',
-                'linkedin' => filter_input(INPUT_POST, 'linkedin', FILTER_SANITIZE_SPECIAL_CHARS) ?? '',
-                'csrf_token' => $csrf_token,
-            ];
-
-            if (!empty($_FILES['avatar'] || null === $_FILES['avatar'])) {
-                unset($postData['avatar']);
-            }
-            $editProfileFV = new EditProfileFormValidator($this->securityHelper);
-            $response = $editProfileFV->validate($postData);
-            if ($response['valid']) {
-                $data = $response['data'];
-                if (isset($data['avatar']) && null !== $data['avatar']) {
-                    $filename = $this->imageHelper->uploadImage($data['avatar'], 200, 200);
-                    if (0 === strpos($filename, 'Error')) {
-                        throw new \RuntimeException($filename);
-                    }
-                    $filename = explode('.', $filename)[0];
-                    $data['avatar'] = $filename;
-                    $user->setAvatar($filename);
-                }
-                // Update other user information
-                $user->setFirstName($data['firstName']);
-                $user->setLastName($data['lastName']);
-                $user->setEmail($data['email']);
-                $user->setBio($data['bio']);
-                $user->setTwitter($data['twitter']);
-                $user->setFacebook($data['facebook']);
-                $user->setGithub($data['github']);
-                $user->setLinkedin($data['linkedin']);
-                if ($userManager->updateProfile($user, $data)) {
-                    $user = $userManager->find($userId);
-                    $message = 'Your profile has been updated successfully!';
-                    // generate new CSRF token to prevent multiple submissions
-                    $csrf_token = $this->securityHelper->generateCsrfToken('editProfile');
-                    $data = [
-                        'title' => 'MyBlog - Profile',
-                        'route' => 'profile',
-                        'user' => $user,
-                        'message' => $message,
-                        'errors' => $errors,
-                        'loggedUser' => $loggedUser,
-                        'csrf_token' => $csrf_token,
-                    ];
-
-                    return $this->profile($message, $data, $csrf_token);
-                }
-                $errors = $response['errors'];
-            } else {
-                $errors = $response['errors'];
-            }
-        } else {
-            $errors = [];
+        if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrf_token', FILTER_SANITIZE_SPECIAL_CHARS)) {
+            list($errors, $message) = $this->profileService->handleProfilePostRequest($user);
         }
 
         $csrf_token = $this->securityHelper->generateCsrfToken('editProfile');
-        $user = $this->userManager->find($userId);
         $data = [
             'title' => 'MyBlog - Profile',
             'route' => 'profile',
             'user' => $user,
             'message' => $message,
             'errors' => $errors,
-            'loggedUser' => $loggedUser,
             'csrf_token' => $csrf_token,
             'session' => $this->session,
         ];
@@ -174,9 +84,7 @@ class UserController extends TwigHelper
         }
         $this->authenticate();
         if ($this->authMiddleware->isUserOrAdmin()) {
-            header('Location: /blog');
-
-            exit;
+            return $this->request->redirectToRoute('blog');
         }
         if ('POST' === $_SERVER['REQUEST_METHOD']) {
             $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
@@ -189,7 +97,7 @@ class UserController extends TwigHelper
                 'remember' => $remember,
             ];
 
-            $loginFV = new LoginFormValidator($this->securityHelper);
+            $loginFV = new LoginFormValidator($this->userManager);
             $errors = $loginFV->validate($postData, $postData['remember']);
 
             if (empty($errors)) {
@@ -200,24 +108,21 @@ class UserController extends TwigHelper
                         $this->securityHelper->rememberMe($user);
                     }
 
-                    header('Location: /profile');
-
-                    exit;
+                    return $this->request->redirectToRoute('profile');
                 }
 
                 $errors[] = 'Email or password is incorrect';
             }
 
-            header('Location: /profile');
-        } else {
-            $data = [
-                'title' => 'MyBlog - Connexion',
-                'route' => 'login',
-                'message' => $message,
-            ];
-
-            $this->twig->render('pages/security/login.html.twig', $data);
+            return $this->request->redirectToRoute('profile');
         }
+        $data = [
+            'title' => 'MyBlog - Connexion',
+            'route' => 'login',
+            'message' => $message,
+        ];
+
+        $this->twig->render('pages/security/login.html.twig', $data);
     }
 
     /**
@@ -228,9 +133,7 @@ class UserController extends TwigHelper
     public function register($message = null)
     {
         if ($this->authMiddleware->isUserOrAdmin()) {
-            header('Location: /blog');
-
-            exit;
+            return $this->request->redirectToRoute('login');
         }
 
         if ('POST' === $_SERVER['REQUEST_METHOD']) {
@@ -246,11 +149,8 @@ class UserController extends TwigHelper
             $valid = $errors['valid'];
             if (true === $valid) {
                 $registered = $this->securityHelper->register($postData);
-
                 if ($registered) {
-                    header('Location: /login');
-
-                    exit;
+                    return $this->request->redirectToRoute('login');
                 }
                 $errors[] = 'Registration failed. Please try again.';
             }
@@ -277,28 +177,19 @@ class UserController extends TwigHelper
     /**
      * Display the user profile page.
      *
-     * @param null|mixed $message
-     * @param mixed      $username
+     * @param mixed $username
      */
-    public function userProfile($username, $message = null)
+    public function userProfile(string $username)
     {
-        $sh = new StringHelper();
         $url = $_SERVER['REQUEST_URI'];
-        $username = $sh->getLastUrlPart($url);
-        Debugger::barDump($username);
+        $username = $this->stringHelper->getLastUrlPart($url);
         $user = $this->userManager->findBy(['username' => $username]);
-        $loggedUser = null;
-        if (isset($_SESSION['user'])) {
-            $loggedUser = $_SESSION['user'];
-        }
         $data = [
             'title' => 'MyBlog - Profile',
             'route' => 'profile',
             'user' => $user,
-            'loggedUser' => $loggedUser,
             'session' => $this->session,
         ];
-
         $this->twig->render('pages/profile/profile.html.twig', $data);
     }
 
@@ -307,10 +198,9 @@ class UserController extends TwigHelper
      */
     public function logout()
     {
-        $this->session->destroySession();
-        header('Location: /blog');
+        $this->session->destroy();
 
-        exit;
+        return $this->request->redirectToRoute('blog');
     }
 
     private function authenticate(): void

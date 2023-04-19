@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Helper;
 
 use App\Router\Route;
+use App\Router\ServerRequest;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 use Twig\TwigFunction;
@@ -12,9 +13,11 @@ use Twig\TwigFunction;
 class TwigHelper
 {
     protected $twig;
+    private $serverRequest;
 
     public function __construct()
     {
+        $this->serverRequest = new ServerRequest($_SERVER);
         $loader = new FilesystemLoader(dirname(__DIR__).'/View');
 
         $this->twig = new Environment($loader, [
@@ -83,8 +86,8 @@ class TwigHelper
      */
     public function asset($asset)
     {
-        $protocol = isset($_SERVER['HTTPS']) && 'off' !== $_SERVER['HTTPS'] ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'];
+        $protocol = $this->serverRequest->isSecure() ? 'https' : 'http';
+        $host = $this->serverRequest->get('HTTP_HOST');
         $baseURL = "{$protocol}://{$host}";
 
         return sprintf('%s/assets/%s', $baseURL, ltrim($asset, '/'));

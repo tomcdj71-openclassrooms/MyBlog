@@ -4,8 +4,17 @@ declare(strict_types=1);
 
 namespace App\Router;
 
+use App\DependencyInjection\Container;
+
 class Request
 {
+    private $container;
+
+    public function __construct(Container $container)
+    {
+        $this->container = $container;
+    }
+
     /**
      * This method redirects to a route based on an index.
      *
@@ -25,7 +34,11 @@ class Request
             $method = $request[2];
 
             if (method_exists($class, $method)) {
-                return call_user_func([$class, $method], $param);
+                // First, create an instance of the class using the container
+                $instance = $this->container->get($class);
+
+                // Then, call the method on the instance
+                return call_user_func([$instance, $method], $param);
             }
         }
     }
