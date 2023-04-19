@@ -6,35 +6,18 @@ require_once __DIR__.'/../vendor/autoload.php';
 
 use App\Controller\ErrorController;
 use App\DependencyInjection\Container;
-use App\Helper\SecurityHelper;
-use App\Helper\StringHelper;
-use App\Helper\TwigHelper;
-use App\Manager\CategoryManager;
-use App\Manager\CommentManager;
-use App\Manager\PostManager;
-use App\Manager\TagManager;
-use App\Manager\UserManager;
-use App\Middleware\AuthenticationMiddleware;
+use App\DependencyInjection\Injectable;
 use App\Router\Router;
 use App\Router\RouterException;
-use App\Router\Session;
 use Tracy\Debugger;
 
 Debugger::enable();
 
+// Create the container
 $container = new Container();
 
-// Register your services here
-$container->set(CategoryManager::class);
-$container->set(TagManager::class);
-$container->set(PostManager::class);
-$container->set(UserManager::class);
-$container->set(CommentManager::class);
-$container->set(SecurityHelper::class);
-$container->set(StringHelper::class);
-$container->set(TwigHelper::class);
-$container->set(AuthenticationMiddleware::class);
-$container->set(SecurityHelper::class, new SecurityHelper($container->get(Session::class)));
+// Register the services
+Injectable::register($container);
 
 try {
     $router = new Router($_SERVER['REQUEST_URI'], $container);

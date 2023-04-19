@@ -71,11 +71,4 @@ class Router
 
         return null;
     }
-
-    private function executeController($controller, $method): void
-    {
-        $controllerObject = new $controller($this->container);
-        $this->container->injectProperties($controllerObject);
-        $controllerObject->{$method}();
-    }
 }
