@@ -30,16 +30,16 @@ class UserModel
         string $password,
         string $created_at,
         string $role,
-        string $avatar = '',
-        string $bio = '',
+        string $avatar = null,
+        string $bio = null,
         string $remember_me_token = null,
         string $remember_me_expires_at = null,
-        string $firstName = '',
-        string $lastName = '',
-        string $twitter = '',
-        string $facebook = '',
-        string $linkedin = '',
-        string $github = ''
+        string $firstName = null,
+        string $lastName = null,
+        string $twitter = null,
+        string $facebook = null,
+        string $linkedin = null,
+        string $github = null
     ) {
         $this->id = $id;
         $this->username = $username;
@@ -47,16 +47,16 @@ class UserModel
         $this->password = $password;
         $this->created_at = $created_at;
         $this->role = $role;
-        $this->avatar = $avatar ?? '';
-        $this->bio = $bio ?? '';
-        $this->remember_me_token = $remember_me_token ?? '';
-        $this->remember_me_expires_at = $remember_me_expires_at ?? '';
-        $this->firstName = $firstName ?? '';
-        $this->lastName = $lastName ?? '';
-        $this->twitter = $twitter ?? '';
-        $this->facebook = $facebook ?? '';
-        $this->linkedin = $linkedin ?? '';
-        $this->github = $github ?? '';
+        $this->avatar = $avatar ?? null;
+        $this->bio = $bio ?? null;
+        $this->remember_me_token = $remember_me_token ?? null;
+        $this->remember_me_expires_at = $remember_me_expires_at ?? null;
+        $this->firstName = $firstName ?? null;
+        $this->lastName = $lastName ?? null;
+        $this->twitter = $twitter ?? null;
+        $this->facebook = $facebook ?? null;
+        $this->linkedin = $linkedin ?? null;
+        $this->github = $github ?? null;
     }
 
     public function getId(): int
@@ -64,37 +64,37 @@ class UserModel
         return $this->id;
     }
 
-    public function getUsername(): string
+    public function getUsername(): ?string
     {
         return $this->username;
     }
 
-    public function getEmail(): string
+    public function getEmail(): ?string
     {
         return $this->email;
     }
 
-    public function getPassword(): string
+    public function getPassword(): ?string
     {
         return $this->password;
     }
 
-    public function getCreatedAt(): string
+    public function getCreatedAt(): ?string
     {
         return $this->created_at;
     }
 
-    public function getRole(): string
+    public function getRole(): ?string
     {
         return $this->role;
     }
 
-    public function getAvatar(): string
+    public function getAvatar(): ?string
     {
         return $this->avatar;
     }
 
-    public function getBio(): string
+    public function getBio(): ?string
     {
         return $this->bio;
     }
@@ -139,7 +139,7 @@ class UserModel
         $this->bio = $bio;
     }
 
-    public function getRememberMeToken(): string
+    public function getRememberMeToken(): ?string
     {
         return $this->remember_me_token;
     }
@@ -149,7 +149,7 @@ class UserModel
         $this->remember_me_token = $remember_me_token;
     }
 
-    public function getRememberMeExpiresAt(): string
+    public function getRememberMeExpiresAt(): ?string
     {
         return $this->remember_me_expires_at;
     }
@@ -159,32 +159,32 @@ class UserModel
         $this->remember_me_expires_at = $remember_me_expires_at;
     }
 
-    public function getFirstName(): string
+    public function getFirstName(): ?string
     {
         return $this->firstName;
     }
 
-    public function getLastName(): string
+    public function getLastName(): ?string
     {
         return $this->lastName;
     }
 
-    public function getTwitter(): string
+    public function getTwitter(): ?string
     {
         return $this->twitter;
     }
 
-    public function getFacebook(): string
+    public function getFacebook(): ?string
     {
         return $this->facebook;
     }
 
-    public function getLinkedin(): string
+    public function getLinkedin(): ?string
     {
         return $this->linkedin;
     }
 
-    public function getGithub(): string
+    public function getGithub(): ?string
     {
         return $this->github;
     }

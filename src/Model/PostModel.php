@@ -6,21 +6,19 @@ namespace App\Model;
 
 class PostModel
 {
-    public $author;
     private $id;
     private $title;
+    private ?UserModel $author = null;
     private $content;
     private $chapo;
     private $createdAt;
     private $updatedAt;
     private $isEnabled;
     private $featuredImage;
-    private $category;
+    private ?CategoryModel $category = null;
     private $slug;
-    private string $categorySlug;
-    private $tags;
-    private $comments;
-    private $numberOfComments;
+    private array $tags;
+    private array $comments;
 
     public function __construct(
         int $id,
@@ -31,13 +29,11 @@ class PostModel
         string $updatedAt,
         bool $isEnabled,
         ?string $featuredImage,
-        string $author,
-        string $category,
+        UserModel $author = null,
+        CategoryModel $category = null,
         string $slug,
-        string $categorySlug,
         array $tags,
-        array $comments = [],
-        ?int $numberOfComments = null
+        array $comments
     ) {
         $this->id = $id;
         $this->title = $title;
@@ -50,10 +46,8 @@ class PostModel
         $this->author = $author;
         $this->category = $category;
         $this->slug = $slug;
-        $this->categorySlug = $categorySlug;
         $this->tags = $tags;
         $this->comments = $comments;
-        $this->numberOfComments = $numberOfComments;
     }
 
     public function __toString(): string
@@ -75,9 +69,7 @@ class PostModel
             'author' => $this->author,
             'category' => $this->category,
             'slug' => $this->slug,
-            'categorySlug' => $this->categorySlug,
             'tags' => $this->tags,
-            'comments' => $this->comments,
         ];
     }
 
@@ -121,19 +113,14 @@ class PostModel
         return $this->featuredImage;
     }
 
-    public function getAuthor(): string
+    public function getAuthor(): ?UserModel
     {
         return $this->author;
     }
 
-    public function getCategory(): string
+    public function getCategory(): ?CategoryModel
     {
         return $this->category;
-    }
-
-    public function getCategorySlug(): string
-    {
-        return $this->categorySlug;
     }
 
     public function getSlug(): string
@@ -223,16 +210,16 @@ class PostModel
         return $this;
     }
 
-    public function setTags(array $tags): self
+    public function addTags(array $tags): self
     {
         $this->tags = $tags;
 
         return $this;
     }
 
-    public function setCategorySlug(string $categorySlug): self
+    public function removeTags(array $tags): self
     {
-        $this->categorySlug = $categorySlug;
+        $this->tags = $tags;
 
         return $this;
     }
@@ -242,44 +229,23 @@ class PostModel
         return $this->comments;
     }
 
-    public function setComments(array $comments): self
+    public function addComment(CommentModel $comment): self
     {
-        $this->comments = $comments;
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setPost($this);
+        }
 
         return $this;
     }
 
-    public function addComment(array $comment): self
+    public function removeComment(CommentModel $comment): self
     {
-        $this->comments[] = $comment;
-
-        return $this;
-    }
-
-    public function removeComment(array $comment): self
-    {
-        $this->comments = array_filter($this->comments, function ($c) use ($comment) {
-            return $c['id'] !== $comment['id'];
-        });
-
-        return $this;
-    }
-
-    public function getNumberOfComments(): int
-    {
-        return count($this->comments);
-    }
-
-    public function getNumberOfEnabledComments(): int
-    {
-        return count(array_filter($this->comments, function ($comment) {
-            return $comment['isEnabled'];
-        }));
-    }
-
-    public function setNumberOfComments(int $numberOfComments): self
-    {
-        $this->numberOfComments = $numberOfComments;
+        if ($this->comments->removeElement($comment)) {
+            if ($comment->getPost() === $this) {
+                $comment->setPost(null);
+            }
+        }
 
         return $this;
     }

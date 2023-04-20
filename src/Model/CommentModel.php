@@ -6,23 +6,30 @@ namespace App\Model;
 
 class CommentModel
 {
-    public $author;
-    public $createdAt;
     private $id;
+    private $createdAt;
     private $content;
+    private ?UserModel $author = null;
     private $isEnabled;
     private $parentId;
-    private $postId;
+    private ?PostModel $post = null;
 
-    public function __construct(int $id, string $content, string $createdAt, int $author, int $postId, bool $isEnabled, int $parentId)
-    {
+    public function __construct(
+        int $id,
+        string $content,
+        string $createdAt,
+        UserModel $author,
+        bool $isEnabled,
+        int $parentId = null,
+        PostModel $post
+    ) {
         $this->id = $id;
         $this->content = $content;
         $this->createdAt = $createdAt;
-        $this->author = $author;
-        $this->postId = $postId;
+        $this->author = $author ? $author : null;
         $this->isEnabled = $isEnabled;
-        $this->parentId = $parentId;
+        $this->parentId = $parentId ? $parentId : null;
+        $this->post = $post ? $post : null;
     }
 
     public function getId(): int
@@ -40,14 +47,9 @@ class CommentModel
         return $this->createdAt;
     }
 
-    public function getAuthor(): int
+    public function getAuthor(): ?UserModel
     {
         return $this->author;
-    }
-
-    public function getPostId(): int
-    {
-        return $this->postId;
     }
 
     public function getIsEnabled(): bool
@@ -55,7 +57,7 @@ class CommentModel
         return (bool) $this->isEnabled;
     }
 
-    public function getParentId(): int
+    public function getParentId(): ?int
     {
         return $this->parentId;
     }
@@ -80,11 +82,6 @@ class CommentModel
         $this->author = $author;
     }
 
-    public function setPostId(int $postId): void
-    {
-        $this->postId = $postId;
-    }
-
     public function setIsEnabled(bool $isEnabled): void
     {
         $this->isEnabled = $isEnabled;
@@ -93,5 +90,17 @@ class CommentModel
     public function setParentId(int $parentId): void
     {
         $this->parentId = $parentId;
+    }
+
+    public function getPost(): ?PostModel
+    {
+        return $this->post;
+    }
+
+    public function setPost(?PostModel $post): self
+    {
+        $this->post = $post;
+
+        return $this;
     }
 }
