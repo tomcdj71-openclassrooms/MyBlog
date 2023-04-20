@@ -102,7 +102,6 @@ class UserController
 
             if (empty($errors)) {
                 $user = $this->securityHelper->authenticate($postData);
-
                 if ($user instanceof UserModel) {
                     if ($postData['remember']) {
                         $this->securityHelper->rememberMe($user);
@@ -183,7 +182,7 @@ class UserController
     {
         $url = $_SERVER['REQUEST_URI'];
         $username = $this->stringHelper->getLastUrlPart($url);
-        $user = $this->userManager->findBy(['username' => $username]);
+        $user = $this->userManager->findOneBy(['username' => $username]);
         $data = [
             'title' => 'MyBlog - Profile',
             'route' => 'profile',

@@ -26,7 +26,7 @@ class Route
             'blog_post' => ['/blog/post/{slug}', BlogController::class, 'blogPost', 'GET|POST'],
             'blog_category' => ['/blog/category/{slug}', BlogController::class, 'blogCategory', 'GET'],
             'blog_tag' => ['/blog/tag/{slug}', BlogController::class, 'blogTag', 'GET'],
-            'blog_author' => ['/blog/author/{author}', BlogController::class, 'blogAuthor', 'GET'],
+            'blog_author' => ['/blog/author/{username}', BlogController::class, 'blogAuthor', 'GET'],
             'blog_date' => ['/blog/date/{date}', BlogController::class, 'blogDate', 'GET'],
             'my_profile' => ['/profile', UserController::class, 'profile', 'GET|POST'],
             'user_profile' => ['/profile/{slug}', UserController::class, 'userProfile', 'GET'],

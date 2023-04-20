@@ -1,10 +1,10 @@
 {% import _self as macros %}
 
 <div id="comment-section" class="blog-comments">
-	{% set enabledComments = post.comments|filter(c => c.isEnabled) %}
+	{% set enabledComments = comments|filter(c => c.isEnabled) %}
 	<h4 class="comments-count">{{ enabledComments|length }}
 		Commentaire{{ enabledComments|length > 1 ? 's' : '' }}</h4>
-	{{ macros.renderComments(post.comments, loggedUser) }}
+	{{ macros.renderComments(comments, loggedUser) }}
 
 	{% macro renderComments(comments, user, parentId = null, isReply = false, parentComment = null) %}
 		{% set filteredComments = comments|filter(c => c.isEnabled or (user is defined and user is not null and c.author.username == user.username)) %}
@@ -14,10 +14,10 @@
 				<div id="comment-{{ comment.id }}" class="comment{% if not comment.isEnabled %} comment-not-validated{% endif %}{% if hasReplies and not isReply %} comment-reply{% endif %}">
 					<div class="d-flex text-break text-wrap">
 						<div class="comment-img">
-							{% if comment.author.getAvatar() starts with 'http://' or comment.author.getAvatar() starts with 'https://' %}
-								<img src="{{ comment.author.getAvatar() }}" alt="avatar of user {{ comment.author.username }}">
+							{% if comment.author.avatar starts with 'http://' or comment.author.avatar starts with 'https://' %}
+								<img src="{{ comment.author.avatar }}" alt="avatar of user {{ comment.author.username }}">
 							{% else %}
-								<img src="{{ asset('../uploads/avatars/' ~ comment.author.getAvatar() ~ '.jpg') }}" alt="avatar of user {{ comment.author.username }}">
+								<img src="{{ asset('../uploads/avatars/' ~ comment.author.avatar ~ '.jpg') }}" alt="avatar of user {{ comment.author.username }}">
 							{% endif %}
 						</div>
 						<div class="w-100">

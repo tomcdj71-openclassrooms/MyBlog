@@ -1,5 +1,6 @@
 {% extends 'base.html.twig' %}
 {% block body %}
+	{% set author = post.author %}
 	<section id="blog" class="blog mt-4">
 		<div class="container pt-4" data-aos="fade-up">
 			<div class="row">
@@ -15,8 +16,8 @@
 							<ul>
 								<li class="d-flex align-items-center">
 									<i class="bi bi-person"></i>
-									<a href="{{ path('blog_author', {'author': post.author}) }}">
-										{{ post.author }}</a>
+									<a href="{{ path('blog_author', {'username': post.author.username }) }}">
+										{{ post.author.username }}</a>
 								</li>
 								<li class="d-flex align-items-center">
 									<i class="bi bi-clock"></i>
@@ -27,9 +28,8 @@
 								</li>
 								<li class="d-flex align-items-center">
 									<i class="bi bi-chat-dots"></i>
-									{% set enabledComments = post.comments|filter(c => c.isEnabled) %}
-									<a href="#comment-section" class="comments-count">{{enabledComments|length}}
-										Commentaire{{ enabledComments|length > 1 ? 's' : '' }}</a>
+									<a href="#comment-section" class="comments-count">{{ post.comments.number_of_comments }}
+										Commentaire{{ post.comments.number_of_comments > 1 ? 's' : '' }}</a>
 								</li>
 							</ul>
 						</div>
@@ -40,7 +40,7 @@
 							<i class="bi bi-folder"></i>
 							<ul class="categories">
 								<li>
-									<a href="{{ path('blog_category', {'slug': post.categorySlug}) }}">{{ post.category }}</a>
+									<a href="{{ path('blog_category', {'slug': post.category.slug }) }}">{{ post.category.name }}</a>
 								</li>
 							</li>
 						</ul>
@@ -56,17 +56,18 @@
 				</article>
 				<!-- End blog entry -->
 				<div class="blog-author d-flex align-items-center">
-					<img src="{{ author.avatar }}" class="rounded-circle float-left" alt="avatar of the author {{ post.author }}">
+					<img src="{{ post.author.avatar }}" class="rounded-circle float-left" alt="avatar of the author {{ post.author.username }}">
+
 					<div>
 						<h4>
-							{{ post.author }}
+							{{ post.author.username }}
 						</h4>
-						<small class="text-muted">({{ author.role == 'ROLE_USER' ? 'Utilisateur' : 'Administrateur' }})</small>
+						<small class="text-muted">({{ post.author.role == 'ROLE_USER' ? 'Utilisateur' : 'Administrateur' }})</small>
 						{% set socialLinks = [
-							{'name': 'twitter', 'url': author.twitter, 'icon': 'bi bi-twitter'},
-							{'name': 'facebook', 'url': author.facebook, 'icon': 'bi bi-facebook'},
-							{'name': 'github', 'url': author.github, 'icon': 'bi bi-github'},
-							{'name': 'linkedin', 'url': author.linkedin, 'icon': 'bi bi-linkedin'}
+							{'name': 'twitter', 'url': post.author.twitter, 'icon': 'bi bi-twitter'},
+							{'name': 'facebook', 'url': post.author.facebook, 'icon': 'bi bi-facebook'},
+							{'name': 'github', 'url': post.author.github, 'icon': 'bi bi-github'},
+							{'name': 'linkedin', 'url': post.author.linkedin, 'icon': 'bi bi-linkedin'}
 						] %}
 						<div class="social-links">
 							{% for link in socialLinks %}

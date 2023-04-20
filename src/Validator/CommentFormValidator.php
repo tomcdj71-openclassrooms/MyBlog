@@ -29,9 +29,17 @@ class CommentFormValidator
             $errors['content'] = 'Please enter a comment.';
         }
 
+        if (empty($errors)) {
+            return [
+                'valid' => true,
+                'data' => $data,
+            ];
+        }
+
         return [
-            'valid' => $valid,
+            'valid' => false,
             'errors' => $errors,
+            'data' => [],
         ];
     }
 }

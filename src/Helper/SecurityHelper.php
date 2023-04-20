@@ -74,7 +74,7 @@ class SecurityHelper
             return $errors;
         }
 
-        $user = $this->userManager->findBy(['email' => $data['email']]);
+        $user = $this->userManager->findOneBy(['email' => $data['email']]);
 
         if (!$user || !password_verify($data['password'], $user->getPassword())) {
             return null;
@@ -118,21 +118,16 @@ class SecurityHelper
         if (!isset($_COOKIE['remember_me_token']) || empty($_COOKIE['remember_me_token'])) {
             throw new \InvalidArgumentException('Remember me token is not set or empty.');
         }
-
         $token = $this->session->getCookie('remember_me_token');
-
-        $user = $this->userManager->findBy(['remember_me_token' => $token]);
-
+        $user = $this->userManager->findOneBy(['remember_me_token' => $token]);
         if (!$user) {
             throw new \Exception('No user found.');
         }
-
         $expiresAt = $user->getRememberMeExpiresAt();
         $expiresAt = strtotime($expiresAt);
         if ($expiresAt < time()) {
             throw new \Exception('Token expired.');
         }
-
         $this->session->set('user', $user);
         header('Location: /blog');
 
