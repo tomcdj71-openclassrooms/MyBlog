@@ -16,6 +16,7 @@ use App\Middleware\AuthenticationMiddleware;
 use App\Router\Request;
 use App\Router\ServerRequest;
 use App\Router\Session;
+use App\Service\CommentService;
 use App\Service\ProfileService;
 
 class Injectable
@@ -34,6 +35,7 @@ class Injectable
         $container->set(StringHelper::class);
         $container->set(TwigHelper::class);
         $container->set(ProfileService::class);
+        $container->set(CommentService::class);
 
         $container->set(Request::class, function (Container $container) {
             return new Request($container);
