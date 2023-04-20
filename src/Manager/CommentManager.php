@@ -6,6 +6,8 @@ namespace App\Manager;
 
 use App\Config\DatabaseConnexion;
 use App\Model\CommentModel;
+use App\Model\PostModel;
+use App\Model\UserModel;
 
 class CommentManager
 {
@@ -21,29 +23,37 @@ class CommentManager
         return $this->db;
     }
 
-    public function findBy(array $params): array
+    public function find(int $id): ?CommentModel
     {
         try {
-            $sql = 'SELECT * FROM comment WHERE 1=1';
-            $sql .= isset($params['id']) ? ' AND id = :id' : '';
-            $sql .= isset($params['post_id']) ? ' AND post_id = :post_id' : '';
-            $sql .= isset($params['is_enabled']) ? ' AND is_enabled = :is_enabled' : '';
-            $sql .= isset($params['parent_id']) ? ' AND parent_id = :parent_id' : '';
-            $sql .= isset($params['order']) ? ' ORDER BY created_at '.$params['order'] : '';
-            $sql .= isset($params['limit']) ? ' LIMIT '.$params['limit'] : '';
+            $sql = 'SELECT * FROM comment WHERE id = :id';
 
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute($params);
-            $comments = $stmt->fetchAll();
+            $statement = $this->db->prepare($sql);
+            $statement->execute(['id' => $id]);
 
-            $commentModels = [];
-            foreach ($comments as $comment) {
-                $commentModels[] = $this->createCommentModelFromArray($comment);
+            if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
+                return $this->createCommentModelFromArray($data);
             }
-
-            return $commentModels;
         } catch (\PDOException $e) {
-            echo 'Error: '.$e->getMessage();
+            echo $e->getMessage();
+        }
+    }
+
+    public function findyOneBy(string $field, string $value): ?CommentModel
+    {
+        try {
+            $sql = "SELECT * FROM comment WHERE {$field} = :value";
+
+            $statement = $this->db->prepare($sql);
+            $statement->execute(['value' => $value]);
+
+            if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
+                $this->createCommentModelFromArray($data);
+            }
+        } catch (\PDOException $e) {
+            error_log('Error fetching comment: '.$e->getMessage());
+
+            return null;
         }
     }
 
@@ -51,90 +61,165 @@ class CommentManager
     {
         try {
             $sql = 'SELECT * FROM comment';
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute();
-            $comments = $stmt->fetchAll();
 
-            $commentModels = [];
-            foreach ($comments as $comment) {
-                $commentModels[] = $this->createCommentModelFromArray($comment);
+            $statement = $this->db->prepare($sql);
+            $statement->execute();
+
+            $comments = [];
+
+            while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
+                $comments[] = $this->createCommentModelFromArray($data);
             }
 
-            return $commentModels;
+            return $comments;
         } catch (\PDOException $e) {
-            echo 'Error: '.$e->getMessage();
+            echo $e->getMessage();
         }
     }
 
-    public function find(int $id): CommentModel
+    public function countPostComments(int $postId): int
     {
         try {
-            $sql = 'SELECT * FROM comment WHERE id = :id';
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute(['id' => $id]);
-            $comment = $stmt->fetch();
+            $sql = 'SELECT COUNT(*) FROM comment WHERE post = :post';
 
-            return $this->createCommentModelFromArray($comment);
+            $statement = $this->db->prepare($sql);
+            $statement->execute(['post' => $postId]);
+
+            return (int) $statement->fetchColumn();
         } catch (\PDOException $e) {
-            echo 'Error: '.$e->getMessage();
+            echo $e->getMessage();
         }
     }
 
-    public function create($data): CommentModel
+    public function findByPage(int $postId, int $page, int $limit): array
     {
-        if ($data instanceof CommentModel) {
-            $commentModel = $data;
-        } elseif (is_array($data)) {
-            $commentModel = $this->createCommentModelFromArray($data);
-        } else {
-            throw new \InvalidArgumentException('$data must be an instance of CommentModel or an array.');
-        }
-
         try {
-            $sql = 'INSERT INTO comment (content, author_id, post_id, created_at, is_enabled, parent_id) 
-                VALUES (:content, :author_id, :post_id, :created_at, :is_enabled, :parent_id)';
-            $stmt = $this->db->prepare($sql);
+            $sql = 'SELECT * FROM comment WHERE post = :post ORDER BY created_at DESC LIMIT :limit OFFSET :offset';
 
-            $is_enabled = ($commentModel->getIsEnabled()) ? 1 : 0;
+            $statement = $this->db->prepare($sql);
+            $statement->bindValue('post', $postId, \PDO::PARAM_INT);
+            $statement->bindValue('limit', $limit, \PDO::PARAM_INT);
+            $statement->bindValue('offset', ($page - 1) * $limit, \PDO::PARAM_INT);
+            $statement->execute();
 
-            $stmt->bindValue(':content', $commentModel->getContent());
-            $stmt->bindValue(':author_id', $commentModel->getAuthor());
-            $stmt->bindValue(':post_id', $commentModel->getPostId());
-            $stmt->bindValue(':created_at', $commentModel->getCreatedAt());
-            $stmt->bindValue(':is_enabled', $is_enabled, \PDO::PARAM_INT); // Bind as integer
-            $stmt->bindValue(':parent_id', $commentModel->getParentId());
+            $comments = [];
 
-            $stmt->execute();
+            while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
+                $comments[] = $this->createCommentModelFromArray($data);
+            }
 
-            $commentModel->setId((int) $this->db->lastInsertId());
-
-            return $commentModel;
+            return $comments;
         } catch (\PDOException $e) {
-            echo 'Error: '.$e->getMessage();
+            echo $e->getMessage();
+        }
+    }
 
-            return null;
+    public function findAllByPost(int $postId): array
+    {
+        try {
+            $sql = 'SELECT comment.id, comment.content, comment.author_id, comment.post_id, comment.created_at, comment.is_enabled, comment.parent_id,
+                        user.id AS author_id, user.username, user.email, user.password, user.role, user.firstName, user.lastName, user.avatar, user.bio, user.twitter, user.facebook, user.github, user.linkedin, user.remember_me_token, user.remember_me_expires_at,
+                        post.title, post.chapo, post.updated_at, post.featured_image, post.category_id, post.slug, post.tags
+                    FROM comment 
+                    INNER JOIN user ON comment.author_id = user.id 
+                    INNER JOIN post ON comment.post_id = post.id 
+                    WHERE comment.post_id = :post ORDER BY comment.created_at ASC';
+
+            $statement = $this->db->prepare($sql);
+            $statement->execute(['post' => $postId]);
+            $comments = [];
+            while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
+                $comment = $this->createCommentModelFromArray($data);
+                $comments[] = $comment;
+            }
+
+            return $comments;
+        } catch (\PDOException $e) {
+            echo $e->getMessage();
+        }
+    }
+
+    public function create(array $commentData): void
+    {
+        try {
+            $sql = 'INSERT INTO comment (created_at, content, author_id, is_enabled, parent_id, post_id) VALUES (:created_at, :content, :author_id, :is_enabled, :parent_id, :post_id)';
+            $statement = $this->db->prepare($sql);
+            $statement->execute([
+                'created_at' => $commentData['created_at'],
+                'content' => $commentData['content'],
+                'author_id' => $commentData['author_id'],
+                'is_enabled' => $commentData['is_enabled'],
+                'parent_id' => $commentData['parent_id'],
+                'post_id' => $commentData['post_id'],
+            ]);
+        } catch (\PDOException $e) {
+            echo $e->getMessage();
+        }
+    }
+
+    public function enable(int $id): void
+    {
+        try {
+            $sql = 'UPDATE comment SET status = :status WHERE id = :id';
+            $statement = $this->db->prepare($sql);
+            $statement->execute([
+                'status' => 'enabled',
+                'id' => $id,
+            ]);
+        } catch (\PDOException $e) {
+            echo $e->getMessage();
         }
     }
 
     private function createCommentModelFromArray(array $data): CommentModel
     {
-        $id = isset($data['id']) ? (int) $data['id'] : 0;
-        $author = isset($data['author_id']) ? (int) $data['author_id'] : null;
-        $parentId = isset($data['parent_id']) ? (int) $data['parent_id'] : null;
+        $data['tags'] = isset($data['tags']) ? array_map('trim', explode(',', $data['tags'])) : [];
+        $data['comments'] = isset($data['comments']) ? $data['comments'] : [];
+        $data['category'] = isset($data['categories']) ? $data['categories'] : null;
 
-        // if parent_id is null, set it to 0
-        if (null === $parentId) {
-            $parentId = 0;
-        }
+        $author = new UserModel(
+            (int) $data['author_id'],
+            $data['username'],
+            $data['email'],
+            $data['password'],
+            $data['created_at'],
+            $data['role'],
+            $data['avatar'],
+            $data['bio'],
+            $data['remember_me_token'],
+            $data['remember_me_expires_at'],
+            $data['firstName'],
+            $data['lastName'],
+            $data['twitter'],
+            $data['facebook'],
+            $data['linkedin'],
+            $data['github'],
+        );
+
+        $post = new PostModel(
+            (int) ($data['post_id'] ?? $data['id']),
+            $data['title'],
+            $data['content'],
+            $data['chapo'],
+            $data['created_at'],
+            $data['updated_at'],
+            (bool) $data['is_enabled'],
+            $data['featured_image'],
+            $author,
+            $data['category'],
+            $data['slug'],
+            $data['tags'],
+            $data['comments'],
+        );
 
         return new CommentModel(
-            $id,
+            (int) $data['id'],
             $data['content'],
             $data['created_at'],
             $author,
-            (int) $data['post_id'],
             (bool) $data['is_enabled'],
-            $parentId
+            $data['parent_id'],
+            $post
         );
     }
 }

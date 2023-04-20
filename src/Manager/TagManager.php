@@ -44,6 +44,28 @@ class TagManager
         }
     }
 
+    public function find(int $id): ?TagModel
+    {
+        try {
+            $sql = 'SELECT * FROM tag WHERE id = :id';
+
+            $statement = $this->db->prepare($sql);
+            $statement->execute(['id' => $id]);
+
+            if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
+                return new TagModel(
+                    (int) $data['id'],
+                    $data['name'],
+                    $data['slug']
+                );
+            }
+
+            return null;
+        } catch (\PDOException $e) {
+            echo $e->getMessage();
+        }
+    }
+
     public function findBySlug(string $slug): ?TagModel
     {
         try {
@@ -61,6 +83,20 @@ class TagManager
             }
 
             return null;
+        } catch (\PDOException $e) {
+            echo $e->getMessage();
+        }
+    }
+
+    public function count(): int
+    {
+        try {
+            $sql = 'SELECT COUNT(*) FROM tag';
+
+            $statement = $this->db->prepare($sql);
+            $statement->execute();
+
+            return (int) $statement->fetchColumn();
         } catch (\PDOException $e) {
             echo $e->getMessage();
         }

@@ -16,11 +16,6 @@ class UserManager
         $this->db = $databaseConnexion->connect();
     }
 
-    public function getDatabase()
-    {
-        return $this->db;
-    }
-
     public function find(int $id): ?UserModel
     {
         try {
@@ -29,11 +24,79 @@ class UserManager
             $statement = $this->db->prepare($sql);
             $statement->execute(['id' => $id]);
 
-            if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                return $this->createUserModelFromArray($data);
+            $data = $statement->fetch(\PDO::FETCH_ASSOC);
+
+            if (!$data) {
+                return null;
             }
+
+            return $this->createUserModelFromArray($data);
         } catch (\PDOException $e) {
-            echo $e->getMessage();
+            error_log('Error fetching post: '.$e->getMessage());
+
+            return null;
+        }
+    }
+
+    public function findByPage(int $page, int $limit): array
+    {
+        try {
+            $sql = 'SELECT * FROM user ORDER BY id DESC LIMIT :limit OFFSET :offset';
+
+            $statement = $this->db->prepare($sql);
+            $statement->bindValue('limit', $limit, \PDO::PARAM_INT);
+            $statement->bindValue('offset', ($page - 1) * $limit, \PDO::PARAM_INT);
+            $statement->execute();
+
+            $data = $statement->fetchAll(\PDO::FETCH_ASSOC);
+
+            if (!$data) {
+                return [];
+            }
+
+            $users = [];
+
+            foreach ($data as $user) {
+                $users[] = $this->createUserModelFromArray($user);
+            }
+
+            return $users;
+        } catch (\PDOException $e) {
+            error_log('Error fetching posts: '.$e->getMessage());
+
+            return [];
+        }
+    }
+
+    public function findOneBy(array $criteria): ?UserModel
+    {
+        try {
+            $sql = 'SELECT * FROM user WHERE ';
+
+            $where = [];
+            $parameters = [];
+
+            foreach ($criteria as $key => $value) {
+                $where[] = $key.' = :'.$key;
+                $parameters[$key] = $value;
+            }
+
+            $sql .= implode(' AND ', $where);
+
+            $statement = $this->db->prepare($sql);
+            $statement->execute($parameters);
+
+            $data = $statement->fetch(\PDO::FETCH_ASSOC);
+
+            if (!$data) {
+                return null;
+            }
+
+            return $this->createUserModelFromArray($data);
+        } catch (\PDOException $e) {
+            error_log('Error fetching post: '.$e->getMessage());
+
+            return null;
         }
     }
 
@@ -45,62 +108,23 @@ class UserManager
             $statement = $this->db->prepare($sql);
             $statement->execute();
 
+            $data = $statement->fetchAll(\PDO::FETCH_ASSOC);
+
+            if (!$data) {
+                return [];
+            }
+
             $users = [];
-            while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                $users[] = $this->createUserModelFromArray($data);
+
+            foreach ($data as $user) {
+                $users[] = $this->createUserModelFromArray($user);
             }
 
             return $users;
         } catch (\PDOException $e) {
-            echo $e->getMessage();
+            error_log('Error fetching posts: '.$e->getMessage());
 
             return [];
-        }
-    }
-
-    public function findBy(array $criteria): ?UserModel
-    {
-        try {
-            $sql = 'SELECT * FROM user';
-
-            $conditions = [];
-            $params = [];
-
-            if (isset($criteria['username'])) {
-                $conditions[] = 'username = :username';
-                $params['username'] = $criteria['username'];
-            }
-
-            if (isset($criteria['email'])) {
-                $conditions[] = 'email = :email';
-                $params['email'] = $criteria['email'];
-            }
-
-            if (isset($criteria['role'])) {
-                $conditions[] = 'role = :role';
-                $params['role'] = $criteria['role'];
-            }
-
-            if (isset($criteria['remember_me_token'])) {
-                $conditions[] = 'remember_me_token = :remember_me_token';
-                $params['remember_me_token'] = $criteria['remember_me_token'];
-            }
-
-            if (!empty($conditions)) {
-                $sql .= ' WHERE '.implode(' AND ', $conditions);
-            }
-            $sql .= ' LIMIT 1';
-
-            $statement = $this->db->prepare($sql);
-            $statement->execute($params);
-
-            if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                return $this->createUserModelFromArray($data);
-            }
-
-            return null;
-        } catch (\PDOException $e) {
-            return 'Error: '.$e->getMessage();
         }
     }
 
@@ -186,12 +210,8 @@ class UserManager
         return $stmt->execute($params);
     }
 
-    private function createUserModelFromArray(array $data): UserModel
+    public function createUserModelFromArray(array $data): UserModel
     {
-        if (null === $data['avatar']) {
-            $avatar = '';
-        }
-
         return new UserModel(
             (int) $data['id'],
             $data['username'],
@@ -199,16 +219,16 @@ class UserManager
             $data['password'],
             $data['created_at'],
             $data['role'],
-            $data['avatar'] ?? '',
+            $data['avatar'],
             $data['bio'],
             $data['remember_me_token'],
             $data['remember_me_expires_at'],
             $data['firstName'],
             $data['lastName'],
-            $data['twitter'] ?? '',
-            $data['facebook'] ?? '',
-            $data['linkedin'] ?? '',
-            $data['github'] ?? ''
+            $data['twitter'],
+            $data['facebook'],
+            $data['linkedin'],
+            $data['github']
         );
     }
 }
