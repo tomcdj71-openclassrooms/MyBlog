@@ -1,9 +1,25 @@
 {% extends "base.html.twig" %}
+{% block stylesheets %}
+	<link href="{{ asset('node_modules/bootstrap/dist/css/bootstrap.css') }}" rel="stylesheet">
+	<link href="{{ asset('node_modules/bootstrap-icons/font/bootstrap-icons.css') }}" rel="stylesheet">
+	<link href="{{ asset('css/style.css') }}" rel="stylesheet">
+	<link href="{{ asset('node_modules/bootstrap-table/dist/bootstrap-table.min.css') }}" rel="stylesheet">
+
+{% endblock %}
+{% block javascripts %}
+	<script src="{{ asset('node_modules/jquery/dist/jquery.min.js') }}"></script>
+	<script src="{{ asset('node_modules/@popperjs/core/dist/umd/popper.min.js') }}"></script>
+	<script src="{{ asset('node_modules/bootstrap/dist/js/bootstrap.min.js') }}"></script>
+	<script src="{{ asset('node_modules/bootstrap-table/dist/bootstrap-table.min.js') }}"></script>
+	<script src="{{ asset('node_modules/bootstrap-table/dist/locale/bootstrap-table-fr-FR.min.js') }}"></script>
+	<script src="{{ asset('js/tables.js') }}"></script>
+{% endblock %}
+
 {% block body %}
 	<section id="blog" class="blog mt-4">
 		<div class="container pt-4" style="max-width:1800px" data-aos="fade-up">
 			<div class="row">
-				<div class="col-lg-4">
+				<div class="col-lg-3">
 					<div class="card">
 						<div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
 							{% if user.avatar starts with 'http://' or user.avatar starts with 'https://' %}
@@ -15,11 +31,11 @@
 								{{ user.lastName ? user.lastName : ''}}</h2>
 							<h3>{{ user.role == 'ROLE_USER' ? 'Utilisateur' : 'Administrateur' }}</h3>
 							{% set socialLinks = [
-							{'name': 'twitter', 'website': 'https://twitter.com/', 'username': user.twitter, 'icon': 'bi bi-twitter'},
-							{'name': 'facebook', 'website': 'https://facebook.com/','username': user.facebook, 'icon': 'bi bi-facebook'},
-							{'name': 'github', 'website': 'https://github.com/','username': user.github, 'icon': 'bi bi-github'},
-							{'name': 'linkedin', 'website': 'https://linkedin.com/in/','username': user.linkedin, 'icon': 'bi bi-linkedin'}
-						] %}
+								{'name': 'twitter', 'website': 'https://twitter.com/', 'username': user.twitter, 'icon': 'bi bi-twitter'},
+								{'name': 'facebook', 'website': 'https://facebook.com/','username': user.facebook, 'icon': 'bi bi-facebook'},
+								{'name': 'github', 'website': 'https://github.com/','username': user.github, 'icon': 'bi bi-github'},
+								{'name': 'linkedin', 'website': 'https://linkedin.com/in/','username': user.linkedin, 'icon': 'bi bi-linkedin'}
+							] %}
 							<div class="social-links">
 								{% for link in socialLinks %}
 									{% if link.username is not empty %}
@@ -32,7 +48,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="col-lg-8">
+				<div class="col-lg-9">
 					<div class="card">
 						<div
 							class="card-body pt-3">
@@ -84,63 +100,33 @@
 									{% if csrf_token is defined %}
 										{% include "_partials/profile_form.html.twig" with {'csrf_token': csrf_token} %}
 									{% endif %}
-
 									<!-- End Profile Edit Form -->
 								</div>
 								<div
 									class="tab-pane fade profile-comments pt-3" id="profile-comments" role="tabpanel">
-
-									<!-- Comments Form -->
-									<h4>Mes commentaires</h4>
+									<!-- Comments Table -->
 									<div class="d-flex align-items-center">
-										<table class="table table-hover">
-											<thead>
-												<tr>
-													<th scope="col">#</th>
-													<th scope="col">Name</th>
-													<th scope="col">Position</th>
-													<th scope="col">Age</th>
-													<th scope="col">Start Date</th>
-												</tr>
-											</thead>
-											<tbody>
-												<tr>
-													<th scope="row">1</th>
-													<td>Brandon Jacob</td>
-													<td>Designer</td>
-													<td>28</td>
-													<td>2016-05-25</td>
-												</tr>
-												<tr>
-													<th scope="row">2</th>
-													<td>Bridie Kessler</td>
-													<td>Developer</td>
-													<td>35</td>
-													<td>2014-12-05</td>
-												</tr>
-												<tr>
-													<th scope="row">3</th>
-													<td>Ashleigh Langosh</td>
-													<td>Finance</td>
-													<td>45</td>
-													<td>2011-08-12</td>
-												</tr>
-												<tr>
-													<th scope="row">4</th>
-													<td>Angus Grady</td>
-													<td>HR</td>
-													<td>34</td>
-													<td>2012-06-11</td>
-												</tr>
-												<tr>
-													<th scope="row">5</th>
-													<td>Raheem Lehner</td>
-													<td>Dynamic Division Officer</td>
-													<td>47</td>
-													<td>2011-04-19</td>
-												</tr>
-											</tbody>
-										</table>
+										<div class="card">
+											<div class="card-header text-center">
+												<h4>Mes commentaires</h4>
+											</div>
+											<div class="card-body">
+												<div class="table-wrapper"></div>
+												<table id="table-user-profile-posts"></table>
+											</div>
+										</div>
+									</div>
+									<div class="d-flex align-items-center">
+										<div class="card">
+											<div class="card-header text-center">
+												<h4>Mes commentaires</h4>
+											</div>
+											<div class="card-body">
+												<div class="table-wrapper">
+													<table id="table-user-profile-comments"></table>
+												</div>
+											</div>
+										</div>
 									</div>
 									<!-- End comments Table -->
 								</div>
@@ -149,54 +135,14 @@
 									<!-- Posts Table -->
 									<h4>Mes articles</h4>
 									<div class="d-flex align-items-center">
-										<table class="table table-hover">
-											<thead>
-												<tr>
-													<th scope="col">#</th>
-													<th scope="col">Name</th>
-													<th scope="col">Position</th>
-													<th scope="col">Age</th>
-													<th scope="col">Start Date</th>
-												</tr>
-											</thead>
-											<tbody>
-												<tr>
-													<th scope="row">1</th>
-													<td>Brandon Jacob</td>
-													<td>Designer</td>
-													<td>28</td>
-													<td>2016-05-25</td>
-												</tr>
-												<tr>
-													<th scope="row">2</th>
-													<td>Bridie Kessler</td>
-													<td>Developer</td>
-													<td>35</td>
-													<td>2014-12-05</td>
-												</tr>
-												<tr>
-													<th scope="row">3</th>
-													<td>Ashleigh Langosh</td>
-													<td>Finance</td>
-													<td>45</td>
-													<td>2011-08-12</td>
-												</tr>
-												<tr>
-													<th scope="row">4</th>
-													<td>Angus Grady</td>
-													<td>HR</td>
-													<td>34</td>
-													<td>2012-06-11</td>
-												</tr>
-												<tr>
-													<th scope="row">5</th>
-													<td>Raheem Lehner</td>
-													<td>Dynamic Division Officer</td>
-													<td>47</td>
-													<td>2011-04-19</td>
-												</tr>
-											</tbody>
-										</table>
+										<div class="card">
+											<div class="card-header text-center">
+												<h4>Mes commentaires</h4>
+											</div>
+											<div class="card-body">
+												<table id="table-user-profile-posts" class="table table-responsive-md fixed-height-table"></table>
+											</div>
+										</div>
 									</div>
 									<!-- End Post Table -->
 								</div>

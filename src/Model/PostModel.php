@@ -228,25 +228,4 @@ class PostModel
     {
         return $this->comments;
     }
-
-    public function addComment(CommentModel $comment): self
-    {
-        if (!$this->comments->contains($comment)) {
-            $this->comments->add($comment);
-            $comment->setPost($this);
-        }
-
-        return $this;
-    }
-
-    public function removeComment(CommentModel $comment): self
-    {
-        if ($this->comments->removeElement($comment)) {
-            if ($comment->getPost() === $this) {
-                $comment->setPost(null);
-            }
-        }
-
-        return $this;
-    }
 }

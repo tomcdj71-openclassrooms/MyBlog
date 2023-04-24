@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Router;
 
 use App\Controller\AdminController;
+use App\Controller\AjaxController;
 use App\Controller\BlogController;
 use App\Controller\ErrorController;
 use App\Controller\HomeController;
@@ -45,6 +46,11 @@ class Route
             'admin_comments' => ['/admin/comments', AdminController::class, 'comments', 'GET|POST'],
             'admin_comment_delete' => ['/admin/comment/{id}/delete', AdminController::class, 'comment', 'POST'],
             'edit_comment' => ['/comment/{id}/edit', BlogController::class, 'editComment', 'GET|POST'],
+            'ajax_user_comments' => ['/ajax/user-comments', AjaxController::class, 'myComments', 'GET'],
+            'ajax_user_posts' => ['/ajax/user-posts', AjaxController::class, 'myPosts', 'GET'],
+            'ajax_admin_all_comments' => ['/ajax/admin-all-comments', AjaxController::class, 'allComments', 'GET'],
+            'ajax_admin_all_posts' => ['/ajax/admin-all-posts', AjaxController::class, 'allPosts', 'GET'],
+            'ajax_admin_all_users' => ['/ajax/admin-all-users', AjaxController::class, 'allUsers', 'GET'],
         ];
     }
 }

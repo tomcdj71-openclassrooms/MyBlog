@@ -220,6 +220,53 @@ class PostManager
         }
     }
 
+    public function findUserPosts(int $userId, int $page, int $limit): array
+    {
+        try {
+            $sql = "SELECT p.*, u.*, c.name as category_name, c.slug as category_slug,
+                GROUP_CONCAT(DISTINCT t.name) as tag_names,
+                GROUP_CONCAT(DISTINCT t.id) as tag_ids,
+                GROUP_CONCAT(DISTINCT t.slug) as tag_slugs,
+                (SELECT COUNT(*) FROM comment cm WHERE cm.post_id = p.id AND cm.is_enabled = 1) as number_of_comments
+                FROM post p
+                LEFT JOIN user u ON p.author_id = u.id
+                LEFT JOIN category c ON p.category_id = c.id
+                LEFT JOIN tag t ON instr(',' || p.tags || ',', ',' || t.id || ',') > 0
+                WHERE p.author_id = :user_id
+                GROUP BY p.id
+                ORDER BY p.created_at DESC
+                LIMIT :limit
+                OFFSET :offset";
+
+            $statement = $this->db->prepare($sql);
+            $statement->execute([
+                'user_id' => $userId,
+                'limit' => $limit,
+                'offset' => ($page - 1) * $limit,
+            ]);
+
+            $posts = [];
+            while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
+                $preparedData = $this->preparePostData($data);
+                $posts[] = $this->createPostModelFromArray($preparedData);
+            }
+
+            $sql = 'SELECT COUNT(*) FROM post WHERE author_id = :user_id';
+            $statement = $this->db->prepare($sql);
+            $statement->execute(['user_id' => $userId]);
+            $count = $statement->fetchColumn();
+
+            return [
+                'posts' => $posts,
+                'count' => $count,
+            ];
+        } catch (\PDOException $e) {
+            error_log('Error fetching posts: '.$e->getMessage());
+
+            return [];
+        }
+    }
+
     public function findRecentPosts(int $limit = 5): array
     {
         try {

@@ -8,6 +8,7 @@ use App\DependencyInjection\Container;
 use App\Helper\SecurityHelper;
 use App\Helper\StringHelper;
 use App\Helper\TwigHelper;
+use App\Manager\CommentManager;
 use App\Manager\UserManager;
 use App\Middleware\AuthenticationMiddleware;
 use App\Model\UserModel;
@@ -29,6 +30,7 @@ class UserController
     private ProfileService $profileService;
     private Request $request;
     private StringHelper $stringHelper;
+    private CommentManager $commentManager;
 
     public function __construct(Container $container)
     {
@@ -64,6 +66,7 @@ class UserController
             'csrf_token' => $csrf_token,
             'session' => $this->session,
         ];
+
         $this->twig->render('pages/profile/profile.html.twig', $data);
     }
 
@@ -96,10 +99,8 @@ class UserController
                 'password' => $password,
                 'remember' => $remember,
             ];
-
             $loginFV = new LoginFormValidator($this->userManager);
             $errors = $loginFV->validate($postData, $postData['remember']);
-
             if (empty($errors)) {
                 $user = $this->securityHelper->authenticate($postData);
                 if ($user instanceof UserModel) {
@@ -109,7 +110,6 @@ class UserController
 
                     return $this->request->redirectToRoute('profile');
                 }
-
                 $errors[] = 'Email or password is incorrect';
             }
 

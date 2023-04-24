@@ -10,10 +10,12 @@ use App\Model\UserModel;
 class UserManager
 {
     private $db;
+    private $commentManager;
 
     public function __construct(DatabaseConnexion $databaseConnexion)
     {
         $this->db = $databaseConnexion->connect();
+        $this->commentManager = new CommentManager($databaseConnexion);
     }
 
     public function find(int $id): ?UserModel

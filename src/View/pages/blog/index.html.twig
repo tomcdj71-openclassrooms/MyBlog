@@ -37,38 +37,38 @@
 											{{ post.comments.number_of_comments }}
 											Commentaire{{ post.comments.number_of_comments > 1 ? 's' : '' }}</a>
 									</li>
-								</a>
+								</ul>
+							</div>
+							<div class="entry-content">
+								<p>
+									{{ post.chapo }}
+								</p>
+								<div class="read-more">
+									<a href="{{ path('blog_post', {'slug': post.slug}) }}">Voir Plus</a>
+
+								</div>
+							</div>
+						</article>
+					{% endfor %}
+					<!-- End blog entry -->
+					<div class="blog-pagination">
+						<ul class="justify-content-center">
+							<li>
+								<a href="#">1</a>
+							</li>
+							<li class="active">
+								<a href="#">2</a>
+							</li>
+							<li>
+								<a href="#">3</a>
 							</li>
 						</ul>
 					</div>
-					<div class="entry-content">
-						<p>
-							{{ post.chapo }}
-						</p>
-						<div class="read-more">
-							<a href="{{ path('blog_post', {'slug': post.slug}) }}">Voir Plus</a>
-
-						</div>
-					</div>
-				</article>
-			{% endfor %}
-			<!-- End blog entry -->
-			<div class="blog-pagination">
-				<ul class="justify-content-center">
-					<li>
-						<a href="#">1</a>
-					</li>
-					<li class="active">
-						<a href="#">2</a>
-					</li>
-					<li>
-						<a href="#">3</a>
-					</li>
-				</ul>
+				</div>
+				<!-- End blog entries list -->
+				{% include "_partials/blog_sidebar.html.twig" %}
+				<!-- End blog sidebar -->
 			</div>
 		</div>
-		<!-- End blog entries list -->
-		{% include "_partials/blog_sidebar.html.twig" %}
-		<!-- End blog sidebar -->
-	</div>
-</div></section>{% endblock %}
+	</section>
+{% endblock %}

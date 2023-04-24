@@ -6,12 +6,11 @@
 		Commentaire{{ enabledComments|length > 1 ? 's' : '' }}</h4>
 	{{ macros.renderComments(comments, loggedUser) }}
 
-	{% macro renderComments(comments, user, parentId = null, isReply = false, parentComment = null) %}
-		{% set filteredComments = comments|filter(c => c.isEnabled or (user is defined and user is not null and c.author.username == user.username)) %}
-		{% for comment in filteredComments %}
+	{% macro renderComments(comments, user, parentId = null) %}
+		{% for comment in comments %}
 			{% if comment.parentId == parentId %}
 				{% set hasReplies = comments|filter(c => c.parentId == comment.id)|length > 0 %}
-				<div id="comment-{{ comment.id }}" class="comment{% if not comment.isEnabled %} comment-not-validated{% endif %}{% if hasReplies and not isReply %} comment-reply{% endif %}">
+				<div id="comment-{{ comment.id }}" class="comment{% if not comment.isEnabled %} comment-not-validated{% endif %}{% if hasReplies %} comment-reply{% endif %}">
 					<div class="d-flex text-break text-wrap">
 						<div class="comment-img">
 							{% if comment.author.avatar starts with 'http://' or comment.author.avatar starts with 'https://' %}
@@ -34,7 +33,8 @@
 									<strong>Commentaire en attente de validation</strong>
 								</div>
 							{% endif %}
-							{% if parentComment %}
+							{% if comment.parentId %}
+								{% set parentComment = comments|filter(c => c.id == comment.parentId)|first %}
 								{% set previewLength = 50 %}
 								{% set preview = parentComment.content|slice(0, previewLength) %}
 								{% if parentComment.content|length > previewLength %}
@@ -57,8 +57,8 @@
 						</div>
 					</div>
 					{% if hasReplies %}
-						<div id="comment-reply-{{ comment.id }}" class="comment{% if isReply %}-reply{% endif %}">
-							{{ macros.renderComments(comments, user, comment.id, true, comment) }}
+						<div id="comment-reply-{{ comment.id }}" class="comment-reply">
+							{{ macros.renderComments(comments, user, comment.id) }}
 						</div>
 					{% endif %}
 				</div>
@@ -66,5 +66,5 @@
 		{% endfor %}
 	{% endmacro %}
 
-
-	{% include "_partials/comment_form.html.twig" %}</div>
+	{% include "_partials/comment_form.html.twig" %}
+</div>

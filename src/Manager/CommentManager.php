@@ -57,6 +57,53 @@ class CommentManager
         }
     }
 
+    public function findUserComments(int $userId, int $page, int $limit): array
+    {
+        try {
+            $sql = 'SELECT comment.id, comment.content, comment.author_id, comment.post_id, comment.created_at, comment.is_enabled, comment.parent_id,
+                    user.id AS author_id, user.username, user.email, user.password, user.role, user.firstName, user.lastName, user.avatar, user.bio, user.twitter, user.facebook, user.github, user.linkedin, user.remember_me_token, user.remember_me_expires_at,
+                    post.title, post.chapo, post.updated_at, post.featured_image, post.category_id, post.slug, post.tags
+                FROM comment 
+                INNER JOIN user ON comment.author_id = user.id 
+                INNER JOIN post ON comment.post_id = post.id 
+                WHERE comment.author_id = :user
+                ORDER BY comment.created_at DESC
+                LIMIT :limit OFFSET :offset';
+
+            $offset = ($page - 1) * $limit;
+
+            $statement = $this->db->prepare($sql);
+            $statement->bindValue(':user', $userId, \PDO::PARAM_INT);
+            $statement->bindValue(':limit', $limit, \PDO::PARAM_INT);
+            $statement->bindValue(':offset', $offset, \PDO::PARAM_INT);
+            $statement->execute();
+
+            $comments = [];
+            while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
+                $comment = $this->createCommentModelFromArray($data);
+                $comments[] = $comment;
+            }
+
+            return $comments;
+        } catch (\PDOException $e) {
+            echo $e->getMessage();
+        }
+    }
+
+    public function countUserComments(int $userId): int
+    {
+        try {
+            $sql = 'SELECT COUNT(*) FROM comment WHERE author_id = :user';
+
+            $statement = $this->db->prepare($sql);
+            $statement->execute(['user' => $userId]);
+
+            return (int) $statement->fetchColumn();
+        } catch (\PDOException $e) {
+            echo $e->getMessage();
+        }
+    }
+
     public function findAll(): array
     {
         try {
