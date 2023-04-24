@@ -1,0 +1,48 @@
+lockfileVersion: '6.0'
+
+dependencies:
+  '@popperjs/core':
+    specifier: ^2.11.7
+    version: 2.11.7
+  bootstrap:
+    specifier: ^5.2.3
+    version: 5.2.3(@popperjs/core@2.11.7)
+  bootstrap-icons:
+    specifier: ^1.10.4
+    version: 1.10.4
+  bootstrap-table:
+    specifier: ^1.21.4
+    version: 1.21.4(jquery@3.6.4)
+  jquery:
+    specifier: ^3.6.4
+    version: 3.6.4
+
+packages:
+
+  /@popperjs/core@2.11.7:
+    resolution: {integrity: sha512-Cr4OjIkipTtcXKjAsm8agyleBuDHvxzeBoa1v543lbv1YaIwQjESsVcmjiWiPEbC1FIeHOG/Op9kdCmAmiS3Kw==}
+    dev: false
+
+  /bootstrap-icons@1.10.4:
+    resolution: {integrity: sha512-eI3HyIUmpGKRiRv15FCZccV+2sreGE2NnmH8mtxV/nPOzQVu0sPEj8HhF1MwjJ31IhjF0rgMvtYOX5VqIzcb/A==}
+    dev: false
+
+  /bootstrap-table@1.21.4(jquery@3.6.4):
+    resolution: {integrity: sha512-Vp0kwkCsZzBINiA1KJ46LSkIa4oA0r6GSuzERZEqkUU8/0JDij2aG4CdYxiOm/UFCPZ9+KuAE4zSjxJLxg5jWw==}
+    peerDependencies:
+      jquery: '3'
+    dependencies:
+      jquery: 3.6.4
+    dev: false
+
+  /bootstrap@5.2.3(@popperjs/core@2.11.7):
+    resolution: {integrity: sha512-cEKPM+fwb3cT8NzQZYEu4HilJ3anCrWqh3CHAok1p9jXqMPsPTBhU25fBckEJHJ/p+tTxTFTsFQGM+gaHpi3QQ==}
+    peerDependencies:
+      '@popperjs/core': ^2.11.6
+    dependencies:
+      '@popperjs/core': 2.11.7
+    dev: false
+
+  /jquery@3.6.4:
+    resolution: {integrity: sha512-v28EW9DWDFpzcD9O5iyJXg3R3+q+mET5JhnjJzQUZMHOv67bpSIHq81GEYpPNZHG+XXHsfSme3nxp/hndKEcsQ==}
+    dev: false

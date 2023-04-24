@@ -918,6 +918,27 @@ body {
     max-width: 120px;
 }
 
+.fixed-height-table {
+    display: block;
+    overflow-y: auto;
+}
+
+.fixed-height-table thead,
+.fixed-height-table tbody {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+@media screen and (max-width: 767px) {
+    .fixed-height-table {
+        max-height: 50vh;
+    }
+    .table-wrapper {
+        overflow-x: auto;
+    }
+}
+
 /**
  * Footer
  */

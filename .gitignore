@@ -6,3 +6,4 @@
 /var/faker.js
 /var/pnpm*
 /public/uploads/
+/public/assets/node_modules
