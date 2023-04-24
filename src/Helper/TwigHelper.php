@@ -15,9 +15,9 @@ class TwigHelper
     protected $twig;
     private $serverRequest;
 
-    public function __construct()
+    public function __construct(ServerRequest $serverRequest)
     {
-        $this->serverRequest = new ServerRequest($_SERVER);
+        $this->serverRequest = $serverRequest;
         $loader = new FilesystemLoader(dirname(__DIR__).'/View');
 
         $this->twig = new Environment($loader, [

@@ -6,6 +6,13 @@ namespace App\Helper;
 
 class StringHelper
 {
+    private $normalizer;
+
+    public function __construct(\Normalizer $normalizer)
+    {
+        $this->normalizer = $normalizer;
+    }
+
     /**
      * Get a string between two strings.
      *
@@ -38,7 +45,8 @@ class StringHelper
             throw new \Exception("The 'intl' extension is required for slug generation.");
         }
         // Normalize the string (remove accents, diacritics, etc.).
-        $string = \Normalizer::normalize($string, \Normalizer::FORM_D);
+        $string = $this->normalizer->normalize($string, \Normalizer::FORM_D);
+
         if (false === $string) {
             throw new \Exception('An error occurred while normalizing the string.');
         }

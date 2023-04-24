@@ -20,9 +20,9 @@ class SecurityHelper
 
     public function __construct(Session $session)
     {
-        $db = new DatabaseConnexion();
+        $connexion = new DatabaseConnexion();
         $this->session = $session;
-        $this->userManager = new UserManager($db);
+        $this->userManager = new UserManager($connexion);
         $this->registerValidator = new RegisterFormValidator();
         $this->loginValidator = new LoginFormValidator($this->userManager);
     }
