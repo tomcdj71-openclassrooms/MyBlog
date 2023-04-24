@@ -15,7 +15,6 @@ use App\Manager\TagManager;
 use App\Manager\UserManager;
 use App\Router\Session;
 use App\Service\CommentService;
-use Tracy\Debugger;
 
 class BlogController
 {
@@ -105,7 +104,6 @@ class BlogController
         $data['comments'] = $this->commentManager->findAllByPost($post->getId());
         $data['loggedUser'] = $user;
         $data['session'] = $this->session;
-        Debugger::barDump($data);
         $this->twig->render('pages/blog/post.html.twig', $data);
     }
 

@@ -15,6 +15,7 @@ use App\Model\UserModel;
 use App\Router\Request;
 use App\Router\ServerRequest;
 use App\Router\Session;
+use App\Service\PostService;
 use App\Service\ProfileService;
 use App\Validator\LoginFormValidator;
 use App\Validator\RegisterFormValidator;
@@ -31,6 +32,7 @@ class UserController
     private Request $request;
     private StringHelper $stringHelper;
     private CommentManager $commentManager;
+    private PostService $postService;
 
     public function __construct(Container $container)
     {
@@ -47,7 +49,6 @@ class UserController
         if (!$this->authMiddleware->isUserOrAdmin()) {
             return $this->request->redirectToRoute('login', ['message' => 'You must be logged in to access this page.']);
         }
-
         $user = $this->securityHelper->getUser();
         $errors = [];
         $message = null;
@@ -55,8 +56,10 @@ class UserController
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrf_token', FILTER_SANITIZE_SPECIAL_CHARS)) {
             list($errors, $message) = $this->profileService->handleProfilePostRequest($user);
         }
-
         $csrf_token = $this->securityHelper->generateCsrfToken('editProfile');
+        $userPostsData = $this->postService->getUserPostsData();
+        $hasPost = ($userPostsData['total'] > 0) ? true : false;
+
         $data = [
             'title' => 'MyBlog - Profile',
             'route' => 'profile',
@@ -65,6 +68,7 @@ class UserController
             'errors' => $errors,
             'csrf_token' => $csrf_token,
             'session' => $this->session,
+            'hasPost' => $hasPost,
         ];
 
         $this->twig->render('pages/profile/profile.html.twig', $data);

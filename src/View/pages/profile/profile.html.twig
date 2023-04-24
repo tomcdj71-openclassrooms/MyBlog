@@ -65,7 +65,7 @@
 										<button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-comments" aria-selected="false" role="tab" tabindex="-1">Mes Commentaires</button>
 									</li>
 								{% endif %}
-								{% if user.role == "ROLE_ADMIN" %}
+								{% if hasPost %}
 									<li class="nav-item" role="presentation">
 										<button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-my-posts" aria-selected="false" tabindex="-1" role="tab">Mes Articles</button>
 									</li>
@@ -111,17 +111,6 @@
 												<h4>Mes commentaires</h4>
 											</div>
 											<div class="card-body">
-												<div class="table-wrapper"></div>
-												<table id="table-user-profile-posts"></table>
-											</div>
-										</div>
-									</div>
-									<div class="d-flex align-items-center">
-										<div class="card">
-											<div class="card-header text-center">
-												<h4>Mes commentaires</h4>
-											</div>
-											<div class="card-body">
 												<div class="table-wrapper">
 													<table id="table-user-profile-comments"></table>
 												</div>
@@ -133,14 +122,14 @@
 								<div
 									class="tab-pane fade pt-3" id="profile-my-posts" role="tabpanel">
 									<!-- Posts Table -->
-									<h4>Mes articles</h4>
 									<div class="d-flex align-items-center">
 										<div class="card">
 											<div class="card-header text-center">
-												<h4>Mes commentaires</h4>
+												<h4>Mes articles</h4>
 											</div>
 											<div class="card-body">
-												<table id="table-user-profile-posts" class="table table-responsive-md fixed-height-table"></table>
+												<div class="table-wrapper"></div>
+												<table id="table-user-profile-posts"></table>
 											</div>
 										</div>
 									</div>
