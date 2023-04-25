@@ -7,3 +7,4 @@
 /var/pnpm*
 /public/uploads/
 /public/assets/node_modules
+/src/Config/.env.php

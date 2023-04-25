@@ -57,7 +57,7 @@ class Container
      *
      * @throws \Exception
      */
-    public function resolve($concrete, $parameters)
+    public function resolve($concrete, $parameters = [])
     {
         if ($concrete instanceof \Closure) {
             return $concrete($this, $parameters);
@@ -101,9 +101,18 @@ class Container
             $dependency = $parameter->getType() && !$parameter->getType()->isBuiltin() ? new \ReflectionClass($parameter->getType()->getName()) : null;
             if (null === $dependency) {
                 // check if default value for a parameter is available
-                $dependencies[] = $parameter->isDefaultValueAvailable()
-                    ? $parameter->getDefaultValue()
-                    : throw new \Exception("Can not resolve class dependency {$parameter->name}");
+                if ($parameter->isDefaultValueAvailable()) {
+                    $dependencies[] = $parameter->getDefaultValue();
+                } else {
+                    // Get the parameter name
+                    $paramName = $parameter->name;
+                    // Check if the container has the parameter name registered
+                    if (isset($this->instances[$paramName])) {
+                        $dependencies[] = $this->get($paramName);
+                    } else {
+                        throw new \Exception("Can not resolve class dependency {$parameter->name}");
+                    }
+                }
             } else {
                 // get dependency resolved
                 $dependencies[] = $this->get($dependency->name);
@@ -119,14 +128,18 @@ class Container
         $properties = $reflectionClass->getProperties();
 
         foreach ($properties as $property) {
-            $dependency = $property->getType()->getName();
+            $propertyType = $property->getType();
+            if (null === $propertyType) {
+                continue;
+            }
+            $dependency = $propertyType->getName();
 
             try {
                 $dependencyInstance = $this->get($dependency);
                 $property->setAccessible(true);
                 $property->setValue($object, $dependencyInstance);
             } catch (\Exception $e) {
-                echo $e->getMessage();
+                throw new \Exception("Can not inject property {$property->name} of class {$reflectionClass->name}");
             }
         }
     }

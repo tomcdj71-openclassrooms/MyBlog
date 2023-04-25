@@ -13,3 +13,14 @@ then, navigate to public and do :
 `pnpm install`
 
 if you don't have pnpm, run `npm install`
+
+For the mailing system, I use MailCatcher to catch the emails instead sending to a real address.
+
+On a Linux computer, you can use [use this tutorial](https://blog.eldernode.com/install-mailcatcher-on-ubuntu-20-04/) to get it working,or follow these steps : 
+`sudo apt-get update && sudo apt-get install -yqq build-essential software-properties-common libsqlite3-dev ruby-dev`
+
+`gem install mailcatcher`
+
+`mailcatcher --ip 127.0.0.1`
+
+Then, you'll find the web interface at [http://127.0.0.1:1080/](http://127.0.0.1:1080/)

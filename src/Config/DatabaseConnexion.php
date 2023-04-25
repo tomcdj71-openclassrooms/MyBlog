@@ -32,7 +32,7 @@ class DatabaseConnexion
             try {
                 $this->pdo = new \PDO('sqlite:'.$this->PATH_TO_SQLITE_FILE);
             } catch (\PDOException $e) {
-                echo $e->getMessage();
+                throw new \PDOException($e->getMessage(), (int) $e->getCode());
             }
         }
 
