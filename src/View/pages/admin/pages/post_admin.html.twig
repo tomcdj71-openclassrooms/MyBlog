@@ -12,28 +12,7 @@
 			<h3></h3>
 			<div class="card">
 				<div class="card-body">
-					<div class="table-responsive">
-						<table id="table-posts" data-toggle="table" data-pagination="true" data-page-size="10" data-search="true" data-locale="fr-FR" class="table">
-							<thead>
-								<tr>
-									<th data-field="id">Id</th>
-									<th data-field="title">Titre</th>
-									<th data-field="slug">Slug</th>
-									<th data-formatter="actionFormatter" data-events="actionEvents">Action</th>
-								</tr>
-							</thead>
-							<tbody>
-								{% for post in posts %}
-									<tr>
-										<td>{{ post.id }}</td>
-										<td>{{ post.title }}</td>
-										<td>{{ post.slug }}</td>
-										<td></td>
-									</tr>
-								{% endfor %}
-							</tbody>
-						</table>
-					</div>
+					<div class="table-responsive"></div>
 				</div>
 			</div>
 		</div>

@@ -7,13 +7,11 @@ namespace App\Service;
 use App\DependencyInjection\Container;
 use App\Helper\SecurityHelper;
 use App\Manager\PostManager;
-use App\Middleware\AuthenticationMiddleware;
 
 class PostService
 {
     private PostManager $postManager;
     private SecurityHelper $securityHelper;
-    private AuthenticationMiddleware $authMiddleware;
 
     public function __construct(Container $container)
     {

@@ -8,6 +8,7 @@ use App\Config\DatabaseConnexion;
 use App\Model\CommentModel;
 use App\Model\PostModel;
 use App\Model\UserModel;
+use Tracy\Debugger;
 
 class CommentManager
 {
@@ -26,29 +27,43 @@ class CommentManager
     public function find(int $id): ?CommentModel
     {
         try {
-            $sql = 'SELECT * FROM comment WHERE id = :id';
-
+            $sql = 'SELECT comment.id, comment.content, comment.author_id, comment.post_id, comment.created_at, comment.is_enabled, comment.parent_id,
+                    user.id AS author_id, user.username, user.email, user.password, user.role, user.firstName, user.lastName, user.avatar, user.bio, user.twitter, user.facebook, user.github, user.linkedin, user.remember_me_token, user.remember_me_expires_at,
+                    post.title, post.chapo, post.updated_at, post.featured_image, post.category_id, post.slug, post.tags
+                FROM comment 
+                INNER JOIN user ON comment.author_id = user.id 
+                INNER JOIN post ON comment.post_id = post.id 
+                WHERE comment.id = :id
+                LIMIT 1';
             $statement = $this->db->prepare($sql);
-            $statement->execute(['id' => $id]);
-
+            $statement->bindValue(':id', $id, \PDO::PARAM_INT);
+            $statement->execute();
             if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
                 return $this->createCommentModelFromArray($data);
             }
         } catch (\PDOException $e) {
-            echo $e->getMessage();
+            error_log('Error fetching comment: '.$e->getMessage());
         }
     }
 
-    public function findyOneBy(string $field, string $value): ?CommentModel
+    public function findOneBy(string $field, string $value): ?CommentModel
     {
         try {
-            $sql = "SELECT * FROM comment WHERE {$field} = :value";
+            $sql = 'SELECT comment.id, comment.content, comment.author_id, comment.post_id, comment.created_at, comment.is_enabled, comment.parent_id,
+                    user.id AS author_id, user.username, user.email, user.password, user.role, user.firstName, user.lastName, user.avatar, user.bio, user.twitter, user.facebook, user.github, user.linkedin, user.remember_me_token, user.remember_me_expires_at,
+                    post.title, post.chapo, post.updated_at, post.featured_image, post.category_id, post.slug, post.tags
+                FROM comment 
+                INNER JOIN user ON comment.author_id = user.id 
+                INNER JOIN post ON comment.post_id = post.id 
+                WHERE {$field} = :value';
 
             $statement = $this->db->prepare($sql);
             $statement->execute(['value' => $value]);
 
             if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                $this->createCommentModelFromArray($data);
+                Debugger::barDump($data, 'data');
+
+                return $this->createCommentModelFromArray($data);
             }
         } catch (\PDOException $e) {
             error_log('Error fetching comment: '.$e->getMessage());
@@ -104,21 +119,34 @@ class CommentManager
         }
     }
 
-    public function findAll(): array
+    public function findAll(int $page = 1, int $limit = 10): array
     {
         try {
-            $sql = 'SELECT * FROM comment';
+            $sql = 'SELECT comment.*, (SELECT COUNT(*) FROM comment) as total_comments,
+                user.id AS author_id, user.username, user.email, user.password, user.role, user.firstName, user.lastName, user.avatar, user.bio, user.twitter, user.facebook, user.github, user.linkedin, user.remember_me_token, user.remember_me_expires_at,
+                post.id AS post_id, post.title, post.chapo, post.updated_at, post.featured_image, post.category_id, post.slug, post.tags
+                FROM comment
+                INNER JOIN user ON comment.author_id = user.id
+                INNER JOIN post ON comment.post_id = post.id
+                ORDER BY comment.created_at DESC
+                LIMIT :limit OFFSET :offset';
+
+            $offset = ($page - 1) * $limit;
 
             $statement = $this->db->prepare($sql);
+            $statement->bindValue(':limit', $limit, \PDO::PARAM_INT);
+            $statement->bindValue(':offset', $offset, \PDO::PARAM_INT);
             $statement->execute();
 
             $comments = [];
+            $total_comments = 0;
 
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
                 $comments[] = $this->createCommentModelFromArray($data);
+                $total_comments = $data['total_comments'];
             }
 
-            return $comments;
+            return ['comments' => $comments, 'total_comments' => $total_comments];
         } catch (\PDOException $e) {
             echo $e->getMessage();
         }
@@ -204,17 +232,20 @@ class CommentManager
         }
     }
 
-    public function enable(int $id): void
+    public function updateIsEnabled(CommentModel $comment): bool
     {
         try {
-            $sql = 'UPDATE comment SET status = :status WHERE id = :id';
+            $sql = 'UPDATE comment SET is_enabled = :isEnabled WHERE id = :id';
             $statement = $this->db->prepare($sql);
-            $statement->execute([
-                'status' => 'enabled',
-                'id' => $id,
-            ]);
+            $statement->bindValue(':isEnabled', $comment->getIsEnabled(), \PDO::PARAM_BOOL);
+            $statement->bindValue(':id', $comment->getId(), \PDO::PARAM_INT);
+            $statement->execute();
+
+            return true;
         } catch (\PDOException $e) {
-            echo $e->getMessage();
+            error_log('Error updating comment status: '.$e->getMessage());
+
+            return false;
         }
     }
 
@@ -223,7 +254,6 @@ class CommentManager
         $data['tags'] = isset($data['tags']) ? array_map('trim', explode(',', $data['tags'])) : [];
         $data['comments'] = isset($data['comments']) ? $data['comments'] : [];
         $data['category'] = isset($data['categories']) ? $data['categories'] : null;
-
         $author = new UserModel(
             (int) $data['author_id'],
             $data['username'],

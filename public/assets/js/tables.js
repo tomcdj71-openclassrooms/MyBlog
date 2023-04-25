@@ -79,11 +79,46 @@ function userFormatter(value, row, index) {
 }
 
 function actionFormatter(value, row, index) {
+    var actions = row.actions;
     var entityType = getObjectType(row);
-    var postSlug = row.post ? row.post.slug : row.slug;
     var commentId = row.id;
-    return '<a href="/blog/post/' + postSlug + (entityType === 'comment' ? '#comment-' + commentId : '') + '" class="btn btn-sm btn-primary"><i class="bi bi-eye"> </i>Voir</a>';
+    var actionButtons = '';
+    if (actions.voir) {
+        actionButtons += '<a href="' + actions.voir + '" class="btn btn-sm btn-primary"><i class="bi bi-eye"></i> Voir</a> ';
+    }
+    if (entityType === 'comment') {
+        var isChecked = row.is_enabled ? 'checked' : '';
+        actionButtons += `<label class="custom-control teleport-switch">
+            <span class="teleport-switch-control-description">Off</span>
+            <input type="checkbox" class="teleport-switch-control-input" id="approveComment-${commentId}" data-approve-url="${actions.approuver}" data-refuse-url="${actions.refuser}" ${isChecked} onchange="toggleCommentApproval(this)">
+            <span class="teleport-switch-control-indicator"></span>
+            <span class="teleport-switch-control-description">On</span>
+        </label>`;
+    }
+    return actionButtons;
 }
+
+
+function toggleCommentApproval(element) {
+    var approveUrl = element.dataset.approveUrl;
+    var refuseUrl = element.dataset.refuseUrl;
+    var isChecked = element.checked;
+    var url = isChecked ? approveUrl : refuseUrl;
+    $.ajax({
+        url,
+        method: 'POST',
+        success: function (response) {
+            if (response.success) {
+                $('#table-all-comments').bootstrapTable('refresh');
+            }
+        },
+        error: function (error) {
+            console.error(error);
+        }
+    });
+}
+
+
 
 function updateBootstrapTableOptions(page, limit) {
     $('#table-users').bootstrapTable('refreshOptions', {
@@ -146,46 +181,53 @@ function generateTableConfig(url, columns, onPostBody) {
 }
 
 $(document).ready(function () {
-    initBootstrapTable('#table-user-profile-posts', generateTableConfig('/ajax/user-posts', [
-        { field: 'title', title: 'Titre', formatter: titleFormatter, width: '35', widthUnit: '', widthUnit: '%' },
-        { field: 'category', title: 'Categorie', width: '15', widthUnit: '%' },
-        { field: 'created_at', title: 'Créé le', formatter: dateFormatter, width: '10', widthUnit: '%' },
-        { field: 'tags', title: 'Tags', formatter: tagsFormatter, width: '15', widthUnit: '%' },
-        { field: 'status', title: 'Statut', formatter: isEnabledFormatter, width: '10', widthUnit: '%' },
-        { field: 'post.slug', title: 'Actions', formatter: actionFormatter, width: '15', widthUnit: '%' },
-    ], function () {
-        var table = $('#table-user-profile-posts');
-        var page = table.bootstrapTable('getOptions').pageNumber;
-        var limit = table.bootstrapTable('getOptions').pageSize;
-        updateBootstrapTableOptions(page, limit);
-    }));
+    if ($('#table-user-profile-posts').length) {
+        initBootstrapTable('#table-user-profile-posts', generateTableConfig('/ajax/user-posts', [
+            { field: 'title', title: 'Titre', formatter: titleFormatter, width: '35', widthUnit: '', widthUnit: '%' },
+            { field: 'category', title: 'Categorie', width: '15', widthUnit: '%' },
+            { field: 'created_at', title: 'Créé le', formatter: dateFormatter, width: '10', widthUnit: '%' },
+            { field: 'tags', title: 'Tags', formatter: tagsFormatter, width: '15', widthUnit: '%' },
+            { field: 'status', title: 'Statut', formatter: isEnabledFormatter, width: '10', widthUnit: '%' },
+            { field: 'actions', title: 'Actions', formatter: actionFormatter, width: '15', widthUnit: '%' }
+        ], function () {
+            var table = $('#table-user-profile-posts');
+            var page = table.bootstrapTable('getOptions').pageNumber;
+            var limit = table.bootstrapTable('getOptions').pageSize;
+            updateBootstrapTableOptions(page, limit);
+        }));
+    }
 
-    initBootstrapTable('#table-user-profile-comments', generateTableConfig('/ajax/user-comments', [
-        { field: 'post_title', title: 'Post', formatter: titleFormatter, width: '15', widthUnit: '%' },
-        { field: 'content', title: 'Contenu', formatter: contentPreviewFormatter, width: '55', widthUnit: '%' },
-        { field: 'created_at', title: 'Créé le', formatter: dateFormatter, width: '10', widthUnit: '%' },
-        { field: 'is_enabled', title: 'Statut', formatter: isEnabledFormatter, width: '10', widthUnit: '%' },
-        { field: 'post.slug', title: 'Actions', formatter: actionFormatter, width: '10', widthUnit: '%' },
-    ], function () {
-        var table = $('#table-user-profile-comments');
-        var page = table.bootstrapTable('getOptions').pageNumber;
-        var limit = table.bootstrapTable('getOptions').pageSize;
-        updateBootstrapTableOptions(page, limit);
-    }));
+    if ($('#table-user-profile-posts').length) {
+        initBootstrapTable('#table-user-profile-comments', generateTableConfig('/ajax/user-comments', [
+            { field: 'post_title', title: 'Post', formatter: titleFormatter, width: '15', widthUnit: '%' },
+            { field: 'content', title: 'Contenu', formatter: contentPreviewFormatter, width: '55', widthUnit: '%' },
+            { field: 'created_at', title: 'Créé le', formatter: dateFormatter, width: '10', widthUnit: '%' },
+            { field: 'is_enabled', title: 'Statut', formatter: isEnabledFormatter, width: '10', widthUnit: '%' },
+            { field: 'actions', title: 'Actions', formatter: actionFormatter, width: '10', widthUnit: '%' }
+        ], function () {
+            var table = $('#table-user-profile-comments');
+            var page = table.bootstrapTable('getOptions').pageNumber;
+            var limit = table.bootstrapTable('getOptions').pageSize;
+            updateBootstrapTableOptions(page, limit);
+        }));
+    }
 
-    initBootstrapTable('#table-all-comments', generateTableConfig('/ajax/user-comments', [
-        { field: 'post_title', title: 'Post', formatter: titleFormatter, width: '15', widthUnit: '%' },
-        { field: 'content', title: 'Contenu', formatter: contentPreviewFormatter, width: '55', widthUnit: '%' },
-        { field: 'created_at', title: 'Créé le', formatter: dateFormatter, width: '10', widthUnit: '%' },
-        { field: 'is_enabled', title: 'Statut', formatter: isEnabledFormatter, width: '10', widthUnit: '%' },
-        { field: 'user', title: 'Utilisateur', formatter: userFormatter, width: '10', widthUnit: '%' },
-        { field: 'post.slug', title: 'Actions', formatter: actionFormatter, width: '10', widthUnit: '%' },
-    ], function () {
-        var table = $('#table-user-profile-comments');
-        var page = table.bootstrapTable('getOptions').pageNumber;
-        var limit = table.bootstrapTable('getOptions').pageSize;
-        updateBootstrapTableOptions(page, limit);
-    }));
+    if ($('#table-all-comments').length) {
+        initBootstrapTable('#table-all-comments', generateTableConfig('/ajax/admin-all-comments', [
+            { field: 'post_title', title: 'Post', formatter: titleFormatter, width: '15', widthUnit: '%' },
+            { field: 'content', title: 'Contenu', formatter: contentPreviewFormatter, width: '55', widthUnit: '%' },
+            { field: 'created_at', title: 'Créé le', formatter: dateFormatter, width: '10', widthUnit: '%' },
+            { field: 'is_enabled', title: 'Statut', formatter: isEnabledFormatter, width: '10', widthUnit: '%' },
+            { field: 'user', title: 'Utilisateur', formatter: userFormatter, width: '10', widthUnit: '%' },
+            { field: 'actions', title: 'Actions', formatter: actionFormatter, width: '10', widthUnit: '%' }
+        ], function () {
+            var table = $('#table-all-comments');
+            var page = table.bootstrapTable('getOptions').pageNumber;
+            var limit = table.bootstrapTable('getOptions').pageSize;
+            updateBootstrapTableOptions(page, limit);
+        }));
+    }
+
 
     toggleCardView();
     window.addEventListener('resize', toggleCardView);

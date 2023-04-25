@@ -9,29 +9,15 @@
 	</div>
 	<div class="row my-4">
 		<div class="col-12 col-xl-12 mb-4 mb-lg-0">
-			<div class="card">
-				<div class="card-body">
-					<div class="table-responsive">
-						<table id="table-comment" data-toggle="table" data-pagination="true" data-page-size="10" data-search="true" data-locale="fr-FR" class="table">
-							<thead>
-								<tr>
-									<th data-field="id">Id</th>
-									<th data-field="name">Nom</th>
-									<th data-field="content">Contenu</th>
-									<th data-formatter="actionFormatter" data-events="actionEvents">Action</th>
-								</tr>
-							</thead>
-							<tbody>
-								{% for comment in comments %}
-									<tr>
-										<td>{{ comment.id }}</td>
-										<td>{{ comment.author }}</td>
-										<td>{{ comment.content }}</td>
-										<td></td>
-									</tr>
-								{% endfor %}
-							</tbody>
-						</table>
+			<div class="d-flex align-items-center">
+				<div class="card">
+					<div class="card-header text-center">
+						<h4>Mes commentaires</h4>
+					</div>
+					<div class="card-body">
+						<div class="table-wrapper">
+							<table id="table-all-comments"></table>
+						</div>
 					</div>
 				</div>
 			</div>

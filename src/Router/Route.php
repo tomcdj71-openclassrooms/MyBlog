@@ -48,9 +48,12 @@ class Route
             'edit_comment' => ['/comment/{id}/edit', BlogController::class, 'editComment', 'GET|POST'],
             'ajax_user_comments' => ['/ajax/user-comments', AjaxController::class, 'myComments', 'GET'],
             'ajax_user_posts' => ['/ajax/user-posts', AjaxController::class, 'myPosts', 'GET'],
-            'ajax_admin_all_comments' => ['/ajax/admin-all-comments', AjaxController::class, 'allComments', 'GET'],
+            'ajax_admin_all_comments' => ['/ajax/admin-all-comments', AjaxController::class, 'manageAllComments', 'GET'],
             'ajax_admin_all_posts' => ['/ajax/admin-all-posts', AjaxController::class, 'allPosts', 'GET'],
             'ajax_admin_all_users' => ['/ajax/admin-all-users', AjaxController::class, 'allUsers', 'GET'],
+            'ajax_admin_all_tags' => ['/ajax/admin-all-tags', AjaxController::class, 'allTags', 'GET'],
+            'ajax_admin_all_categories' => ['/ajax/admin-all-categories', AjaxController::class, 'allCategories', 'GET'],
+            'ajax_admin_toggle_comment' => ['/ajax/admin-toggle-comment/{id}', AjaxController::class, 'toggleCommentStatus', 'POST'],
         ];
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Config\DatabaseConnexion;
+use App\DependencyInjection\Container;
 use App\Helper\SecurityHelper;
 use App\Helper\StringHelper;
 use App\Helper\TwigHelper;
@@ -14,31 +14,32 @@ use App\Manager\PostManager;
 use App\Manager\TagManager;
 use App\Manager\UserManager;
 use App\Middleware\AuthenticationMiddleware;
+use App\Router\Request;
+use App\Router\ServerRequest;
+use App\Router\Session;
+use App\Service\PostService;
+use App\Service\ProfileService;
 
-class AdminController extends TwigHelper
+class AdminController
 {
-    protected $twig;
-    private $securityHelper;
-    private $userManager;
-    private $postManager;
-    private $commentManager;
-    private $categoryManager;
-    private $tagManager;
-    private $authMiddleware;
-    private $stringHelper;
+    protected TwigHelper $twig;
+    private UserManager $userManager;
+    private SecurityHelper $securityHelper;
+    private AuthenticationMiddleware $authMiddleware;
+    private Session $session;
+    private ServerRequest $serverRequest;
+    private ProfileService $profileService;
+    private Request $request;
+    private StringHelper $stringHelper;
+    private CommentManager $commentManager;
+    private PostService $postService;
+    private PostManager $postManager;
+    private TagManager $tagManager;
+    private CategoryManager $categoryManager;
 
-    public function __construct()
+    public function __construct(Container $container)
     {
-        $db = new DatabaseConnexion();
-        $this->securityHelper = new SecurityHelper();
-        $this->twig = new TwigHelper();
-        $this->userManager = new UserManager($db);
-        $this->postManager = new PostManager($db);
-        $this->commentManager = new CommentManager($db);
-        $this->categoryManager = new CategoryManager($db);
-        $this->tagManager = new TagManager($db);
-        $this->authMiddleware = new AuthenticationMiddleware($this->securityHelper);
-        $this->stringHelper = new StringHelper();
+        $container->injectProperties($this);
     }
 
     public function index($message = null)
@@ -46,8 +47,6 @@ class AdminController extends TwigHelper
         $this->authenticate();
         if (!$this->authMiddleware->isUser()) {
             header('Location: /');
-
-            exit;
         }
 
         $currentUser = $this->securityHelper->getUser();
@@ -85,8 +84,6 @@ class AdminController extends TwigHelper
         $this->authenticate();
         if (!$this->authMiddleware->isUser()) {
             header('Location: /');
-
-            exit;
         }
 
         $currentUser = $this->securityHelper->getUser();
@@ -107,29 +104,15 @@ class AdminController extends TwigHelper
         $this->authenticate();
         if (!$this->authMiddleware->isUser()) {
             header('Location: /');
-
-            exit;
         }
-
-        $currentUser = $this->securityHelper->getUser();
-
-        $comments = $this->commentManager->findAll();
-        $commentsData = [];
-        foreach ($comments as $comment) {
-            $commentsData[] = [
-                'id' => $comment->getId(),
-                'content' => $comment->getContent(),
-                'createdAt' => $comment->getCreatedAt(),
-                'post' => $comment->getPostId(),
-                'author' => $comment->getAuthor(),
-            ];
-        }
+        $results = $this->commentManager->findAll(1, 10);
 
         return $this->twig->render('pages/admin/pages/comment_admin.html.twig', [
             'title' => 'MyBlog - Admin Dashboard',
             'route' => 'admin_comments',
-            'comments' => $commentsData,
-            'loggedUser' => $currentUser,
+            'comments' => $results['comments'],
+            'total_comments' => $results['total_comments'],
+            'user' => $this->securityHelper->getUser(),
             'message' => $message,
         ]);
     }
@@ -139,8 +122,6 @@ class AdminController extends TwigHelper
         $this->authenticate();
         if (!$this->authMiddleware->isUser()) {
             header('Location: /');
-
-            exit;
         }
 
         $currentUser = $this->securityHelper->getUser();
@@ -161,8 +142,6 @@ class AdminController extends TwigHelper
         $this->authenticate();
         if (!$this->authMiddleware->isUser()) {
             header('Location: /');
-
-            exit;
         }
 
         $currentUser = $this->securityHelper->getUser();
@@ -183,8 +162,6 @@ class AdminController extends TwigHelper
         $this->authenticate();
         if (!$this->authMiddleware->isUser()) {
             header('Location: /');
-
-            exit;
         }
 
         $currentUser = $this->securityHelper->getUser();
