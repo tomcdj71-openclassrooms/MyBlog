@@ -19,9 +19,9 @@
 			<script src="{{ asset('js/script.js') }}"></script>
 		{% endblock %}
 	</head>
+	<!-- Body dark  -->
+	<body>
+		{% include '_partials/navbar.html.twig' %}
+		{% block body %}{% endblock %}
+	</body>
 </html>
-<!-- Body dark  -->
-<body>
-	{% include '_partials/navbar.html.twig' %}
-	{% block body %}{% endblock %}
-</body>

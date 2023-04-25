@@ -7,10 +7,12 @@ namespace App\Router;
 class ServerRequest extends Request
 {
     private array $server;
+    private array $query;
 
-    public function __construct(array $server = [])
+    public function __construct(array $server = [], array $query = [])
     {
         $this->server = $server ?: $_SERVER;
+        $this->query = $query ?: $_GET;
     }
 
     public function get(string $key, $default = null)
@@ -51,5 +53,10 @@ class ServerRequest extends Request
     public function getProtocol(): string
     {
         return $this->isSecure() ? 'https' : 'http';
+    }
+
+    public function getQuery(string $key, $default = null)
+    {
+        return $this->query[$key] ?? $default;
     }
 }

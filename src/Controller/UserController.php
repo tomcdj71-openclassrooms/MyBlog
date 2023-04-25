@@ -139,7 +139,7 @@ class UserController
             return $this->request->redirectToRoute('login');
         }
 
-        if ('POST' === $_SERVER['REQUEST_METHOD']) {
+        if ('POST' === $this->serverRequest->getRequestMethod()) {
             $postData = [
                 'email' => filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL),
                 'username' => filter_input(INPUT_POST, 'username', FILTER_SANITIZE_SPECIAL_CHARS),
@@ -184,7 +184,7 @@ class UserController
      */
     public function userProfile(string $username)
     {
-        $url = $_SERVER['REQUEST_URI'];
+        $url = $this->serverRequest->getUri();
         $username = $this->stringHelper->getLastUrlPart($url);
         $user = $this->userManager->findOneBy(['username' => $username]);
         $data = [

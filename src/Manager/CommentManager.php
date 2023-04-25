@@ -8,7 +8,6 @@ use App\Config\DatabaseConnexion;
 use App\Model\CommentModel;
 use App\Model\PostModel;
 use App\Model\UserModel;
-use Tracy\Debugger;
 
 class CommentManager
 {
@@ -56,13 +55,10 @@ class CommentManager
                 INNER JOIN user ON comment.author_id = user.id 
                 INNER JOIN post ON comment.post_id = post.id 
                 WHERE {$field} = :value';
-
             $statement = $this->db->prepare($sql);
             $statement->execute(['value' => $value]);
-
-            if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                Debugger::barDump($data, 'data');
-
+            $data = $statement->fetch(\PDO::FETCH_ASSOC);
+            if ($data) {
                 return $this->createCommentModelFromArray($data);
             }
         } catch (\PDOException $e) {
@@ -137,16 +133,14 @@ class CommentManager
             $statement->bindValue(':limit', $limit, \PDO::PARAM_INT);
             $statement->bindValue(':offset', $offset, \PDO::PARAM_INT);
             $statement->execute();
-
             $comments = [];
-            $total_comments = 0;
-
+            $totalComments = 0;
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
                 $comments[] = $this->createCommentModelFromArray($data);
-                $total_comments = $data['total_comments'];
+                $totalComments = $data['total_comments'];
             }
 
-            return ['comments' => $comments, 'total_comments' => $total_comments];
+            return ['comments' => $comments, 'total_comments' => $totalComments];
         } catch (\PDOException $e) {
             echo $e->getMessage();
         }

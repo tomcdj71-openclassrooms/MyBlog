@@ -6,7 +6,6 @@ namespace App\Controller;
 
 use App\DependencyInjection\Container;
 use App\Helper\SecurityHelper;
-use App\Helper\StringHelper;
 use App\Helper\TwigHelper;
 use App\Manager\CategoryManager;
 use App\Manager\CommentManager;
@@ -14,11 +13,7 @@ use App\Manager\PostManager;
 use App\Manager\TagManager;
 use App\Manager\UserManager;
 use App\Middleware\AuthenticationMiddleware;
-use App\Router\Request;
 use App\Router\ServerRequest;
-use App\Router\Session;
-use App\Service\PostService;
-use App\Service\ProfileService;
 
 class AdminController
 {
@@ -26,13 +21,8 @@ class AdminController
     private UserManager $userManager;
     private SecurityHelper $securityHelper;
     private AuthenticationMiddleware $authMiddleware;
-    private Session $session;
     private ServerRequest $serverRequest;
-    private ProfileService $profileService;
-    private Request $request;
-    private StringHelper $stringHelper;
     private CommentManager $commentManager;
-    private PostService $postService;
     private PostManager $postManager;
     private TagManager $tagManager;
     private CategoryManager $categoryManager;

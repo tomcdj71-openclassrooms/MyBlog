@@ -6,8 +6,8 @@ use App\DependencyInjection\Container;
 use App\Helper\SecurityHelper;
 use App\Manager\CommentManager;
 use App\Middleware\AuthenticationMiddleware;
+use App\Router\ServerRequest;
 use App\Service\PostService;
-use Tracy\Debugger;
 
 class AjaxController
 {
@@ -15,6 +15,7 @@ class AjaxController
     private SecurityHelper $securityHelper;
     private AuthenticationMiddleware $authMiddleware;
     private PostService $postService;
+    private ServerRequest $request;
 
     public function __construct(Container $container)
     {
@@ -26,16 +27,12 @@ class AjaxController
         if (!$this->authMiddleware->isUserOrAdmin()) {
             header('HTTP/1.0 403 Forbidden');
         }
-
         $user = $this->securityHelper->getUser();
-
-        $offset = isset($_GET['offset']) ? intval($_GET['offset']) : 1;
-        $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 10;
+        $offset = $this->request->getQuery('offset', 1);
+        $limit = $this->request->getQuery('limit', 10);
         $page = intval($offset / $limit) + 1;
-
         $userComments = $this->commentManager->findUserComments($user->getId(), $page, $limit);
         $totalComments = $this->commentManager->countUserComments($user->getId());
-
         $userCommentsArray = [];
         foreach ($userComments as $comment) {
             $userCommentsArray[] = [
@@ -93,13 +90,12 @@ class AjaxController
             header('HTTP/1.0 403 Forbidden');
         }
 
-        $offset = isset($_GET['offset']) ? intval($_GET['offset']) : 1;
-        $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 10;
+        $offset = $this->request->getQuery('offset', 1);
+        $limit = $this->request->getQuery('limit', 10);
         $page = intval($offset / $limit) + 1;
         $results = $this->commentManager->findAll($page, $limit);
         $comments = $results['comments'];
         $totalComments = $results['total_comments'];
-
         $commentsArray = [];
         foreach ($comments as $comment) {
             $commentsArray[] = [
@@ -141,12 +137,10 @@ class AjaxController
         }
 
         $comment = $this->commentManager->find($commentId);
-        Debugger::barDump($comment);
+        $sucess = false;
         if ($comment) {
             $comment->setIsEnabled(!$comment->getIsEnabled());
             $success = $this->commentManager->updateIsEnabled($comment);
-        } else {
-            $success = false;
         }
 
         header('Content-Type: application/json');

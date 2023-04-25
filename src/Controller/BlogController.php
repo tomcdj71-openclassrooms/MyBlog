@@ -13,6 +13,7 @@ use App\Manager\CommentManager;
 use App\Manager\PostManager;
 use App\Manager\TagManager;
 use App\Manager\UserManager;
+use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Service\CommentService;
 
@@ -28,6 +29,7 @@ class BlogController
     private CommentManager $commentManager;
     private Session $session;
     private CommentService $commentService;
+    private ServerRequest $serverRequest;
 
     public function __construct(Container $container)
     {
@@ -58,7 +60,7 @@ class BlogController
     public function blogPost($slug, $message = null)
     {
         $data = $this->resetData();
-        $url = $_SERVER['REQUEST_URI'];
+        $url = $this->serverRequest->getUri();
         $slug = $this->stringHelper->getLastUrlPart($url);
         $post = $this->postManager->findOneBy('slug', $slug);
         if (null === $post) {
@@ -69,7 +71,7 @@ class BlogController
         } else {
             $user = $this->securityHelper->getUser();
         }
-        if ('POST' === $_SERVER['REQUEST_METHOD'] && filter_input(INPUT_POST, 'content') && filter_input(INPUT_POST, 'csrf_token')) {
+        if ('POST' === $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'content') && filter_input(INPUT_POST, 'csrf_token')) {
             $postData = [
                 'content' => filter_input(INPUT_POST, 'content', FILTER_SANITIZE_SPECIAL_CHARS),
                 'post_id' => $post,
@@ -117,7 +119,7 @@ class BlogController
     public function blogCategory($categorySlug, $message = null)
     {
         $data = $this->resetData();
-        $url = $_SERVER['REQUEST_URI'];
+        $url = $this->serverRequest->getUri();
         $categorySlug = $this->stringHelper->getLastUrlPart($url);
         $posts = $this->postManager->findBy('category_slug', $categorySlug);
         $data['searchType'] = 'Catégorie';
@@ -130,7 +132,7 @@ class BlogController
     public function blogTag($tagSlug, $message = null)
     {
         $data = $this->resetData();
-        $url = $_SERVER['REQUEST_URI'];
+        $url = $this->serverRequest->getUri();
         $tagSlug = $this->stringHelper->getLastUrlPart($url);
         $posts = $this->postManager->findPostsWithTag($tagSlug);
         $data['searchType'] = 'Tag';
@@ -143,7 +145,7 @@ class BlogController
     public function blogAuthor($username, $message = null)
     {
         $data = $this->resetData();
-        $url = $_SERVER['REQUEST_URI'];
+        $url = $this->serverRequest->getUri();
         $username = $this->stringHelper->getLastUrlPart($url);
         $author = $this->userManager->findOneBy(['username' => $username]);
         $authorId = $author->getId();
@@ -164,7 +166,7 @@ class BlogController
     public function blogDate($date, $message = null)
     {
         $data = $this->resetData();
-        $url = $_SERVER['REQUEST_URI'];
+        $url = $this->serverRequest->getUri();
         $date = $this->stringHelper->getLastUrlPart($url);
         $endDate = new \DateTime($date);
         $startDate = clone $endDate;

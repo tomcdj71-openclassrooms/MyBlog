@@ -41,16 +41,18 @@ class HomeController
             ];
             $mailerConfig = $this->configuration->get('mailer');
 
-            $this->mailer->send(
-                $mailerConfig['from_email'],
-                $postData['email'],
-                $postData['subject'],
-                $postData['message']
-            );
-
+            try {
+                $this->mailer->send(
+                    $mailerConfig['from_email'],
+                    $postData['email'],
+                    $postData['subject'],
+                    $postData['message']
+                );
+            } catch (\Exception $e) {
+                $message = 'An error occurred while sending your message. Please try again later.';
+            }
             $message = 'Your message has been sent successfully.';
         }
-
         $data = [
             'title' => 'MyBlog - Portfolio',
             'message' => $message,
