@@ -4,10 +4,15 @@ namespace App\Controller;
 
 use App\DependencyInjection\Container;
 use App\Helper\SecurityHelper;
+use App\Manager\CategoryManager;
 use App\Manager\CommentManager;
+use App\Manager\PostManager;
+use App\Manager\TagManager;
+use App\Manager\UserManager;
 use App\Middleware\AuthenticationMiddleware;
 use App\Router\ServerRequest;
 use App\Service\PostService;
+use Tracy\Debugger;
 
 class AjaxController
 {
@@ -16,6 +21,10 @@ class AjaxController
     private AuthenticationMiddleware $authMiddleware;
     private PostService $postService;
     private ServerRequest $request;
+    private TagManager $tagManager;
+    private CategoryManager $categoryManager;
+    private UserManager $userManager;
+    private PostManager $postManager;
 
     public function __construct(Container $container)
     {
@@ -63,23 +72,13 @@ class AjaxController
     public function myPosts()
     {
         $userPostsData = $this->postService->getUserPostsData();
-
-        $userPostsArray = [];
-        foreach ($userPostsData['posts'] as $post) {
-            $userPostsArray[] = [
-                'id' => $post->getId(),
-                'title' => $post->getTitle(),
-                'slug' => $post->getSlug(),
-                'created_at' => $post->getCreatedAt(),
-                'is_enabled' => $post->getIsEnabled(),
-                'type' => 'myPosts',
-                'actions' => [
-                    'voir' => '/post/'.$post->getSlug(),
-                    'modifier' => '/admin/post/'.$post->getId().'/edit',
-                ],
+        foreach ($userPostsData['rows'] as $key => $row) {
+            $userPostsData['rows'][$key]['actions'] = [
+                'voir' => '/blog/post/'.$userPostsData['rows'][$key]['slug'],
+                'modifier' => '/admin/post/'.$userPostsData['rows'][$key]['id'].'/edit',
             ];
+            $userPostsData['rows'][$key]['type'] = 'myPosts';
         }
-
         header('Content-Type: application/json');
         echo json_encode($userPostsData);
     }
@@ -145,5 +144,123 @@ class AjaxController
 
         header('Content-Type: application/json');
         echo json_encode(['success' => $success]);
+    }
+
+    public function allTags()
+    {
+        $tags = $this->tagManager->findAll();
+        $tagsArray = [];
+        foreach ($tags as $tag) {
+            $tagsArray[] = [
+                'id' => $tag->getId(),
+                'name' => $tag->getName(),
+                'slug' => $tag->getSlug(),
+                'type' => 'allTags',
+                'actions' => [
+                    'voir' => '/blog/tag/'.$tag->getSlug(),
+                    'editer' => '/admin/tag/'.$tag->getId().'/edit',
+                ],
+            ];
+        }
+        $response = [
+            'rows' => $tagsArray,
+            'total' => count($tagsArray),
+        ];
+
+        header('Content-Type: application/json');
+        echo json_encode($response);
+    }
+
+    public function allCategories()
+    {
+        $categories = $this->categoryManager->findAll();
+        $categoriesArray = [];
+        foreach ($categories as $category) {
+            $categoriesArray[] = [
+                'id' => $category->getId(),
+                'name' => $category->getName(),
+                'slug' => $category->getSlug(),
+                'type' => 'allCategories',
+                'actions' => [
+                    'voir' => '/blog/category/'.$category->getSlug(),
+                    'editer' => '/admin/category/'.$category->getId().'/edit',
+                ],
+            ];
+        }
+        $response = [
+            'rows' => $categoriesArray,
+            'total' => count($categoriesArray),
+        ];
+
+        header('Content-Type: application/json');
+        echo json_encode($response);
+    }
+
+    public function allUsers()
+    {
+        $users = $this->userManager->findAll();
+        $usersArray = [];
+        foreach ($users as $user) {
+            $usersArray[] = [
+                'id' => $user->getId(),
+                'username' => $user->getUsername(),
+                'email' => $user->getEmail(),
+                'roles' => $user->getRole(),
+                'created_at' => $user->getCreatedAt(),
+                'type' => 'allUsers',
+                'actions' => [
+                    'voir' => '/admin/user/'.$user->getId().'/edit',
+                ],
+            ];
+        }
+        $response = [
+            'rows' => $usersArray,
+            'total' => count($usersArray),
+        ];
+        header('Content-Type: application/json');
+        echo json_encode($response);
+    }
+
+    public function allPosts()
+    {
+        $offset = $this->request->getQuery('offset', 1);
+        $limit = $this->request->getQuery('limit', 10);
+        $page = intval($offset / $limit) + 1;
+        $results = $this->postManager->findAll($page, $limit);
+        $posts = $results['posts'];
+        $totalPosts = $results['total_posts'];
+        $postsArray = [];
+        $tagsArray = [];
+        foreach ($posts as $post) {
+            foreach ($post->getTags() as $tag) {
+                $tagsArray[] = $tag->getName();
+            }
+            $postsArray[] = [
+                'id' => $post->getId(),
+                'title' => $post->getTitle(),
+                'slug' => $post->getSlug(),
+                'is_enabled' => $post->getIsEnabled(),
+                'created_at' => $post->getCreatedAt(),
+                'updated_at' => $post->getUpdatedAt(),
+                'tags' => $tagsArray,
+                'category' => $post->getCategory()->getName(),
+                'comments' => $post->getComments(),
+                'author' => $post->getAuthor()->getUsername(),
+                'type' => 'allPosts',
+                'actions' => [
+                    'voir' => '/blog/post/'.$post->getSlug(),
+                    'editer' => '/admin/post/'.$post->getId().'/edit',
+                    'approuver' => '/ajax/admin-toggle-post/'.$post->getId(),
+                    'refuser' => '/ajax/admin-toggle-post/'.$post->getId(),
+                ],
+            ];
+        }
+        $response = [
+            'rows' => $postsArray,
+            'total' => $totalPosts,
+        ];
+        Debugger::barDump($response);
+        header('Content-Type: application/json');
+        echo json_encode($response);
     }
 }

@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace App\Model;
 
+use App\ModelParameters\TagModelParameters;
+
 class TagModel
 {
     private $id;
     private $name;
     private $slug;
 
-    public function __construct(int $id, string $name, string $slug)
+    public function __construct(TagModelParameters $tagModelParams)
     {
-        $this->id = $id;
-        $this->name = $name;
-        $this->slug = $slug;
+        $this->id = $tagModelParams->id;
+        $this->name = $tagModelParams->name;
+        $this->slug = $tagModelParams->slug;
     }
 
     public function __toString(): string

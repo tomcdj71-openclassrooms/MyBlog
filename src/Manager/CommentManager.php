@@ -8,6 +8,8 @@ use App\Config\DatabaseConnexion;
 use App\Model\CommentModel;
 use App\Model\PostModel;
 use App\Model\UserModel;
+use App\ModelParameters\PostModelParameters;
+use App\ModelParameters\UserModelParameters;
 
 class CommentManager
 {
@@ -126,9 +128,7 @@ class CommentManager
                 INNER JOIN post ON comment.post_id = post.id
                 ORDER BY comment.created_at DESC
                 LIMIT :limit OFFSET :offset';
-
             $offset = ($page - 1) * $limit;
-
             $statement = $this->db->prepare($sql);
             $statement->bindValue(':limit', $limit, \PDO::PARAM_INT);
             $statement->bindValue(':offset', $offset, \PDO::PARAM_INT);
@@ -248,40 +248,11 @@ class CommentManager
         $data['tags'] = isset($data['tags']) ? array_map('trim', explode(',', $data['tags'])) : [];
         $data['comments'] = isset($data['comments']) ? $data['comments'] : [];
         $data['category'] = isset($data['categories']) ? $data['categories'] : null;
-        $author = new UserModel(
-            (int) $data['author_id'],
-            $data['username'],
-            $data['email'],
-            $data['password'],
-            $data['created_at'],
-            $data['role'],
-            $data['avatar'],
-            $data['bio'],
-            $data['remember_me_token'],
-            $data['remember_me_expires_at'],
-            $data['firstName'],
-            $data['lastName'],
-            $data['twitter'],
-            $data['facebook'],
-            $data['linkedin'],
-            $data['github'],
-        );
-
-        $post = new PostModel(
-            (int) ($data['post_id'] ?? $data['id']),
-            $data['title'],
-            $data['content'],
-            $data['chapo'],
-            $data['created_at'],
-            $data['updated_at'],
-            (bool) $data['is_enabled'],
-            $data['featured_image'],
-            $author,
-            $data['category'],
-            $data['slug'],
-            $data['tags'],
-            $data['comments'],
-        );
+        $authorModelParams = UserModelParameters::createFromData($data);
+        $author = new UserModel($authorModelParams);
+        $data['author'] = $author;
+        $postModelParams = PostModelParameters::createFromData($data);
+        $post = new PostModel($postModelParams);
 
         return new CommentModel(
             (int) $data['id'],

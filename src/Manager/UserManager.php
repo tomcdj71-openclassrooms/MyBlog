@@ -6,6 +6,7 @@ namespace App\Manager;
 
 use App\Config\DatabaseConnexion;
 use App\Model\UserModel;
+use App\ModelParameters\UserModelParameters;
 
 class UserManager
 {
@@ -44,14 +45,11 @@ class UserManager
     {
         try {
             $sql = 'SELECT * FROM user ORDER BY id DESC LIMIT :limit OFFSET :offset';
-
             $statement = $this->db->prepare($sql);
             $statement->bindValue('limit', $limit, \PDO::PARAM_INT);
             $statement->bindValue('offset', ($page - 1) * $limit, \PDO::PARAM_INT);
             $statement->execute();
-
             $data = $statement->fetchAll(\PDO::FETCH_ASSOC);
-
             if (!$data) {
                 return [];
             }
@@ -74,22 +72,16 @@ class UserManager
     {
         try {
             $sql = 'SELECT * FROM user WHERE ';
-
             $where = [];
             $parameters = [];
-
             foreach ($criteria as $key => $value) {
                 $where[] = $key.' = :'.$key;
                 $parameters[$key] = $value;
             }
-
             $sql .= implode(' AND ', $where);
-
             $statement = $this->db->prepare($sql);
             $statement->execute($parameters);
-
             $data = $statement->fetch(\PDO::FETCH_ASSOC);
-
             if (!$data) {
                 return null;
             }
@@ -214,23 +206,8 @@ class UserManager
 
     public function createUserModelFromArray(array $data): UserModel
     {
-        return new UserModel(
-            (int) $data['id'],
-            $data['username'],
-            $data['email'],
-            $data['password'],
-            $data['created_at'],
-            $data['role'],
-            $data['avatar'],
-            $data['bio'],
-            $data['remember_me_token'],
-            $data['remember_me_expires_at'],
-            $data['firstName'],
-            $data['lastName'],
-            $data['twitter'],
-            $data['facebook'],
-            $data['linkedin'],
-            $data['github']
-        );
+        $userModelParams = UserModelParameters::createFromData($data);
+
+        return new UserModel($userModelParams);
     }
 }

@@ -95,7 +95,6 @@ class BlogController
             }
             $message = implode(', ', $errors); // Combine error messages if there are multiple errors
         }
-
         $csrf_token = $this->securityHelper->generateCsrfToken('comment');
         $data['title'] = 'MyBlog - Blog Post';
         $data['route'] = 'blog';
@@ -171,9 +170,7 @@ class BlogController
         $endDate = new \DateTime($date);
         $startDate = clone $endDate;
         $startDate->modify('-30 days');
-
         $posts = $this->postManager->findPostsBetweenDates($startDate, $endDate);
-
         $data['searchType'] = 'Date';
         $data['search'] = 'Postés entre le '.$startDate->format('d-m-Y').' et le '.$endDate->format('d-m-Y').'.';
         $data['message'] = $message;
@@ -183,8 +180,6 @@ class BlogController
 
     private function resetData()
     {
-        $date = date('Y-m-d', strtotime('-30 days'));
-
         return [
             'title' => 'MyBlog - Blog',
             'route' => 'blog',

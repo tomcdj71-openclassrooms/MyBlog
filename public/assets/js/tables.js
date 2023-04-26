@@ -36,15 +36,18 @@ function titleFormatter(value, row, index) {
 
 function tagsFormatter(value, row, index) {
     var tags = row.post ? row.post.tags : row.tags;
-    var tagsArray = tags.split(', '); // Split the string into an array
     var tagsLength = 5;
-    var tagsList = tagsArray.slice(0, tagsLength);
+    var tagsList = tags.slice(0, tagsLength);
     var tagsListLength = tagsList.length;
     var tagsListString = '';
     for (var i = 0; i < tagsListLength; i++) {
         tagsListString += '<span class="badge bg-info">' + tagsList[i] + '</span> ';
     }
     return tagsListString;
+}
+
+function nameFormatter(value, row, index) {
+    return row.name;
 }
 
 function contentPreviewFormatter(value, row, index) {
@@ -73,8 +76,13 @@ function isEnabledFormatter(value, row, index) {
 }
 
 function userFormatter(value, row, index) {
-    var user = row.user;
-    var userLink = '<a href="/profile/' + user.username + '">' + user.username + '</a>';
+    var entityType = getObjectType(row);
+    if (entityType === 'post') {
+        var user = row.author;
+    } else {
+        var user = row.user.username;
+    }
+    var userLink = '<a href="/profile/' + user + '">' + user + '</a>';
     return userLink;
 }
 
@@ -85,6 +93,9 @@ function actionFormatter(value, row, index) {
     var actionButtons = '';
     if (actions.voir) {
         actionButtons += '<a href="' + actions.voir + '" class="btn btn-sm btn-primary"><i class="bi bi-eye"></i> Voir</a> ';
+    }
+    if (actions.editer) {
+        actionButtons += '<a href="' + actions.editer + '" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i> Editer</a> ';
     }
     if (entityType === 'comment') {
         var isChecked = row.is_enabled ? 'checked' : '';
@@ -98,6 +109,18 @@ function actionFormatter(value, row, index) {
     return actionButtons;
 }
 
+function roleFormatter(value, row, index) {
+    var role = row.roles;
+    if (role === 'ROLE_ADMIN') {
+        role = 'Administrateur';
+        color = 'success';
+    } else if (role === 'ROLE_USER') {
+        role = 'Utilisateur';
+        color = 'primary';
+    }
+    var roleBadge = '<span class="badge bg-' + color + '">' + role + '</span>';
+    return roleBadge;
+}
 
 function toggleCommentApproval(element) {
     var approveUrl = element.dataset.approveUrl;
@@ -117,8 +140,6 @@ function toggleCommentApproval(element) {
         }
     });
 }
-
-
 
 function updateBootstrapTableOptions(page, limit) {
     $('#table-users').bootstrapTable('refreshOptions', {
@@ -156,6 +177,9 @@ function generateTableConfig(url, columns, onPostBody) {
     return {
         url,
         columns,
+        responseHandler: function (res) {
+            return res;
+        },
         pagination: true,
         sidePagination: 'server',
         pageSize: 10,
@@ -228,6 +252,68 @@ $(document).ready(function () {
         }));
     }
 
+    if ($('#table-all-tags').length) {
+        initBootstrapTable('#table-all-tags', generateTableConfig('/ajax/admin-all-tags', [
+            { field: 'id', title: 'ID', width: '5', widthUnit: '%' },
+            { field: 'name', title: 'Nom', formatter: nameFormatter, width: '40', widthUnit: '%' },
+            { field: 'slug', title: 'Slug', width: '40', widthUnit: '%' },
+            { field: 'actions', title: 'Actions', formatter: actionFormatter, width: '15', widthUnit: '% ' }
+        ], function () {
+            var table = $('#table-all-tags');
+            var page = table.bootstrapTable('getOptions').pageNumber;
+            var limit = table.bootstrapTable('getOptions').pageSize;
+            updateBootstrapTableOptions(page, limit);
+        }));
+    }
+
+    if ($('#table-all-categories').length) {
+        initBootstrapTable('#table-all-categories', generateTableConfig('/ajax/admin-all-categories', [
+            { field: 'id', title: 'ID', width: '5', widthUnit: '%' },
+            { field: 'name', title: 'Nom', formatter: nameFormatter, width: '15', widthUnit: '%' },
+            { field: 'slug', title: 'Slug', width: '15', widthUnit: '%' },
+            { field: 'actions', title: 'Actions', formatter: actionFormatter, width: '15', widthUnit: '% ' }
+        ], function () {
+            var table = $('#table-all-categories');
+            var page = table.bootstrapTable('getOptions').pageNumber;
+            var limit = table.bootstrapTable('getOptions').pageSize;
+            updateBootstrapTableOptions(page, limit);
+        }));
+    }
+
+    if ($('#table-all-users').length) {
+        initBootstrapTable('#table-all-users', generateTableConfig('/ajax/admin-all-users', [
+            { field: 'id', title: 'ID', width: '5', widthUnit: '%' },
+            { field: 'username', title: 'Nom', width: '15', widthUnit: '%' },
+            { field: 'email', title: 'Email', width: '15', widthUnit: '%' },
+            { field: 'role', title: 'Rôle', formatter: roleFormatter, width: '10', widthUnit: '%' },
+            { field: 'created_at', title: 'Créé le', formatter: dateFormatter, width: '10', widthUnit: '%' },
+            { field: 'is_enabled', title: 'Statut', formatter: isEnabledFormatter, width: '10', widthUnit: '%' },
+            { field: 'actions', title: 'Actions', formatter: actionFormatter, width: '15', widthUnit: '%' }
+        ], function () {
+            var table = $('#table-all-users');
+            var page = table.bootstrapTable('getOptions').pageNumber;
+            var limit = table.bootstrapTable('getOptions').pageSize;
+            updateBootstrapTableOptions(page, limit);
+        }));
+    }
+
+    if ($('#table-all-posts').length) {
+        initBootstrapTable('#table-all-posts', generateTableConfig('/ajax/admin-all-posts', [
+            { field: 'author', title: 'Utilisateur', formatter: userFormatter, width: '10', widthUnit: '%' },
+            { field: 'title', title: 'Titre', formatter: titleFormatter, width: '15', widthUnit: '%' },
+            { field: 'created_at', title: 'Créé le', formatter: dateFormatter, width: '10', widthUnit: '%' },
+            { field: 'updated_at', title: 'Modifié le', formatter: dateFormatter, width: '10', widthUnit: '%' },
+            { field: 'category', title: 'Catégorie', width: '10', widthUnit: '%' },
+            { field: 'tags', title: 'Tags', formatter: tagsFormatter, width: '10', widthUnit: '%' },
+            { field: 'is_enabled', title: 'Statut', formatter: isEnabledFormatter, width: '10', widthUnit: '%' },
+            { field: 'actions', title: 'Actions', formatter: actionFormatter, width: '10', widthUnit: '%' }
+        ], function () {
+            var table = $('#table-all-posts');
+            var page = table.bootstrapTable('getOptions').pageNumber;
+            var limit = table.bootstrapTable('getOptions').pageSize;
+            updateBootstrapTableOptions(page, limit);
+        }));
+    }
 
     toggleCardView();
     window.addEventListener('resize', toggleCardView);

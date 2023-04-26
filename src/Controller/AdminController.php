@@ -21,7 +21,7 @@ class AdminController
     private UserManager $userManager;
     private SecurityHelper $securityHelper;
     private AuthenticationMiddleware $authMiddleware;
-    private ServerRequest $serverRequest;
+    private ServerRequest $request;
     private CommentManager $commentManager;
     private PostManager $postManager;
     private TagManager $tagManager;
@@ -38,9 +38,6 @@ class AdminController
         if (!$this->authMiddleware->isUser()) {
             header('Location: /');
         }
-
-        $currentUser = $this->securityHelper->getUser();
-
         $users = $this->userManager->findAll();
         $usersData = [];
         foreach ($users as $user) {
@@ -52,19 +49,18 @@ class AdminController
                 'createdAt' => $user->getCreatedAt(),
             ];
         }
-
-        $posts = $this->postManager->findAll();
-        $categories = $this->categoryManager->findAll();
-        $tags = $this->tagManager->findAll();
+        $offset = $this->request->getQuery('offset', 1);
+        $limit = $this->request->getQuery('limit', 10);
+        $page = intval($offset / $limit) + 1;
 
         return $this->twig->render('pages/admin/pages/index.html.twig', [
             'title' => 'MyBlog - Admin Dashboard',
             'route' => 'admin_index',
             'users' => $usersData,
-            'posts' => $posts,
-            'categories' => $categories,
-            'tags' => $tags,
-            'loggedUser' => $currentUser,
+            'posts' => $this->postManager->findAll($page, $limit),
+            'categories' => $this->categoryManager->findAll(),
+            'tags' => $this->tagManager->findAll(),
+            'user' => $this->securityHelper->getUser(),
             'message' => $message,
         ]);
     }
@@ -76,15 +72,11 @@ class AdminController
             header('Location: /');
         }
 
-        $currentUser = $this->securityHelper->getUser();
-
-        $categories = $this->categoryManager->findAll();
-
         return $this->twig->render('pages/admin/pages/category_admin.html.twig', [
             'title' => 'MyBlog - Admin Categories',
             'route' => 'admin_categories',
-            'categories' => $categories,
-            'loggedUser' => $currentUser,
+            'categories' => $this->categoryManager->findAll(),
+            'user' => $this->securityHelper->getUser(),
             'message' => $message,
         ]);
     }
@@ -113,16 +105,15 @@ class AdminController
         if (!$this->authMiddleware->isUser()) {
             header('Location: /');
         }
-
-        $currentUser = $this->securityHelper->getUser();
-
-        $posts = $this->postManager->findAll();
+        $offset = $this->request->getQuery('offset', 1);
+        $limit = $this->request->getQuery('limit', 10);
+        $page = intval($offset / $limit) + 1;
 
         return $this->twig->render('pages/admin/pages/post_admin.html.twig', [
             'title' => 'MyBlog - Admin Dashboard',
             'route' => 'admin_posts',
-            'posts' => $posts,
-            'loggedUser' => $currentUser,
+            'posts' => $this->postManager->findAll($page, $limit),
+            'user' => $this->securityHelper->getUser(),
             'message' => $message,
         ]);
     }
@@ -134,15 +125,11 @@ class AdminController
             header('Location: /');
         }
 
-        $currentUser = $this->securityHelper->getUser();
-
-        $tags = $this->tagManager->findAll();
-
         return $this->twig->render('pages/admin/pages/tag_admin.html.twig', [
             'title' => 'MyBlog - Admin Dashboard',
             'route' => 'admin_tags',
-            'tags' => $tags,
-            'loggedUser' => $currentUser,
+            'tags' => $this->tagManager->findAll(),
+            'user' => $this->securityHelper->getUser(),
             'message' => $message,
         ]);
     }
@@ -153,9 +140,9 @@ class AdminController
         if (!$this->authMiddleware->isUser()) {
             header('Location: /');
         }
-
-        $currentUser = $this->securityHelper->getUser();
-
+        $offset = $this->request->getQuery('offset', 1);
+        $limit = $this->request->getQuery('limit', 10);
+        $page = intval($offset / $limit) + 1;
         $users = $this->userManager->findAll();
         $usersData = [];
         foreach ($users as $user) {
@@ -172,7 +159,7 @@ class AdminController
             'title' => 'MyBlog - Admin Dashboard',
             'route' => 'admin_users',
             'users' => $usersData,
-            'loggedUser' => $currentUser,
+            'user' => $this->securityHelper->getUser(),
             'message' => $message,
         ]);
     }

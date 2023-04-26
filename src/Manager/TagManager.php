@@ -6,6 +6,7 @@ namespace App\Manager;
 
 use App\Config\DatabaseConnexion;
 use App\Model\TagModel;
+use App\ModelParameters\TagModelParameters;
 
 class TagManager
 {
@@ -31,11 +32,7 @@ class TagManager
 
             $tags = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                $tags[] = new TagModel(
-                    (int) $data['id'],
-                    $data['name'],
-                    $data['slug']
-                );
+                $tags[] = $this->createTagModelFromArray($data);
             }
 
             return $tags;
@@ -48,16 +45,11 @@ class TagManager
     {
         try {
             $sql = 'SELECT * FROM tag WHERE id = :id';
-
             $statement = $this->db->prepare($sql);
             $statement->execute(['id' => $id]);
-
-            if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                return new TagModel(
-                    (int) $data['id'],
-                    $data['name'],
-                    $data['slug']
-                );
+            $data = $statement->fetch(\PDO::FETCH_ASSOC);
+            if ($data) {
+                $this->createTagModelFromArray($data);
             }
 
             return null;
@@ -75,11 +67,7 @@ class TagManager
             $statement->execute(['slug' => $slug]);
 
             if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                return new TagModel(
-                    (int) $data['id'],
-                    $data['name'],
-                    $data['slug']
-                );
+                return $this->createTagModelFromArray($data);
             }
 
             return null;
@@ -100,5 +88,12 @@ class TagManager
         } catch (\PDOException $e) {
             echo $e->getMessage();
         }
+    }
+
+    private function createTagModelFromArray(array $data): TagModel
+    {
+        $tagModelParams = TagModelParameters::createFromData($data);
+
+        return new TagModel($tagModelParams);
     }
 }

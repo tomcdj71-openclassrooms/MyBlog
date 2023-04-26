@@ -116,11 +116,10 @@ class CategoryManager
     {
         try {
             $sql = 'SELECT COUNT(id) AS nb_categories FROM category';
-
             $statement = $this->db->prepare($sql);
             $statement->execute();
-
-            if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
+            $data = $statement->fetch(\PDO::FETCH_ASSOC);
+            if ($data) {
                 return (int) $data['nb_categories'];
             }
         } catch (\PDOException $e) {

@@ -137,17 +137,17 @@ class SecurityHelper
     public function generateCsrfToken(string $key): string
     {
         $token = bin2hex(random_bytes(32));
-        $csrf_tokens = $this->session->get('csrf_tokens') ?? [];
-        $csrf_tokens[$key] = $token;
-        $this->session->set('csrf_tokens', $csrf_tokens);
+        $csrfTokens = $this->session->get('csrf_tokens') ?? [];
+        $csrfTokens[$key] = $token;
+        $this->session->set('csrf_tokens', $csrfTokens);
 
         return $token;
     }
 
     public function checkCsrfToken(string $key, string $token): bool
     {
-        $csrf_tokens = $this->session->get('csrf_tokens');
-        $expected = $csrf_tokens[$key] ?? null;
+        $csrfTokens = $this->session->get('csrf_tokens');
+        $expected = $csrfTokens[$key] ?? null;
         if (null === $expected) {
             throw new \InvalidArgumentException('No CSRF token found for the given key.');
         }

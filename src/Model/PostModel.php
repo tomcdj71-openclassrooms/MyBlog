@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Model;
 
+use App\ModelParameters\PostModelParameters;
+
 class PostModel
 {
     private $id;
@@ -20,34 +22,21 @@ class PostModel
     private array $tags;
     private array $comments;
 
-    public function __construct(
-        int $id,
-        string $title,
-        string $content,
-        string $chapo,
-        string $createdAt,
-        string $updatedAt,
-        bool $isEnabled,
-        ?string $featuredImage,
-        UserModel $author = null,
-        CategoryModel $category = null,
-        string $slug,
-        array $tags,
-        array $comments
-    ) {
-        $this->id = $id;
-        $this->title = $title;
-        $this->content = $content;
-        $this->chapo = $chapo;
-        $this->createdAt = $createdAt;
-        $this->updatedAt = $updatedAt;
-        $this->isEnabled = $isEnabled;
-        $this->featuredImage = $featuredImage;
-        $this->author = $author;
-        $this->category = $category;
-        $this->slug = $slug;
-        $this->tags = $tags;
-        $this->comments = $comments;
+    public function __construct(PostModelParameters $postModelParams)
+    {
+        $this->id = $postModelParams->id;
+        $this->title = $postModelParams->title;
+        $this->author = $postModelParams->author;
+        $this->content = $postModelParams->content;
+        $this->chapo = $postModelParams->chapo;
+        $this->createdAt = $postModelParams->createdAt;
+        $this->updatedAt = $postModelParams->updatedAt;
+        $this->isEnabled = $postModelParams->isEnabled;
+        $this->featuredImage = $postModelParams->featuredImage;
+        $this->category = $postModelParams->category;
+        $this->slug = $postModelParams->slug;
+        $this->tags = $postModelParams->tags;
+        $this->comments = $postModelParams->comments;
     }
 
     public function __toString(): string

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Model;
 
+use App\ModelParameters\UserModelParameters;
+
 class UserModel
 {
     private $id;
@@ -23,40 +25,24 @@ class UserModel
     private $linkedin;
     private $github;
 
-    public function __construct(
-        int $id,
-        string $username,
-        string $email,
-        string $password,
-        string $created_at,
-        string $role,
-        string $avatar = null,
-        string $bio = null,
-        string $remember_me_token = null,
-        string $remember_me_expires_at = null,
-        string $firstName = null,
-        string $lastName = null,
-        string $twitter = null,
-        string $facebook = null,
-        string $linkedin = null,
-        string $github = null
-    ) {
-        $this->id = $id;
-        $this->username = $username;
-        $this->email = $email;
-        $this->password = $password;
-        $this->created_at = $created_at;
-        $this->role = $role;
-        $this->avatar = $avatar ?? null;
-        $this->bio = $bio ?? null;
-        $this->remember_me_token = $remember_me_token ?? null;
-        $this->remember_me_expires_at = $remember_me_expires_at ?? null;
-        $this->firstName = $firstName ?? null;
-        $this->lastName = $lastName ?? null;
-        $this->twitter = $twitter ?? null;
-        $this->facebook = $facebook ?? null;
-        $this->linkedin = $linkedin ?? null;
-        $this->github = $github ?? null;
+    public function __construct(UserModelParameters $userModelParams)
+    {
+        $this->id = $userModelParams->id;
+        $this->username = $userModelParams->username;
+        $this->email = $userModelParams->email;
+        $this->password = $userModelParams->password;
+        $this->created_at = $userModelParams->createdAt;
+        $this->role = $userModelParams->role;
+        $this->avatar = $userModelParams->avatar;
+        $this->bio = $userModelParams->bio;
+        $this->remember_me_token = $userModelParams->rememberMeToken;
+        $this->remember_me_expires_at = $userModelParams->rememberMeExpiresAt;
+        $this->firstName = $userModelParams->firstName;
+        $this->lastName = $userModelParams->lastName;
+        $this->twitter = $userModelParams->twitter;
+        $this->facebook = $userModelParams->facebook;
+        $this->linkedin = $userModelParams->linkedin;
+        $this->github = $userModelParams->github;
     }
 
     public function getId(): int

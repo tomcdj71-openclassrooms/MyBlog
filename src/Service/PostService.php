@@ -29,18 +29,18 @@ class PostService
         $userPostsArray = [];
         foreach ($userPosts as $post) {
             $numberOfComments = isset($comments['number_of_comments']) ? $comments['number_of_comments'] : 0;
-            $tags = $post->getTags();
-            $tagNames = array_map(function ($tag) {
-                return $tag['name'];
-            }, $tags);
+            $tags = array_map(function ($tag) {
+                return $tag->getName();
+            }, $post->getTags());
             $userPostsArray[] = [
+                'id' => $post->getId(),
                 'title' => $post->getTitle(),
                 'slug' => $post->getSlug(),
                 'created_at' => $post->getCreatedAt(),
                 'is_enabled' => $post->getIsEnabled(),
                 'category' => $post->getCategory()->getName(),
                 'comments' => $numberOfComments.' commentaire(s)',
-                'tags' => implode(', ', $tagNames),
+                'tags' => $tags,
                 'type' => 'myPosts',
             ];
         }
