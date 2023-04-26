@@ -23,8 +23,8 @@ class SecurityHelper
         $connexion = new DatabaseConnexion();
         $this->session = $session;
         $this->userManager = new UserManager($connexion);
-        $this->registerValidator = new RegisterFormValidator();
-        $this->loginValidator = new LoginFormValidator($this->userManager);
+        $this->registerValidator = new RegisterFormValidator($this);
+        $this->loginValidator = new LoginFormValidator($this->userManager, $this);
     }
 
     public function register(array $postData): bool

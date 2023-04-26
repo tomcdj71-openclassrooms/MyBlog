@@ -87,7 +87,11 @@ class AdminController
         if (!$this->authMiddleware->isUser()) {
             header('Location: /');
         }
-        $results = $this->commentManager->findAll(1, 10);
+
+        $offset = $this->request->getQuery('offset', 1);
+        $limit = $this->request->getQuery('limit', 10);
+        $page = intval($offset / $limit) + 1;
+        $results = $this->commentManager->findAll($page, $limit);
 
         return $this->twig->render('pages/admin/pages/comment_admin.html.twig', [
             'title' => 'MyBlog - Admin Dashboard',

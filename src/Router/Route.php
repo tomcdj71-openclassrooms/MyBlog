@@ -22,7 +22,7 @@ class Route
     {
         return [
             'home' => ['/', HomeController::class, 'index', 'GET|POST'],
-            'not_found' => ['404', ErrorController::class, 'not_found', 'GET'],
+            'not_found' => ['404', ErrorController::class, 'notFound', 'GET'],
             'blog' => ['/blog', BlogController::class, 'blogIndex', 'GET'],
             'blog_post' => ['/blog/post/{slug}', BlogController::class, 'blogPost', 'GET|POST'],
             'blog_category' => ['/blog/category/{slug}', BlogController::class, 'blogCategory', 'GET'],

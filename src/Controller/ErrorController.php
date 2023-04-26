@@ -10,14 +10,13 @@ use App\Router\Session;
 
 class ErrorController
 {
-    protected $twig;
+    protected TwigHelper $twig;
     private $data;
-    private $session;
+    private Session $session;
 
     public function __construct(Container $container)
     {
-        $this->twig = $container->get(TwigHelper::class);
-        $this->session = $container->get(Session::class);
+        $container->injectProperties($this);
     }
 
     /**
@@ -25,7 +24,7 @@ class ErrorController
      *
      * @param null $message
      */
-    public function error_page()
+    public function errorPage()
     {
         $this->resetData();
         // switch case to display the correct error page

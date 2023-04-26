@@ -45,9 +45,13 @@ class BlogController
     public function blogIndex($message = null)
     {
         $data = $this->resetData();
-        $posts = $this->postManager->findAll();
+
+        $offset = $this->serverRequest->getQuery('offset', 1);
+        $limit = $this->serverRequest->getQuery('limit', 10);
+        $page = intval($offset / $limit) + 1;
+        $posts = $this->postManager->findAll($page, $limit);
         $data['message'] = $message;
-        $data['posts'] = $posts;
+        $data['posts'] = $posts['posts'];
         $this->twig->render('pages/blog/index.html.twig', $data);
     }
 
@@ -80,13 +84,13 @@ class BlogController
             ];
             list($errors, $message) = $this->commentService->handleCommentPostRequest($post, $postData);
             if (empty($errors)) {
-                $csrf_token = $this->securityHelper->generateCsrfToken('comment');
+                $csrfToken = $this->securityHelper->generateCsrfToken('comment');
                 $data['title'] = 'MyBlog - Blog Post';
                 $data['route'] = 'blog';
                 $data['user'] = $user;
                 $data['message'] = 'Comment posted successfully';
                 $data['errors'] = $errors;
-                $data['csrf_token'] = $csrf_token;
+                $data['csrf_token'] = $csrfToken;
                 $data['post'] = $post;
                 $data['comments'] = $this->commentManager->findAllByPost($post->getId());
                 $data['loggedUser'] = $user;
@@ -95,12 +99,12 @@ class BlogController
             }
             $message = implode(', ', $errors); // Combine error messages if there are multiple errors
         }
-        $csrf_token = $this->securityHelper->generateCsrfToken('comment');
+        $csrfToken = $this->securityHelper->generateCsrfToken('comment');
         $data['title'] = 'MyBlog - Blog Post';
         $data['route'] = 'blog';
         $data['user'] = $user;
         $data['message'] = $message;
-        $data['csrf_token'] = $csrf_token;
+        $data['csrf_token'] = $csrfToken;
         $data['post'] = $post;
         $data['comments'] = $this->commentManager->findAllByPost($post->getId());
         $data['loggedUser'] = $user;

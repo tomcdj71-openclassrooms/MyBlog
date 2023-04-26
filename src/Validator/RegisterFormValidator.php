@@ -2,39 +2,30 @@
 
 namespace App\Validator;
 
-class RegisterFormValidator
+class RegisterFormValidator extends BaseValidator
 {
+    private $securityHelper;
+
+    public function __construct($securityHelper)
+    {
+        $this->securityHelper = $securityHelper;
+    }
+
     public function validate($data)
     {
-        $errors = [];
-        $valid = true;
-
-        if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            $valid = false;
-            $errors['email'] = 'Please enter a valid email address!';
-        }
-
-        if (!isset($data['username']) || empty($data['username'])) {
-            $valid = false;
-            $errors['username'] = 'Please enter a username.';
-        }
-
-        if (!isset($data['password']) || empty($data['password'])) {
-            $valid = false;
-            $errors['password'] = 'Please enter a password.';
-        }
-
-        if (!isset($data['passwordConfirm']) || empty($data['passwordConfirm'])) {
-            $valid = false;
-            $errors['passwordConfirm'] = 'Please confirm your password.';
-        } elseif (isset($data['password']) && $data['password'] !== $data['passwordConfirm']) {
-            $valid = false;
-            $errors['passwordConfirm'] = 'The password confirmation does not match.';
-        }
-
-        return [
-            'valid' => $valid,
-            'errors' => $errors,
+        $validationRules = [
+            'email' => ['type' => 'email', 'errorMsg' => 'Please enter a valid email address!', 'required' => true],
+            'username' => ['type' => 'empty', 'errorMsg' => 'Please enter a username.', 'required' => true],
+            'password' => ['type' => 'empty', 'errorMsg' => 'Please enter a password.', 'required' => true],
+            'passwordConfirm' => ['type' => 'confirm', 'compareField' => 'password', 'errorMsg' => 'The password confirmation does not match.', 'required' => true],
+            'csrf_token' => ['type' => 'csrf', 'errorMsg' => 'Invalid CSRF token.', 'required' => true],
         ];
+
+        return $this->validateData($data, $validationRules);
+    }
+
+    protected function validateCsrfToken($token, $errorMsg)
+    {
+        return $this->securityHelper->checkCsrfToken('register', $token) ? '' : $errorMsg;
     }
 }

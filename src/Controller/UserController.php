@@ -56,17 +56,16 @@ class UserController
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrf_token', FILTER_SANITIZE_SPECIAL_CHARS)) {
             list($errors, $message) = $this->profileService->handleProfilePostRequest($user);
         }
-        $csrf_token = $this->securityHelper->generateCsrfToken('editProfile');
+        $csrfToken = $this->securityHelper->generateCsrfToken('editProfile');
         $userPostsData = $this->postService->getUserPostsData();
         $hasPost = ($userPostsData['total'] > 0) ? true : false;
-
         $data = [
             'title' => 'MyBlog - Profile',
             'route' => 'profile',
             'user' => $user,
             'message' => $message,
             'errors' => $errors,
-            'csrf_token' => $csrf_token,
+            'csrf_token' => $csrfToken,
             'session' => $this->session,
             'hasPost' => $hasPost,
         ];
@@ -89,21 +88,22 @@ class UserController
             // If there is an issue with the remember_me_token (expired or invalid), remove it
             setcookie('remember_me_token', '', time() - 3600, '/', '', false, true);
         }
-        $this->authenticate();
         if ($this->authMiddleware->isUserOrAdmin()) {
             return $this->request->redirectToRoute('blog');
         }
-        if ('POST' === $_SERVER['REQUEST_METHOD']) {
+        if ('POST' === $this->serverRequest->getRequestMethod()) {
             $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
             $password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS);
             $remember = filter_input(INPUT_POST, 'remember', FILTER_SANITIZE_SPECIAL_CHARS);
             $remember = $remember && 'true' === $remember ? true : false;
+            $csrfToken = $this->securityHelper->generateCsrfToken('login');
             $postData = [
                 'email' => $email,
                 'password' => $password,
                 'remember' => $remember,
+                'csrf_token' => $csrfToken,
             ];
-            $loginFV = new LoginFormValidator($this->userManager);
+            $loginFV = new LoginFormValidator($this->userManager, $this->securityHelper);
             $errors = $loginFV->validate($postData, $postData['remember']);
             if (empty($errors)) {
                 $user = $this->securityHelper->authenticate($postData);
@@ -119,10 +119,13 @@ class UserController
 
             return $this->request->redirectToRoute('profile');
         }
+        $csrfToken = $this->securityHelper->generateCsrfToken('login');
+
         $data = [
             'title' => 'MyBlog - Connexion',
             'route' => 'login',
             'message' => $message,
+            'csrf_token' => $csrfToken,
         ];
 
         $this->twig->render('pages/security/login.html.twig', $data);
@@ -140,11 +143,13 @@ class UserController
         }
 
         if ('POST' === $this->serverRequest->getRequestMethod()) {
+            $csrfToken = $this->securityHelper->generateCsrfToken('register');
             $postData = [
                 'email' => filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL),
                 'username' => filter_input(INPUT_POST, 'username', FILTER_SANITIZE_SPECIAL_CHARS),
                 'password' => filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS),
                 'passwordConfirm' => filter_input(INPUT_POST, 'passwordConfirm', FILTER_SANITIZE_SPECIAL_CHARS),
+                'csrf_token' => $csrfToken,
             ];
 
             $registerFV = new RegisterFormValidator($this->securityHelper);
@@ -157,21 +162,24 @@ class UserController
                 }
                 $errors[] = 'Registration failed. Please try again.';
             }
-
+            $csrfToken = $this->securityHelper->generateCsrfToken('register');
             $data = [
                 'title' => 'MyBlog - Creer un compte',
                 'route' => 'register',
                 'message' => $message,
                 'session' => $this->session,
+                'csrf_token' => $csrfToken,
             ];
 
             $this->twig->render('pages/security/register.html.twig', array_merge($data, ['errors' => $errors]));
         } else {
+            $csrfToken = $this->securityHelper->generateCsrfToken('register');
             $data = [
                 'title' => 'MyBlog - Creer un compte',
                 'route' => 'register',
                 'message' => $message,
                 'session' => $this->session,
+                'csrf_token' => $csrfToken,
             ];
             $this->twig->render('pages/security/register.html.twig', $data);
         }

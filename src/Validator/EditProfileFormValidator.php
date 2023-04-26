@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Validator;
 
 class EditProfileFormValidator
@@ -16,56 +18,48 @@ class EditProfileFormValidator
         $valid = true;
         $errors = [];
 
-        $twitterRegex = '/^(https?:\/\/)?(www\.)?twitter\.com\/([a-zA-Z0-9_]{1,15})$/';
-        $facebookRegex = '/^(https?:\/\/)?(www\.)?facebook\.com\/([a-zA-Z0-9_]{1,15})$/';
-        $githubRegex = '/^(https?:\/\/)?(www\.)?github\.com\/([a-zA-Z0-9_]{1,15})$/';
-        $linkedinRegex = '/^(https?:\/\/)?(www\.)?linkedin\.com\/([a-zA-Z0-9_]{1,15})$/';
+        $urlRegex = [
+            'twitter' => '/^(https?:\/\/)?(www\.)?twitter\.com\/([a-zA-Z0-9_]{1,15})$/',
+            'facebook' => '/^(https?:\/\/)?(www\.)?facebook\.com\/([a-zA-Z0-9_]{1,15})$/',
+            'github' => '/^(https?:\/\/)?(www\.)?github\.com\/([a-zA-Z0-9_]{1,15})$/',
+            'linkedin' => '/^(https?:\/\/)?(www\.)?linkedin\.com\/([a-zA-Z0-9_]{1,15})$/',
+        ];
 
-        if (isset($data['email']) && !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            $valid = false;
-            $errors['email'] = 'Please enter a valid email address!';
-        }
+        $validationRules = [
+            'email' => ['type' => 'email', 'errorMsg' => 'Please enter a valid email address!'],
+            'firstName' => ['type' => 'length', 'length' => 60, 'errorMsg' => 'Le prénom ne doit pas dépasser 60 caractères.'],
+            'lastName' => ['type' => 'length', 'length' => 60, 'errorMsg' => 'Le nom de famille ne doit pas dépasser 60 caractères.'],
+            'bio' => ['type' => 'length', 'length' => 500, 'errorMsg' => 'La biographie ne peut pas dépasser 500 caractères.'],
+        ];
 
-        if (isset($data['firstName']) && strlen($data['firstName']) > 60) {
-            $valid = false;
-            $errors['firstName'] = 'The first name may not be greater than 60 characters.';
-        }
+        foreach ($validationRules as $field => $rule) {
+            if (isset($data[$field])) {
+                switch ($rule['type']) {
+                    case 'email':
+                        if (!filter_var($data[$field], FILTER_VALIDATE_EMAIL)) {
+                            $valid = false;
+                            $errors[$field] = $rule['errorMsg'];
+                        }
 
-        if (isset($data['lastName']) && strlen($data['lastName']) > 60) {
-            $valid = false;
-            $errors['lastName'] = 'The last name may not be greater than 60 characters.';
-        }
+                        break;
 
-        if (isset($data['bio']) && strlen($data['bio']) > 500) {
-            $valid = false;
-            $errors['bio'] = 'The bio may not be greater than 500 characters.';
-        }
+                    case 'length':
+                        if (strlen($data[$field]) > $rule['length']) {
+                            $valid = false;
+                            $errors[$field] = $rule['errorMsg'];
+                        }
 
-        if (isset($data['twitter']) && !empty($data['twitter'])) {
-            if (preg_match($twitterRegex, $data['twitter'], $matches)) {
-                $parts = explode('/', $matches[3]);
-                $data['twitter'] = end($parts);
+                        break;
+                }
             }
         }
 
-        if (isset($data['facebook']) && !empty($data['facebook'])) {
-            if (preg_match($facebookRegex, $data['facebook'], $matches)) {
-                $parts = explode('/', $matches[3]);
-                $data['facebook'] = end($parts);
-            }
-        }
-
-        if (isset($data['github']) && !empty($data['github'])) {
-            if (preg_match($githubRegex, $data['github'], $matches)) {
-                $parts = explode('/', $matches[3]);
-                $data['github'] = end($parts);
-            }
-        }
-
-        if (isset($data['linkedin']) && !empty($data['linkedin'])) {
-            if (preg_match($linkedinRegex, $data['linkedin'], $matches)) {
-                $parts = explode('/', $matches[3]);
-                $data['linkedin'] = end($parts);
+        foreach ($urlRegex as $key => $regex) {
+            if (isset($data[$key]) && !empty($data[$key])) {
+                if (preg_match($regex, $data[$key], $matches)) {
+                    $parts = explode('/', $matches[3]);
+                    $data[$key] = end($parts);
+                }
             }
         }
 
@@ -86,6 +80,14 @@ class EditProfileFormValidator
             'valid' => $valid,
             'errors' => $errors,
             'data' => $data,
+        ];
+    }
+
+    protected function validateCsrfToken($token, $errorMsg)
+    {
+        return [
+            'valid' => $this->securityHelper->checkCsrfToken('comment', $token),
+            'errorMsg' => $errorMsg,
         ];
     }
 }

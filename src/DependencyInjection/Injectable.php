@@ -54,9 +54,7 @@ class Injectable
         $container->set(MailerInterface::class, function (Container $container) {
             return new Mailer($container->get(CustomSmtpTransport::class));
         });
-
         $container->set(MailerService::class);
-
         $container->set(Request::class, function (Container $container) {
             return new Request($container);
         });

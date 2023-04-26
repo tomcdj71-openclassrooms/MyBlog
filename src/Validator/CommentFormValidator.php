@@ -2,7 +2,7 @@
 
 namespace App\Validator;
 
-class CommentFormValidator
+class CommentFormValidator extends BaseValidator
 {
     private $securityHelper;
 
@@ -13,33 +13,19 @@ class CommentFormValidator
 
     public function validate($data)
     {
-        $errors = [];
-        $valid = true;
+        $validationRules = [
+            'csrf_token' => ['type' => 'csrf', 'errorMsg' => 'Invalid CSRF token.', 'required' => true],
+            'content' => ['type' => 'empty', 'errorMsg' => 'Please enter a comment.', 'required' => true],
+        ];
 
-        if (!isset($data['csrf_token'])) {
-            $valid = false;
-            $errors['csrf_token'] = 'CSRF token missing.';
-        } elseif (!$this->securityHelper->checkCsrfToken('comment', $data['csrf_token'])) {
-            $valid = false;
-            $errors['csrf_token'] = 'Invalid CSRF token.';
-        }
+        return $this->validateData($data, $validationRules);
+    }
 
-        if (!isset($data['content']) || empty($data['content'])) {
-            $valid = false;
-            $errors['content'] = 'Please enter a comment.';
-        }
-
-        if (empty($errors)) {
-            return [
-                'valid' => true,
-                'data' => $data,
-            ];
-        }
-
+    protected function validateCsrfToken($token, $errorMsg)
+    {
         return [
-            'valid' => false,
-            'errors' => $errors,
-            'data' => [],
+            'valid' => $this->securityHelper->checkCsrfToken('comment', $token),
+            'errorMsg' => $errorMsg,
         ];
     }
 }
