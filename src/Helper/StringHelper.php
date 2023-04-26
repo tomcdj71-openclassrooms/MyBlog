@@ -42,13 +42,13 @@ class StringHelper
     {
         // Ensure that the 'intl' extension is loaded.
         if (!extension_loaded('intl')) {
-            throw new \Exception("The 'intl' extension is required for slug generation.");
+            throw new \Exception("L'extension 'intl' est requise pour la génération de slug.");
         }
         // Normalize the string (remove accents, diacritics, etc.).
         $string = $this->normalizer->normalize($string, \Normalizer::FORM_D);
 
         if (false === $string) {
-            throw new \Exception('An error occurred while normalizing the string.');
+            throw new \Exception("Une erreur s'est produite lors de la normalisation de la chaîne.");
         }
 
         // Remove non-letter or non-digit characters, except for spaces.

@@ -19,20 +19,20 @@ class ImageHelper
         if (!is_dir($this->uploadDir)) {
             mkdir($this->uploadDir, 0777, true);
 
-            throw new \Exception('Upload directory does not exist: '.$this->uploadDir);
+            throw new \Exception("Le répertoire de téléchargement n'existe pas: ".$this->uploadDir);
         }
 
         if (!is_writable($this->uploadDir)) {
             chmod($this->uploadDir, 0777);
 
-            throw new \Exception('Upload directory is not writable: '.$this->uploadDir);
+            throw new \Exception("Le répertoire de téléchargement n'est pas accessible en écriture:".$this->uploadDir);
         }
     }
 
     public function uploadImage($file, $width, $height)
     {
         if (!$this->detectFileType($file['tmp_name'])) {
-            return 'Error: Only .jpg and .png file types are allowed.';
+            return 'Erreur: Seuls les types de fichiers .jpg et .png sont autorisés.';
         }
 
         $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
@@ -50,7 +50,7 @@ class ImageHelper
             return $filename;
         }
 
-        return 'Error: Could not upload the file.';
+        return 'Erreur: impossible de télécharger le fichier.';
     }
 
     private function detectFileType($file)

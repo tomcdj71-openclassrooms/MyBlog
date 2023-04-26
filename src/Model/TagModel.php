@@ -19,11 +19,6 @@ class TagModel
         $this->slug = $tagModelParams->slug;
     }
 
-    public function __toString(): string
-    {
-        return json_encode($this->toArray());
-    }
-
     public function getId(): int
     {
         return $this->id;

@@ -70,10 +70,9 @@ class BlogController
         if (null === $post) {
             header('Location: /404');
         }
-        if (null === $this->securityHelper->getUser()) {
+        $user = $this->securityHelper->getUser();
+        if (null === $user) {
             $user = null;
-        } else {
-            $user = $this->securityHelper->getUser();
         }
         if ('POST' === $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'content') && filter_input(INPUT_POST, 'csrf_token')) {
             $postData = [

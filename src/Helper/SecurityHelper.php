@@ -116,17 +116,17 @@ class SecurityHelper
     public function checkRememberMeToken(): ?UserModel
     {
         if (!isset($_COOKIE['remember_me_token']) || empty($_COOKIE['remember_me_token'])) {
-            throw new \InvalidArgumentException('Remember me token is not set or empty.');
+            throw new \InvalidArgumentException("Le jeton 'Remember Me' n'est pas défini ou vide.");
         }
         $token = $this->session->getCookie('remember_me_token');
         $user = $this->userManager->findOneBy(['remember_me_token' => $token]);
         if (!$user) {
-            throw new \Exception('No user found.');
+            throw new \Exception('Aucun utilisateur trouvé.');
         }
         $expiresAt = $user->getRememberMeExpires();
         $expiresAt = strtotime($expiresAt);
         if ($expiresAt < time()) {
-            throw new \Exception('Token expired.');
+            throw new \Exception('Le jeton a expiré.');
         }
         $this->session->set('user', $user);
         header('Location: /blog');
@@ -149,7 +149,7 @@ class SecurityHelper
         $csrfTokens = $this->session->get('csrf_tokens');
         $expected = $csrfTokens[$key] ?? null;
         if (null === $expected) {
-            throw new \InvalidArgumentException('No CSRF token found for the given key.');
+            throw new \InvalidArgumentException('Aucun jeton CSRF trouvé pour la clé donnée.');
         }
 
         return hash_equals($expected, $token);

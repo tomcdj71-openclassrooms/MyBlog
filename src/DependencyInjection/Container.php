@@ -66,7 +66,7 @@ class Container
         $reflector = new \ReflectionClass($concrete);
         // check if class is instantiable
         if (!$reflector->isInstantiable()) {
-            throw new \Exception("Class {$concrete} is not instantiable");
+            throw new \Exception("La classe {$concrete} n'est pas instantiable");
         }
 
         // get class constructor
@@ -110,7 +110,7 @@ class Container
                     if (isset($this->instances[$paramName])) {
                         $dependencies[] = $this->get($paramName);
                     } else {
-                        throw new \Exception("Can not resolve class dependency {$parameter->name}");
+                        throw new \Exception("Impossible de résoudre la dépendance de classe {$parameter->name}");
                     }
                 }
             } else {
@@ -139,7 +139,7 @@ class Container
                 $property->setAccessible(true);
                 $property->setValue($object, $dependencyInstance);
             } catch (\Exception $e) {
-                throw new \Exception("Can not inject property {$property->name} of class {$reflectionClass->name}");
+                throw new \Exception("Ne peut pas injecter la propriété {$property->name} de la classe {$reflectionClass->name}");
             }
         }
     }

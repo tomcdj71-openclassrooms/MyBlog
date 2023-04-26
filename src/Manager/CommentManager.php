@@ -41,7 +41,8 @@ class CommentManager
             $statement = $this->database->prepare($sql);
             $statement->bindValue(':id', $commentId, \PDO::PARAM_INT);
             $statement->execute();
-            if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
+            $data = $statement->fetch(\PDO::FETCH_ASSOC);
+            if ($data) {
                 return $this->createCommentModelFromArray($data);
             }
         } catch (\PDOException $e) {

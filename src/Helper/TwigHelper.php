@@ -74,7 +74,7 @@ class TwigHelper
             }, $path);
         }
 
-        throw new \Exception(sprintf('Route "%s" not found', $name));
+        throw new \Exception(sprintf('Route "%s" introuvable', $name));
     }
 
     /**

@@ -49,9 +49,9 @@ class HomeController
                     $postData['message']
                 );
             } catch (\Exception $e) {
-                $message = 'An error occurred while sending your message. Please try again later.';
+                $message = "Une erreur s'est produite lors de l'envoi de votre message. Veuillez réessayer plus tard.";
             }
-            $message = 'Your message has been sent successfully.';
+            $message = 'Votre message a été envoyé avec succès.';
         }
         $data = [
             'title' => 'MyBlog - Portfolio',

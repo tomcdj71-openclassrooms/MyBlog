@@ -39,29 +39,6 @@ class PostModel
         $this->comments = $postModelParams->comments;
     }
 
-    public function __toString(): string
-    {
-        return json_encode($this->__toArray());
-    }
-
-    public function __toArray(): array
-    {
-        return [
-            'id' => $this->id,
-            'title' => $this->title,
-            'content' => $this->content,
-            'chapo' => $this->chapo,
-            'createdAt' => $this->createdAt,
-            'updatedAt' => $this->updatedAt,
-            'isEnabled' => $this->isEnabled,
-            'featuredImage' => $this->featuredImage,
-            'author' => $this->author,
-            'category' => $this->category,
-            'slug' => $this->slug,
-            'tags' => $this->tags,
-        ];
-    }
-
     public function getId(): int
     {
         return $this->id;

@@ -8,7 +8,7 @@ use App\DependencyInjection\Container;
 use App\Helper\TwigHelper;
 use App\Router\Session;
 
-class ErrorController
+class ErreurController
 {
     protected TwigHelper $twig;
     private $data;
@@ -30,58 +30,58 @@ class ErrorController
         // switch case to display the correct error page
         switch (http_response_code()) {
             case 404:
-                $this->data['title'] = 'Error 404 - Page not found';
+                $this->data['title'] = 'Erreur 404 - Page non trouvée';
                 $this->data['message_title'] = '404';
-                $this->data['message'] = 'Page not found';
-                $this->data['explanations'] = 'The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.';
+                $this->data['message'] = 'Page non trouvée';
+                $this->data['explanations'] = 'La page que vous recherchez a peut-être été supprimée, son nom a changé ou est temporairement indisponible.';
 
                 break;
 
             case 403:
-                $this->data['title'] = 'Error 403 - Forbidden';
+                $this->data['title'] = 'Erreur 403 - Interdit';
                 $this->data['message_title'] = '403';
-                $this->data['message'] = 'Forbidden';
-                $this->data['explanations'] = 'You do not have permission to access this page.';
+                $this->data['message'] = 'Interdit';
+                $this->data['explanations'] = "Vous n'avez pas la permission d'accéder à cette page.";
 
                 break;
 
             case 500:
-                $this->data['title'] = 'Error 500 - Internal Server Error';
+                $this->data['title'] = 'Erreur 500 - Erreur interne du serveur';
                 $this->data['message_title'] = '500';
-                $this->data['message'] = 'Internal Server Error';
-                $this->data['explanations'] = 'The server encountered an internal error or misconfiguration and was unable to complete your request.';
+                $this->data['message'] = 'Erreur interne du serveur';
+                $this->data['explanations'] = "Le serveur a rencontré une erreur interne ou une mauvaise configuration et n'a pas pu traiter votre demande.";
 
                 break;
 
             case 400:
-                $this->data['title'] = 'Error 400 - Bad Request';
+                $this->data['title'] = 'Erreur 400 - Mauvaise demande';
                 $this->data['message_title'] = '400';
-                $this->data['message'] = 'Bad Request';
-                $this->data['explanations'] = 'The server did not understand the request.';
+                $this->data['message'] = 'Mauvaise demande';
+                $this->data['explanations'] = "Le serveur n'a pas compris la requête.";
 
                 break;
 
             case 401:
-                $this->data['title'] = 'Error 401 - Unauthorized';
+                $this->data['title'] = 'Erreur 401 - Non autorisé';
                 $this->data['message_title'] = '401';
-                $this->data['message'] = 'Unauthorized';
-                $this->data['explanations'] = 'This page requires authentication.';
+                $this->data['message'] = 'Non autorisé';
+                $this->data['explanations'] = 'Cette page nécessite une authentification.';
 
                 break;
 
             case 405:
-                $this->data['title'] = 'Error 405 - Method Not Allowed';
+                $this->data['title'] = 'Erreur 405 - Méthode Non Autorisée';
                 $this->data['message_title'] = '405';
-                $this->data['message'] = 'Method Not Allowed';
-                $this->data['explanations'] = 'The method specified in the request is not allowed for the resource identified by the request URI.';
+                $this->data['message'] = 'Méthode Non Autorisée';
+                $this->data['explanations'] = "La méthode spécifiée dans la demande n'est pas autorisée pour la ressource identifiée par l'URI de la demande.";
 
                 break;
 
             default:
-                $this->data['title'] = 'Error';
-                $this->data['message_title'] = 'Error';
-                $this->data['message'] = 'Error';
-                $this->data['explanations'] = 'An error has occurred.';
+                $this->data['title'] = 'Erreur';
+                $this->data['message_title'] = 'Erreur';
+                $this->data['message'] = 'Erreur';
+                $this->data['explanations'] = 'Une erreur est survenue.';
 
                 break;
         }

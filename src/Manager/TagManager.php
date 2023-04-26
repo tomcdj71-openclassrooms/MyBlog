@@ -62,7 +62,8 @@ class TagManager
             $sql = 'SELECT * FROM tag WHERE slug = :slug';
             $statement = $this->database->prepare($sql);
             $statement->execute(['slug' => $slug]);
-            if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
+            $data = $statement->fetch(\PDO::FETCH_ASSOC);
+            if ($data) {
                 return $this->createTagModelFromArray($data);
             }
 

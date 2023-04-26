@@ -27,7 +27,7 @@ class Router
         $matchedRoute = $this->matchRoute($parsedUrl['path']);
 
         if (!$matchedRoute) {
-            throw new RouterException('No matching route found');
+            throw new RouterException('Aucune route trouvée');
         }
 
         $controllerClass = $matchedRoute[1];

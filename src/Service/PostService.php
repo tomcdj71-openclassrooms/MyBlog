@@ -27,6 +27,7 @@ class PostService
         $userPostsData = $this->postManager->findUserPosts($user->getId(), $page, $limit);
         $userPosts = $userPostsData['posts'];
         $userPostsArray = [];
+        $comments = '';
         foreach ($userPosts as $post) {
             $numberOfComments = isset($comments['number_of_comments']) ? $comments['number_of_comments'] : 0;
             $tags = array_map(function ($tag) {

@@ -37,7 +37,7 @@ class ServerRequest extends Request
             return $method;
         }
 
-        throw new \Exception('Unable to determine HTTP request method.');
+        throw new \Exception('Impossible de déterminer la méthode de requête HTTP.');
     }
 
     public function getUri(): string

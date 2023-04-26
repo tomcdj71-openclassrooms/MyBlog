@@ -27,7 +27,8 @@ class CategoryManager
             $sql = 'SELECT * FROM category WHERE id = :id';
             $statement = $this->database->prepare($sql);
             $statement->execute(['id' => $categoryId]);
-            if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
+            $data = $statement->fetch(\PDO::FETCH_ASSOC);
+            if ($data) {
                 return new CategoryModel(
                     (int) $data['id'],
                     $data['name'],
@@ -45,7 +46,8 @@ class CategoryManager
             $sql = "SELECT * FROM category WHERE {$field} = :value";
             $statement = $this->database->prepare($sql);
             $statement->execute(['value' => $value]);
-            if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
+            $data = $statement->fetch(\PDO::FETCH_ASSOC);
+            if ($data) {
                 return new CategoryModel(
                     (int) $data['id'],
                     $data['name'],
@@ -128,7 +130,8 @@ class CategoryManager
                     WHERE category.id = :id';
             $statement = $this->database->prepare($sql);
             $statement->execute(['id' => $postId]);
-            if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
+            $data = $statement->fetch(\PDO::FETCH_ASSOC);
+            if ($data) {
                 return (int) $data['nb_posts'];
             }
         } catch (\PDOException $e) {

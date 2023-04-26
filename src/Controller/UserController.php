@@ -45,12 +45,11 @@ class UserController
     public function profile()
     {
         if (!$this->authMiddleware->isUserOrAdmin()) {
-            return $this->request->redirectToRoute('login', ['message' => 'You must be logged in to access this page.']);
+            return $this->request->redirectToRoute('login', ['message' => 'Vous devez être connecté pour accéder à cette page.']);
         }
         $user = $this->securityHelper->getUser();
         $errors = [];
         $message = null;
-
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrf_token', FILTER_SANITIZE_SPECIAL_CHARS)) {
             list($errors, $message) = $this->profileService->handleProfilePostRequest($user);
         }
@@ -119,7 +118,7 @@ class UserController
 
                     return $this->request->redirectToRoute('profile');
                 }
-                $errors[] = 'Email or password is incorrect';
+                $errors[] = 'E-mail ou mot de passe incorrect.';
             }
         }
         $this->twig->render('pages/security/login.html.twig', array_merge($data, ['errors' => $errors]));
@@ -155,12 +154,12 @@ class UserController
             $registerFV = new RegisterFormValidator($this->securityHelper);
             $validationResult = $registerFV->validate($postData);
             $valid = $validationResult['valid'];
-            if (true === $valid) {
+            if ($valid) {
                 $registered = $this->securityHelper->register($postData);
                 if ($registered) {
                     return $this->request->redirectToRoute('login');
                 }
-                $errors[] = 'Registration failed. Please try again.';
+                $errors[] = "Échec de l'enregistrement. Veuillez réessayer.";
             } else {
                 $errors = $validationResult['errors'];
             }
