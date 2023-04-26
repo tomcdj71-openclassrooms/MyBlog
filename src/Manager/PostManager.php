@@ -16,14 +16,16 @@ use App\ModelParameters\UserModelParameters;
 
 class PostManager
 {
-    private \PDO $db;
+    private \PDO $database;
+    private PostModelParameters $postModelParams;
 
     public function __construct(DatabaseConnexion $databaseConnexion)
     {
-        $this->db = $databaseConnexion->connect();
+        $this->database = $databaseConnexion->connect();
+        $this->postModelParams = new PostModelParameters();
     }
 
-    public function find(int $id): ?PostModel
+    public function find(int $postId): ?PostModel
     {
         try {
             $sql = 'SELECT p.*, u.*, c.*,
@@ -37,8 +39,8 @@ class PostManager
                     LEFT JOIN tag t ON instr("," || p.tags || ",", "," || t.id || ",") > 0
                     WHERE p.id = :id
                     GROUP BY p.id';
-            $statement = $this->db->prepare($sql);
-            $statement->execute(['id' => $id]);
+            $statement = $this->database->prepare($sql);
+            $statement->execute(['id' => $postId]);
             $data = $statement->fetch(\PDO::FETCH_ASSOC);
             if (!$data) {
                 return null;
@@ -66,7 +68,7 @@ class PostManager
                     LEFT JOIN tag t ON instr(',' || p.tags || ',', ',' || t.id || ',') > 0
                     WHERE {$field} = :value
                     GROUP BY p.id";
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute(['value' => $value]);
             $posts = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
@@ -97,7 +99,7 @@ class PostManager
             WHERE p.{$field} = :value
             GROUP BY p.id
             LIMIT 1";
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute(['value' => $value]);
             $data = $statement->fetch(\PDO::FETCH_ASSOC);
             if (!$data) {
@@ -128,7 +130,7 @@ class PostManager
             GROUP BY p.id
             ORDER BY p.created_at DESC
             LIMIT :limit OFFSET :offset';
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->bindValue('limit', $limit, \PDO::PARAM_INT);
             $statement->bindValue('offset', ($page - 1) * $limit, \PDO::PARAM_INT);
             $statement->execute();
@@ -137,7 +139,6 @@ class PostManager
                 $preparedData = $this->preparePostData($data);
                 $posts[] = $this->createPostModelFromArray($preparedData);
             }
-            // add pagination data
 
             return [
                 'posts' => $posts,
@@ -154,7 +155,7 @@ class PostManager
     {
         try {
             $sql = 'SELECT COUNT(*) as total_posts FROM post';
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute();
             $data = $statement->fetch(\PDO::FETCH_ASSOC);
 
@@ -181,7 +182,7 @@ class PostManager
                     WHERE p.created_at BETWEEN :start_date AND :end_date
                     GROUP BY p.id
                     ORDER BY p.created_at DESC";
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute([
                 'start_date' => $startDate->format('Y-m-d H:i:s'),
                 'end_date' => $endDate->format('Y-m-d H:i:s'),
@@ -214,7 +215,7 @@ class PostManager
                 LEFT JOIN tag t ON instr(',' || p.tags || ',', ',' || t.id || ',') > 0
                 WHERE instr(',' || p.tags || ',', ',' || (SELECT id FROM tag WHERE slug = :tag_slug) || ',') > 0
                 GROUP BY p.id";
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute(['tag_slug' => $tag]);
             $posts = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
@@ -247,7 +248,7 @@ class PostManager
                 ORDER BY p.created_at DESC
                 LIMIT :limit
                 OFFSET :offset";
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute([
                 'user_id' => $userId,
                 'limit' => $limit,
@@ -259,7 +260,7 @@ class PostManager
                 $posts[] = $this->createPostModelFromArray($preparedData);
             }
             $sql = 'SELECT COUNT(*) FROM post WHERE author_id = :user_id';
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute(['user_id' => $userId]);
             $count = $statement->fetchColumn();
 
@@ -282,7 +283,7 @@ class PostManager
             GROUP BY id
             ORDER BY created_at DESC
             LIMIT :limit';
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute(['limit' => $limit]);
             $posts = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
@@ -304,7 +305,7 @@ class PostManager
     {
         try {
             $sql = 'SELECT COUNT(*) FROM post';
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute();
 
             return (int) $statement->fetchColumn();
@@ -343,7 +344,6 @@ class PostManager
                 'name' => $tagNames[$i],
                 'slug' => $tagSlugs[$i],
             ];
-
             $tagModelParams = TagModelParameters::createFromData($tagsData);
             $tagsArray[] = new TagModel($tagModelParams);
         }
@@ -396,7 +396,7 @@ class PostManager
         if (empty($data['category'])) {
             $data['category'] = null;
         }
-        $postModelParams = PostModelParameters::createFromData($data);
+        $postModelParams = $this->postModelParams->createFromData($data);
 
         return new PostModel($postModelParams);
     }

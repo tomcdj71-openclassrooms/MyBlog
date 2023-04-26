@@ -14,7 +14,7 @@ class CommentFormValidator extends BaseValidator
     public function validate($data)
     {
         $validationRules = [
-            'csrf_token' => ['type' => 'csrf', 'errorMsg' => 'Invalid CSRF token.', 'required' => true],
+            'csrf_token' => ['type' => 'csrf', 'errorMsg' => 'Jeton CSRF invalide.', 'required' => true],
             'content' => ['type' => 'empty', 'errorMsg' => 'Please enter a comment.', 'required' => true],
         ];
 

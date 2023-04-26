@@ -26,5 +26,5 @@ try {
     // Set the error code to 404 by default
     http_response_code($e->getCode() ?: 404);
     $errorController = new ErrorController($container);
-    $errorController->error_page($e->getMessage());
+    $errorController->errorPage($e->getMessage());
 }

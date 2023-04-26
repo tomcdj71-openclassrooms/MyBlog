@@ -10,26 +10,24 @@ use App\ModelParameters\TagModelParameters;
 
 class TagManager
 {
-    private $db;
+    private $database;
 
     public function __construct(DatabaseConnexion $databaseConnexion)
     {
-        $this->db = $databaseConnexion->connect();
+        $this->database = $databaseConnexion->connect();
     }
 
     public function getDatabase()
     {
-        return $this->db;
+        return $this->database;
     }
 
     public function findAll(): array
     {
         try {
             $sql = 'SELECT * FROM tag';
-
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute();
-
             $tags = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
                 $tags[] = $this->createTagModelFromArray($data);
@@ -41,12 +39,12 @@ class TagManager
         }
     }
 
-    public function find(int $id): ?TagModel
+    public function find(int $tagId): ?TagModel
     {
         try {
             $sql = 'SELECT * FROM tag WHERE id = :id';
-            $statement = $this->db->prepare($sql);
-            $statement->execute(['id' => $id]);
+            $statement = $this->database->prepare($sql);
+            $statement->execute(['id' => $tagId]);
             $data = $statement->fetch(\PDO::FETCH_ASSOC);
             if ($data) {
                 $this->createTagModelFromArray($data);
@@ -62,10 +60,8 @@ class TagManager
     {
         try {
             $sql = 'SELECT * FROM tag WHERE slug = :slug';
-
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute(['slug' => $slug]);
-
             if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
                 return $this->createTagModelFromArray($data);
             }
@@ -80,8 +76,7 @@ class TagManager
     {
         try {
             $sql = 'SELECT COUNT(*) FROM tag';
-
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute();
 
             return (int) $statement->fetchColumn();

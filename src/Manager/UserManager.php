@@ -10,12 +10,12 @@ use App\ModelParameters\UserModelParameters;
 
 class UserManager
 {
-    private $db;
+    private $database;
     private $commentManager;
 
     public function __construct(DatabaseConnexion $databaseConnexion)
     {
-        $this->db = $databaseConnexion->connect();
+        $this->database = $databaseConnexion->connect();
         $this->commentManager = new CommentManager($databaseConnexion);
     }
 
@@ -23,12 +23,9 @@ class UserManager
     {
         try {
             $sql = 'SELECT * FROM user WHERE id = :id';
-
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute(['id' => $id]);
-
             $data = $statement->fetch(\PDO::FETCH_ASSOC);
-
             if (!$data) {
                 return null;
             }
@@ -45,7 +42,7 @@ class UserManager
     {
         try {
             $sql = 'SELECT * FROM user ORDER BY id DESC LIMIT :limit OFFSET :offset';
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->bindValue('limit', $limit, \PDO::PARAM_INT);
             $statement->bindValue('offset', ($page - 1) * $limit, \PDO::PARAM_INT);
             $statement->execute();
@@ -53,9 +50,7 @@ class UserManager
             if (!$data) {
                 return [];
             }
-
             $users = [];
-
             foreach ($data as $user) {
                 $users[] = $this->createUserModelFromArray($user);
             }
@@ -79,7 +74,7 @@ class UserManager
                 $parameters[$key] = $value;
             }
             $sql .= implode(' AND ', $where);
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute($parameters);
             $data = $statement->fetch(\PDO::FETCH_ASSOC);
             if (!$data) {
@@ -98,18 +93,13 @@ class UserManager
     {
         try {
             $sql = 'SELECT * FROM user';
-
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute();
-
             $data = $statement->fetchAll(\PDO::FETCH_ASSOC);
-
             if (!$data) {
                 return [];
             }
-
             $users = [];
-
             foreach ($data as $user) {
                 $users[] = $this->createUserModelFromArray($user);
             }
@@ -127,9 +117,7 @@ class UserManager
         try {
             $sql = 'INSERT INTO user (username, email, password, created_at, role, avatar, bio)
                 VALUES (:username, :email, :password, :created_at, :role, :avatar, :bio)';
-
-            $statement = $this->db->prepare($sql);
-
+            $statement = $this->database->prepare($sql);
             $params = [
                 'username' => $userData['username'],
                 'email' => $userData['email'],
@@ -143,13 +131,9 @@ class UserManager
                 'linkedin' => $userData['linkedin'] ?? '',
                 'github' => $userData['github'] ?? '',
             ];
-
             $statement->execute($params);
-            $lastInsertId = $this->db->lastInsertId();
-
-            // Return the newly created user object
+            $lastInsertId = $this->database->lastInsertId();
             $user = $this->find((int) $lastInsertId);
-
             if (null !== $user) {
                 return $user;
             }
@@ -161,7 +145,7 @@ class UserManager
     public function setRememberMeToken(int $userId, string $token, int $expiresAt): void
     {
         $sql = 'UPDATE user SET remember_me_token = :token, remember_me_expires_at = :expires_at WHERE id = :id';
-        $statement = $this->db->prepare($sql);
+        $statement = $this->database->prepare($sql);
         $statement->execute([
             'id' => $userId,
             'token' => $token,
@@ -183,7 +167,6 @@ class UserManager
             github = :github,
             avatar = :avatar,
             linkedin = :linkedin';
-
         $params = [
             ':email' => $data['email'] ?? $user->getEmail(),
             ':firstName' => $data['firstName'] ?? $user->getFirstName(),
@@ -196,12 +179,10 @@ class UserManager
             ':linkedin' => $data['linkedin'] ?? $user->getLinkedin(),
             ':id' => $user->getId(),
         ];
-
         $sql .= ' WHERE id = :id';
+        $statement = $this->database->prepare($sql);
 
-        $stmt = $this->db->prepare($sql);
-
-        return $stmt->execute($params);
+        return $statement->execute($params);
     }
 
     public function createUserModelFromArray(array $data): UserModel

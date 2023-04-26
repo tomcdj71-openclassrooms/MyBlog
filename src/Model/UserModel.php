@@ -12,12 +12,12 @@ class UserModel
     private $username;
     private $email;
     private $password;
-    private $created_at;
+    private $createdAt;
     private $role;
     private $avatar;
     private $bio;
-    private $remember_me_token;
-    private $remember_me_expires_at;
+    private $rememberMeToken;
+    private $rememberMeExpiresAt;
     private $firstName;
     private $lastName;
     private $twitter;
@@ -31,12 +31,12 @@ class UserModel
         $this->username = $userModelParams->username;
         $this->email = $userModelParams->email;
         $this->password = $userModelParams->password;
-        $this->created_at = $userModelParams->createdAt;
+        $this->createdAt = $userModelParams->createdAt;
         $this->role = $userModelParams->role;
         $this->avatar = $userModelParams->avatar;
         $this->bio = $userModelParams->bio;
-        $this->remember_me_token = $userModelParams->rememberMeToken;
-        $this->remember_me_expires_at = $userModelParams->rememberMeExpiresAt;
+        $this->rememberMeToken = $userModelParams->rememberMeToken;
+        $this->rememberMeExpiresAt = $userModelParams->rememberMeExpiresAt;
         $this->firstName = $userModelParams->firstName;
         $this->lastName = $userModelParams->lastName;
         $this->twitter = $userModelParams->twitter;
@@ -67,7 +67,7 @@ class UserModel
 
     public function getCreatedAt(): ?string
     {
-        return $this->created_at;
+        return $this->createdAt;
     }
 
     public function getRole(): ?string
@@ -105,9 +105,9 @@ class UserModel
         $this->password = $password;
     }
 
-    public function setCreatedAt(string $created_at): void
+    public function setCreatedAt(string $createdAt): void
     {
-        $this->created_at = $created_at;
+        $this->createdAt = $createdAt;
     }
 
     public function setRole(string $role): void
@@ -127,22 +127,22 @@ class UserModel
 
     public function getRememberMeToken(): ?string
     {
-        return $this->remember_me_token;
+        return $this->rememberMeToken;
     }
 
-    public function setRememberMeToken(string $remember_me_token): void
+    public function setRememberMeToken(string $rememberMeToken): void
     {
-        $this->remember_me_token = $remember_me_token;
+        $this->rememberMeToken = $rememberMeToken;
     }
 
-    public function getRememberMeExpiresAt(): ?string
+    public function getRememberMeExpires(): ?string
     {
-        return $this->remember_me_expires_at;
+        return $this->rememberMeExpiresAt;
     }
 
-    public function setRememberMeExpiresAt(string $remember_me_expires_at): void
+    public function setRememberMeExpires(string $rememberMeExpiresAt): void
     {
-        $this->remember_me_expires_at = $remember_me_expires_at;
+        $this->rememberMeExpiresAt = $rememberMeExpiresAt;
     }
 
     public function getFirstName(): ?string

@@ -13,19 +13,21 @@ use App\ModelParameters\UserModelParameters;
 
 class CommentManager
 {
-    private $db;
+    private $database;
+    private PostModelParameters $postModelParams;
 
     public function __construct(DatabaseConnexion $databaseConnexion)
     {
-        $this->db = $databaseConnexion->connect();
+        $this->database = $databaseConnexion->connect();
+        $this->postModelParams = new PostModelParameters();
     }
 
     public function getDatabase()
     {
-        return $this->db;
+        return $this->database;
     }
 
-    public function find(int $id): ?CommentModel
+    public function find(int $commentId): ?CommentModel
     {
         try {
             $sql = 'SELECT comment.id, comment.content, comment.author_id, comment.post_id, comment.created_at, comment.is_enabled, comment.parent_id,
@@ -36,8 +38,8 @@ class CommentManager
                 INNER JOIN post ON comment.post_id = post.id 
                 WHERE comment.id = :id
                 LIMIT 1';
-            $statement = $this->db->prepare($sql);
-            $statement->bindValue(':id', $id, \PDO::PARAM_INT);
+            $statement = $this->database->prepare($sql);
+            $statement->bindValue(':id', $commentId, \PDO::PARAM_INT);
             $statement->execute();
             if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
                 return $this->createCommentModelFromArray($data);
@@ -57,7 +59,7 @@ class CommentManager
                 INNER JOIN user ON comment.author_id = user.id 
                 INNER JOIN post ON comment.post_id = post.id 
                 WHERE {$field} = :value';
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute(['value' => $value]);
             $data = $statement->fetch(\PDO::FETCH_ASSOC);
             if ($data) {
@@ -82,15 +84,12 @@ class CommentManager
                 WHERE comment.author_id = :user
                 ORDER BY comment.created_at DESC
                 LIMIT :limit OFFSET :offset';
-
             $offset = ($page - 1) * $limit;
-
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->bindValue(':user', $userId, \PDO::PARAM_INT);
             $statement->bindValue(':limit', $limit, \PDO::PARAM_INT);
             $statement->bindValue(':offset', $offset, \PDO::PARAM_INT);
             $statement->execute();
-
             $comments = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
                 $comment = $this->createCommentModelFromArray($data);
@@ -107,8 +106,7 @@ class CommentManager
     {
         try {
             $sql = 'SELECT COUNT(*) FROM comment WHERE author_id = :user';
-
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute(['user' => $userId]);
 
             return (int) $statement->fetchColumn();
@@ -129,7 +127,7 @@ class CommentManager
                 ORDER BY comment.created_at DESC
                 LIMIT :limit OFFSET :offset';
             $offset = ($page - 1) * $limit;
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->bindValue(':limit', $limit, \PDO::PARAM_INT);
             $statement->bindValue(':offset', $offset, \PDO::PARAM_INT);
             $statement->execute();
@@ -151,7 +149,7 @@ class CommentManager
         try {
             $sql = 'SELECT COUNT(*) FROM comment WHERE post = :post';
 
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute(['post' => $postId]);
 
             return (int) $statement->fetchColumn();
@@ -164,15 +162,12 @@ class CommentManager
     {
         try {
             $sql = 'SELECT * FROM comment WHERE post = :post ORDER BY created_at DESC LIMIT :limit OFFSET :offset';
-
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->bindValue('post', $postId, \PDO::PARAM_INT);
             $statement->bindValue('limit', $limit, \PDO::PARAM_INT);
             $statement->bindValue('offset', ($page - 1) * $limit, \PDO::PARAM_INT);
             $statement->execute();
-
             $comments = [];
-
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
                 $comments[] = $this->createCommentModelFromArray($data);
             }
@@ -193,8 +188,7 @@ class CommentManager
                     INNER JOIN user ON comment.author_id = user.id 
                     INNER JOIN post ON comment.post_id = post.id 
                     WHERE comment.post_id = :post ORDER BY comment.created_at ASC';
-
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute(['post' => $postId]);
             $comments = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
@@ -212,7 +206,7 @@ class CommentManager
     {
         try {
             $sql = 'INSERT INTO comment (created_at, content, author_id, is_enabled, parent_id, post_id) VALUES (:created_at, :content, :author_id, :is_enabled, :parent_id, :post_id)';
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute([
                 'created_at' => $commentData['created_at'],
                 'content' => $commentData['content'],
@@ -230,7 +224,7 @@ class CommentManager
     {
         try {
             $sql = 'UPDATE comment SET is_enabled = :isEnabled WHERE id = :id';
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->bindValue(':isEnabled', $comment->getIsEnabled(), \PDO::PARAM_BOOL);
             $statement->bindValue(':id', $comment->getId(), \PDO::PARAM_INT);
             $statement->execute();
@@ -251,7 +245,7 @@ class CommentManager
         $authorModelParams = UserModelParameters::createFromData($data);
         $author = new UserModel($authorModelParams);
         $data['author'] = $author;
-        $postModelParams = PostModelParameters::createFromData($data);
+        $postModelParams = $this->postModelParams->createFromData($data);
         $post = new PostModel($postModelParams);
 
         return new CommentModel(

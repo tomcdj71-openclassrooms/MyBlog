@@ -8,6 +8,7 @@ use App\DependencyInjection\Container;
 use App\Helper\SecurityHelper;
 use App\Manager\CommentManager;
 use App\Middleware\AuthenticationMiddleware;
+use App\Router\ServerRequest;
 use App\Validator\CommentFormValidator;
 
 class CommentService
@@ -15,6 +16,7 @@ class CommentService
     private SecurityHelper $securityHelper;
     private CommentManager $commentManager;
     private AuthenticationMiddleware $authMiddleware;
+    private ServerRequest $request;
 
     public function __construct(Container $container)
     {
@@ -26,7 +28,7 @@ class CommentService
         $errors = [];
         $csrf_to_check = $_POST['csrf_token'];
         if (!$this->securityHelper->checkCsrfToken('comment', $csrf_to_check)) {
-            $errors[] = 'Invalid CSRF token';
+            $errors[] = 'Jeton CSRF invalide.';
         }
         $postData = $this->getPostData($postObject);
         $commentFV = new CommentFormValidator($this->securityHelper);
@@ -69,7 +71,6 @@ class CommentService
             'is_enabled' => $isEnabled,
             'created_at' => date('Y-m-d H:i:s'),
         ];
-
         $this->commentManager->create($commentData);
 
         return 'Comment created successfully!';

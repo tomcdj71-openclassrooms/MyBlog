@@ -18,7 +18,7 @@ class RegisterFormValidator extends BaseValidator
             'username' => ['type' => 'empty', 'errorMsg' => 'Please enter a username.', 'required' => true],
             'password' => ['type' => 'empty', 'errorMsg' => 'Please enter a password.', 'required' => true],
             'passwordConfirm' => ['type' => 'confirm', 'compareField' => 'password', 'errorMsg' => 'The password confirmation does not match.', 'required' => true],
-            'csrf_token' => ['type' => 'csrf', 'errorMsg' => 'Invalid CSRF token.', 'required' => true],
+            'csrf_token' => ['type' => 'csrf', 'errorMsg' => 'Jeton CSRF invalide.', 'required' => true],
         ];
 
         return $this->validateData($data, $validationRules);

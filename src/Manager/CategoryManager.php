@@ -9,26 +9,24 @@ use App\Model\CategoryModel;
 
 class CategoryManager
 {
-    private $db;
+    private $database;
 
     public function __construct(DatabaseConnexion $databaseConnexion)
     {
-        $this->db = $databaseConnexion->connect();
+        $this->database = $databaseConnexion->connect();
     }
 
     public function getDatabase()
     {
-        return $this->db;
+        return $this->database;
     }
 
-    public function find(int $id): ?CategoryModel
+    public function find(int $categoryId): ?CategoryModel
     {
         try {
             $sql = 'SELECT * FROM category WHERE id = :id';
-
-            $statement = $this->db->prepare($sql);
-            $statement->execute(['id' => $id]);
-
+            $statement = $this->database->prepare($sql);
+            $statement->execute(['id' => $categoryId]);
             if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
                 return new CategoryModel(
                     (int) $data['id'],
@@ -45,10 +43,8 @@ class CategoryManager
     {
         try {
             $sql = "SELECT * FROM category WHERE {$field} = :value";
-
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute(['value' => $value]);
-
             if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
                 return new CategoryModel(
                     (int) $data['id'],
@@ -65,10 +61,8 @@ class CategoryManager
     {
         try {
             $sql = 'SELECT * FROM category';
-
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute();
-
             $categories = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
                 $categories[] = new CategoryModel(
@@ -92,10 +86,8 @@ class CategoryManager
                     LEFT JOIN post ON post.category_id = category.id
                     GROUP BY category.id
                     ORDER BY nb_posts DESC';
-
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute();
-
             $categories = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
                 $categories[] = new CategoryModel(
@@ -116,7 +108,7 @@ class CategoryManager
     {
         try {
             $sql = 'SELECT COUNT(id) AS nb_categories FROM category';
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute();
             $data = $statement->fetch(\PDO::FETCH_ASSOC);
             if ($data) {
@@ -127,17 +119,15 @@ class CategoryManager
         }
     }
 
-    public function countPostsInCategory(int $id): int
+    public function countPostsInCategory(int $postId): int
     {
         try {
             $sql = 'SELECT COUNT(post.id) AS nb_posts
                     FROM category
                     LEFT JOIN post ON post.category_id = category.id
                     WHERE category.id = :id';
-
-            $statement = $this->db->prepare($sql);
-            $statement->execute(['id' => $id]);
-
+            $statement = $this->database->prepare($sql);
+            $statement->execute(['id' => $postId]);
             if ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
                 return (int) $data['nb_posts'];
             }
@@ -150,8 +140,7 @@ class CategoryManager
     {
         try {
             $sql = 'INSERT INTO category (name, slug) VALUES (:name, :slug)';
-
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute([
                 'name' => $category->getName(),
                 'slug' => $category->getSlug(),
@@ -167,8 +156,7 @@ class CategoryManager
     {
         try {
             $sql = 'UPDATE category SET name = :name, slug = :slug WHERE id = :id';
-
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute([
                 'id' => $category->getId(),
                 'name' => $category->getName(),
@@ -185,8 +173,7 @@ class CategoryManager
     {
         try {
             $sql = 'DELETE FROM category WHERE id = :id';
-
-            $statement = $this->db->prepare($sql);
+            $statement = $this->database->prepare($sql);
             $statement->execute(['id' => $id]);
 
             return true;

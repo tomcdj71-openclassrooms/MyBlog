@@ -123,7 +123,7 @@ class SecurityHelper
         if (!$user) {
             throw new \Exception('No user found.');
         }
-        $expiresAt = $user->getRememberMeExpiresAt();
+        $expiresAt = $user->getRememberMeExpires();
         $expiresAt = strtotime($expiresAt);
         if ($expiresAt < time()) {
             throw new \Exception('Token expired.');

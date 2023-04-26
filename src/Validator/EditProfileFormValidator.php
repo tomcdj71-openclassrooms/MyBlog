@@ -73,7 +73,7 @@ class EditProfileFormValidator
         }
         if (!$this->securityHelper->checkCsrfToken('editProfile', $data['csrf_token'])) {
             $valid = false;
-            $errors['csrf_token'] = 'Invalid CSRF token.';
+            $errors['csrf_token'] = 'Jeton CSRF invalide.';
         }
 
         return [

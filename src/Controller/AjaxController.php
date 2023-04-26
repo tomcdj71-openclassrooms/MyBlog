@@ -12,7 +12,6 @@ use App\Manager\UserManager;
 use App\Middleware\AuthenticationMiddleware;
 use App\Router\ServerRequest;
 use App\Service\PostService;
-use Tracy\Debugger;
 
 class AjaxController
 {
@@ -259,7 +258,6 @@ class AjaxController
             'rows' => $postsArray,
             'total' => $totalPosts,
         ];
-        Debugger::barDump($response);
         header('Content-Type: application/json');
         echo json_encode($response);
     }
