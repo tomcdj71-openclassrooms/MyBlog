@@ -42,7 +42,7 @@ class Router
             if ($response) {
                 echo $response->getBody();
 
-                exit;
+                return;
             }
         }
 
