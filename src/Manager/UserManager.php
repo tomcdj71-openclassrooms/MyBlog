@@ -11,12 +11,12 @@ use App\ModelParameters\UserModelParameters;
 class UserManager
 {
     private $database;
-    private $commentManager;
+    private UserModelParameters $userModelParams;
 
     public function __construct(DatabaseConnexion $databaseConnexion)
     {
         $this->database = $databaseConnexion->connect();
-        $this->commentManager = new CommentManager($databaseConnexion);
+        $this->userModelParams = new UserModelParameters();
     }
 
     public function find(int $id): ?UserModel
@@ -187,7 +187,7 @@ class UserManager
 
     public function createUserModelFromArray(array $data): UserModel
     {
-        $userModelParams = UserModelParameters::createFromData($data);
+        $userModelParams = $this->userModelParams->createFromData($data);
 
         return new UserModel($userModelParams);
     }

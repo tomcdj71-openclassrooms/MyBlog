@@ -11,10 +11,12 @@ use App\ModelParameters\TagModelParameters;
 class TagManager
 {
     private $database;
+    private TagModelParameters $tagModelParams;
 
     public function __construct(DatabaseConnexion $databaseConnexion)
     {
         $this->database = $databaseConnexion->connect();
+        $this->tagModelParams = new TagModelParameters();
     }
 
     public function getDatabase()
@@ -88,7 +90,7 @@ class TagManager
 
     private function createTagModelFromArray(array $data): TagModel
     {
-        $tagModelParams = TagModelParameters::createFromData($data);
+        $tagModelParams = $this->tagModelParams->createFromData($data);
 
         return new TagModel($tagModelParams);
     }

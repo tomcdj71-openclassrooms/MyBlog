@@ -15,11 +15,13 @@ class CommentManager
 {
     private $database;
     private PostModelParameters $postModelParams;
+    private UserModelParameters $userModelParams;
 
     public function __construct(DatabaseConnexion $databaseConnexion)
     {
         $this->database = $databaseConnexion->connect();
         $this->postModelParams = new PostModelParameters();
+        $this->userModelParams = new UserModelParameters();
     }
 
     public function getDatabase()
@@ -243,7 +245,7 @@ class CommentManager
         $data['tags'] = isset($data['tags']) ? array_map('trim', explode(',', $data['tags'])) : [];
         $data['comments'] = isset($data['comments']) ? $data['comments'] : [];
         $data['category'] = isset($data['categories']) ? $data['categories'] : null;
-        $authorModelParams = UserModelParameters::createFromData($data);
+        $authorModelParams = $this->userModelParams->createFromData($data);
         $author = new UserModel($authorModelParams);
         $data['author'] = $author;
         $postModelParams = $this->postModelParams->createFromData($data);

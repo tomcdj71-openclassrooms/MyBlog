@@ -18,11 +18,15 @@ class PostManager
 {
     private \PDO $database;
     private PostModelParameters $postModelParams;
+    private UserModelParameters $userModelParams;
+    private TagModelParameters $tagModelParams;
 
     public function __construct(DatabaseConnexion $databaseConnexion)
     {
         $this->database = $databaseConnexion->connect();
         $this->postModelParams = new PostModelParameters();
+        $this->userModelParams = new UserModelParameters();
+        $this->tagModelParams = new TagModelParameters();
     }
 
     public function find(int $postId): ?PostModel
@@ -319,7 +323,7 @@ class PostManager
 
     private function prepareAuthor(array $data): ?UserModel
     {
-        $authorModelParams = UserModelParameters::createFromData($data);
+        $authorModelParams = $this->userModelParams->createFromData($data);
 
         return new UserModel($authorModelParams);
     }
@@ -345,7 +349,7 @@ class PostManager
                 'name' => $tagNames[$i],
                 'slug' => $tagSlugs[$i],
             ];
-            $tagModelParams = TagModelParameters::createFromData($tagsData);
+            $tagModelParams = $this->tagModelParams->createFromData($tagsData);
             $tagsArray[] = new TagModel($tagModelParams);
         }
 
