@@ -5,21 +5,14 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Config\Configuration;
-use App\DependencyInjection\Container;
-use App\Helper\TwigHelper;
-use App\Router\ServerRequest;
-use App\Router\Session;
 use App\Service\MailerService;
 
-class HomeController
+class HomeController extends AbstractController
 {
-    protected TwigHelper $twig;
-    private Session $session;
-    private ServerRequest $serverRequest;
     private MailerService $mailer;
     private Configuration $configuration;
 
-    public function __construct(Container $container, MailerService $mailer, Configuration $configuration)
+    public function __construct(MailerService $mailer, Configuration $configuration)
     {
         $this->mailer = $mailer;
         $this->configuration = $configuration;

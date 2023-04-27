@@ -68,9 +68,9 @@ function dateFormatter(value, row, index) {
 function isEnabledFormatter(value, row, index) {
     var status = row.is_enabled;
     var entityType = getObjectType(row);
-    if (status == 1) {
+    if (status === 1) {
         return '<span class="badge bg-success">' + (entityType === 'post' ? 'Publié' : 'Validé') + '</span>';
-    } else if (status == 0 || status == null) {
+    } else if (status === 0 || status === null) {
         return '<span class="badge bg-warning">' + (entityType === 'post' ? 'Dépublié' : 'Non validé') + '</span>';
     }
 }

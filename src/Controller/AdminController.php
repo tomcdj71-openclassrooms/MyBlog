@@ -5,23 +5,13 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\DependencyInjection\Container;
-use App\Helper\SecurityHelper;
-use App\Helper\TwigHelper;
 use App\Manager\CategoryManager;
 use App\Manager\CommentManager;
 use App\Manager\PostManager;
 use App\Manager\TagManager;
-use App\Manager\UserManager;
-use App\Middleware\AuthenticationMiddleware;
-use App\Router\ServerRequest;
 
-class AdminController
+class AdminController extends AbstractController
 {
-    protected TwigHelper $twig;
-    private UserManager $userManager;
-    private SecurityHelper $securityHelper;
-    private AuthenticationMiddleware $authMiddleware;
-    private ServerRequest $request;
     private CommentManager $commentManager;
     private PostManager $postManager;
     private TagManager $tagManager;
@@ -29,15 +19,12 @@ class AdminController
 
     public function __construct(Container $container)
     {
+        parent::__construct($container);
         $container->injectProperties($this);
     }
 
     public function index($message = null)
     {
-        $this->authenticate();
-        if (!$this->authMiddleware->isUser()) {
-            header('Location: /');
-        }
         $users = $this->userManager->findAll();
         $usersData = [];
         foreach ($users as $user) {
@@ -49,8 +36,8 @@ class AdminController
                 'createdAt' => $user->getCreatedAt(),
             ];
         }
-        $offset = $this->request->getQuery('offset', 1);
-        $limit = $this->request->getQuery('limit', 10);
+        $offset = $this->serverRequest->getQuery('offset', 1);
+        $limit = $this->serverRequest->getQuery('limit', 10);
         $page = intval($offset / $limit) + 1;
 
         return $this->twig->render('pages/admin/pages/index.html.twig', [
@@ -67,11 +54,6 @@ class AdminController
 
     public function categories($message = null)
     {
-        $this->authenticate();
-        if (!$this->authMiddleware->isUser()) {
-            header('Location: /');
-        }
-
         return $this->twig->render('pages/admin/pages/category_admin.html.twig', [
             'title' => 'MyBlog - Admin Categories',
             'route' => 'admin_categories',
@@ -83,13 +65,8 @@ class AdminController
 
     public function comments($message = null)
     {
-        $this->authenticate();
-        if (!$this->authMiddleware->isUser()) {
-            header('Location: /');
-        }
-
-        $offset = $this->request->getQuery('offset', 1);
-        $limit = $this->request->getQuery('limit', 10);
+        $offset = $this->serverRequest->getQuery('offset', 1);
+        $limit = $this->serverRequest->getQuery('limit', 10);
         $page = intval($offset / $limit) + 1;
         $results = $this->commentManager->findAll($page, $limit);
 
@@ -105,12 +82,8 @@ class AdminController
 
     public function posts($message = null)
     {
-        $this->authenticate();
-        if (!$this->authMiddleware->isUser()) {
-            header('Location: /');
-        }
-        $offset = $this->request->getQuery('offset', 1);
-        $limit = $this->request->getQuery('limit', 10);
+        $offset = $this->serverRequest->getQuery('offset', 1);
+        $limit = $this->serverRequest->getQuery('limit', 10);
         $page = intval($offset / $limit) + 1;
 
         return $this->twig->render('pages/admin/pages/post_admin.html.twig', [
@@ -124,11 +97,6 @@ class AdminController
 
     public function tags($message = null)
     {
-        $this->authenticate();
-        if (!$this->authMiddleware->isUser()) {
-            header('Location: /');
-        }
-
         return $this->twig->render('pages/admin/pages/tag_admin.html.twig', [
             'title' => 'MyBlog - Admin Dashboard',
             'route' => 'admin_tags',
@@ -140,12 +108,8 @@ class AdminController
 
     public function users($message = null)
     {
-        $this->authenticate();
-        if (!$this->authMiddleware->isUser()) {
-            header('Location: /');
-        }
-        $offset = $this->request->getQuery('offset', 1);
-        $limit = $this->request->getQuery('limit', 10);
+        $offset = $this->serverRequest->getQuery('offset', 1);
+        $limit = $this->serverRequest->getQuery('limit', 10);
         $page = intval($offset / $limit) + 1;
         $users = $this->userManager->findAll();
         $usersData = [];
@@ -166,12 +130,5 @@ class AdminController
             'user' => $this->securityHelper->getUser(),
             'message' => $message,
         ]);
-    }
-
-    private function authenticate(): void
-    {
-        $middleware = new AuthenticationMiddleware($this->securityHelper);
-
-        $middleware();
     }
 }

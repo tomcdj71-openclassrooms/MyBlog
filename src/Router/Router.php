@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Router;
 
+use App\Controller\AdminController;
+use App\Controller\BlogController;
 use App\DependencyInjection\Container;
 
 class Router
@@ -16,7 +18,6 @@ class Router
     {
         $this->url = $url;
         $this->container = $container;
-
         $route = new Route();
         $this->routes = $route->getRoutes();
     }
@@ -25,15 +26,25 @@ class Router
     {
         $parsedUrl = $this->parseUrl($this->url);
         $matchedRoute = $this->matchRoute($parsedUrl['path']);
-
         if (!$matchedRoute) {
             throw new RouterException('Aucune route trouvée');
         }
-
         $controllerClass = $matchedRoute[1];
         $controllerMethod = $matchedRoute[2];
         $controller = $this->container->get($controllerClass);
         $this->container->injectProperties($controller);
+        if ($controller instanceof BlogController) {
+            $controller->setRequestParams($matchedRoute['params']);
+        }
+        // Checks if the user is an admin and redirects them if they are not.
+        if ($controller instanceof AdminController) {
+            $response = $controller->ensureAuthenticatedAdmin();
+            if ($response) {
+                echo $response->getBody();
+
+                exit;
+            }
+        }
 
         call_user_func_array([$controller, $controllerMethod], $matchedRoute['params']);
     }
@@ -44,16 +55,17 @@ class Router
         $urlPath = $urlComponents['path'];
         $urlPath = trim($urlPath, '/');
         $urlPath = explode('/', $urlPath);
-
         $controllerName = ucfirst($urlPath[0] ?? 'Blog');
         $methodName = $urlPath[1] ?? 'index';
         $params = array_slice($urlPath, 2);
+        parse_str($urlComponents['query'] ?? '', $queryParams);
 
         return [
             'path' => '/'.implode('/', $urlPath),
             'controller' => $controllerName,
             'method' => $methodName,
             'params' => $params,
+            'query' => $queryParams,
         ];
     }
 

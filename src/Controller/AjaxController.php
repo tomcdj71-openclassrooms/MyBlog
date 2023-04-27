@@ -3,30 +3,23 @@
 namespace App\Controller;
 
 use App\DependencyInjection\Container;
-use App\Helper\SecurityHelper;
 use App\Manager\CategoryManager;
 use App\Manager\CommentManager;
 use App\Manager\PostManager;
 use App\Manager\TagManager;
-use App\Manager\UserManager;
-use App\Middleware\AuthenticationMiddleware;
-use App\Router\ServerRequest;
 use App\Service\PostService;
 
-class AjaxController
+class AjaxController extends AbstractController
 {
     private CommentManager $commentManager;
-    private SecurityHelper $securityHelper;
-    private AuthenticationMiddleware $authMiddleware;
     private PostService $postService;
-    private ServerRequest $request;
     private TagManager $tagManager;
     private CategoryManager $categoryManager;
-    private UserManager $userManager;
     private PostManager $postManager;
 
     public function __construct(Container $container)
     {
+        parent::__construct($container);
         $container->injectProperties($this);
     }
 
@@ -36,8 +29,8 @@ class AjaxController
             header('HTTP/1.0 403 Forbidden');
         }
         $user = $this->securityHelper->getUser();
-        $offset = $this->request->getQuery('offset', 1);
-        $limit = $this->request->getQuery('limit', 10);
+        $offset = $this->serverRequest->getQuery('offset', 1);
+        $limit = $this->serverRequest->getQuery('limit', 10);
         $page = intval($offset / $limit) + 1;
         $userComments = $this->commentManager->findUserComments($user->getId(), $page, $limit);
         $totalComments = $this->commentManager->countUserComments($user->getId());
@@ -88,8 +81,8 @@ class AjaxController
             header('HTTP/1.0 403 Forbidden');
         }
 
-        $offset = $this->request->getQuery('offset', 1);
-        $limit = $this->request->getQuery('limit', 10);
+        $offset = $this->serverRequest->getQuery('offset', 1);
+        $limit = $this->serverRequest->getQuery('limit', 10);
         $page = intval($offset / $limit) + 1;
         $results = $this->commentManager->findAll($page, $limit);
         $comments = $results['comments'];
@@ -222,8 +215,8 @@ class AjaxController
 
     public function allPosts()
     {
-        $offset = $this->request->getQuery('offset', 1);
-        $limit = $this->request->getQuery('limit', 10);
+        $offset = $this->serverRequest->getQuery('offset', 1);
+        $limit = $this->serverRequest->getQuery('limit', 10);
         $page = intval($offset / $limit) + 1;
         $results = $this->postManager->findAll($page, $limit);
         $posts = $results['posts'];

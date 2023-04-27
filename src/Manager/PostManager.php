@@ -130,9 +130,10 @@ class PostManager
             GROUP BY p.id
             ORDER BY p.created_at DESC
             LIMIT :limit OFFSET :offset';
+            $offset = ($page - 1) * $limit;
             $statement = $this->database->prepare($sql);
             $statement->bindValue('limit', $limit, \PDO::PARAM_INT);
-            $statement->bindValue('offset', ($page - 1) * $limit, \PDO::PARAM_INT);
+            $statement->bindValue('offset', $offset, \PDO::PARAM_INT);
             $statement->execute();
             $posts = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {

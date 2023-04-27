@@ -33,7 +33,9 @@ class Injectable
 
             return new Configuration($configurationArray);
         });
-
+        $container->set(Request::class, function (Container $container) {
+            return new Request($container);
+        });
         $container->set(ServerRequest::class, new ServerRequest($_SERVER));
         $container->set(Session::class, new Session());
         $container->set(SecurityHelper::class, new SecurityHelper($container->get(Session::class)));
@@ -53,10 +55,6 @@ class Injectable
         });
         $container->set(MailerInterface::class, function (Container $container) {
             return new Mailer($container->get(CustomSmtpTransport::class));
-        });
-        $container->set(MailerService::class);
-        $container->set(Request::class, function (Container $container) {
-            return new Request($container);
         });
     }
 }

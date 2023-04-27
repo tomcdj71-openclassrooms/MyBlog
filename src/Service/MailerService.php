@@ -9,12 +9,10 @@ use Symfony\Component\Mime\Email;
 
 class MailerService
 {
-    private CustomSmtpTransport $transport;
     private MailerInterface $mailer;
 
-    public function __construct(CustomSmtpTransport $transport, MailerInterface $mailer)
+    public function __construct(MailerInterface $mailer)
     {
-        $this->transport = $transport;
         $this->mailer = $mailer;
     }
 
@@ -30,7 +28,7 @@ class MailerService
         try {
             $this->mailer->send($email);
         } catch (\Symfony\Component\Mailer\Exception\TransportExceptionInterface $e) {
-            throw new \RuntimeException('Unable to send email: '.$e->getMessage());
+            throw new \RuntimeException("Impossible d'envoyer un e-mail: ".$e->getMessage());
         }
     }
 }

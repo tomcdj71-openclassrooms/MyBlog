@@ -5,53 +5,45 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\DependencyInjection\Container;
-use App\Helper\SecurityHelper;
 use App\Helper\StringHelper;
-use App\Helper\TwigHelper;
 use App\Manager\CategoryManager;
 use App\Manager\CommentManager;
 use App\Manager\PostManager;
 use App\Manager\TagManager;
-use App\Manager\UserManager;
-use App\Router\ServerRequest;
-use App\Router\Session;
 use App\Service\CommentService;
 
-class BlogController
+class BlogController extends AbstractController
 {
-    protected TwigHelper $twig;
     private CategoryManager $categoryManager;
     private PostManager $postManager;
     private TagManager $tagManager;
-    private UserManager $userManager;
-    private SecurityHelper $securityHelper;
     private StringHelper $stringHelper;
     private CommentManager $commentManager;
-    private Session $session;
     private CommentService $commentService;
-    private ServerRequest $serverRequest;
 
     public function __construct(Container $container)
     {
+        parent::__construct($container);
         $container->injectProperties($this);
     }
 
     /**
      * Display the blog index page.
      *
-     * @param null  $message
-     * @param mixed $session
+     * @param null $message
      */
     public function blogIndex($message = null)
     {
         $data = $this->resetData();
-
-        $offset = $this->serverRequest->getQuery('offset', 1);
-        $limit = $this->serverRequest->getQuery('limit', 10);
-        $page = intval($offset / $limit) + 1;
+        $page = $this->serverRequest->getQuery('page') ? intval($this->serverRequest->getQuery('page')) : 1;
+        $limit = 10;
+        $totalPosts = $this->postManager->countAll();
+        $totalPages = ceil($totalPosts / $limit);
         $posts = $this->postManager->findAll($page, $limit);
         $data['message'] = $message;
         $data['posts'] = $posts['posts'];
+        $data['currentPage'] = $page;
+        $data['totalPages'] = $totalPages;
         $this->twig->render('pages/blog/index.html.twig', $data);
     }
 

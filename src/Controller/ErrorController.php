@@ -5,17 +5,14 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\DependencyInjection\Container;
-use App\Helper\TwigHelper;
-use App\Router\Session;
 
-class ErreurController
+class ErrorController extends AbstractController
 {
-    protected TwigHelper $twig;
     private $data;
-    private Session $session;
 
     public function __construct(Container $container)
     {
+        parent::__construct($container);
         $container->injectProperties($this);
     }
 

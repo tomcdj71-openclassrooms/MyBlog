@@ -654,12 +654,12 @@ body {
 
 .blog .blog-pagination li.active,
 .blog .blog-pagination li:hover {
-    background: #e43c5c;
+    background: var(--bs-indigo);
 }
 
 .blog .blog-pagination li.active a,
 .blog .blog-pagination li:hover a {
-    color: #fff;
+    color: var(--bs-white);
 }
 
 .blog .sidebar {
@@ -680,45 +680,6 @@ body {
 
 .blog .sidebar .sidebar-item {
     margin-bottom: 30px;
-}
-
-.blog .sidebar .search-form form {
-    background: #fff;
-    border: 1px solid #ddd;
-    padding: 3px 10px;
-    position: relative;
-}
-
-.blog .sidebar .search-form form input[type=text] {
-    border: 0;
-    padding: 4px;
-    border-radius: 4px;
-    width: calc(100% - 40px);
-}
-
-.blog .sidebar .search-form form button {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    border: 0;
-    background: none;
-    font-size: 16px;
-    padding: 0 15px;
-    margin: -1px;
-    background: #e43c5c;
-    color: #fff;
-    transition: 0.3s;
-    border-radius: 0 4px 4px 0;
-    line-height: 0;
-}
-
-.blog .sidebar .search-form form button i {
-    line-height: 0;
-}
-
-.blog .sidebar .search-form form button:hover {
-    background: #e64e6b;
 }
 
 .blog .sidebar .categories ul {

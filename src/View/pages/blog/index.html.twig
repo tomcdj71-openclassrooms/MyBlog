@@ -45,7 +45,6 @@
 								</p>
 								<div class="read-more">
 									<a href="{{ path('blog_post', {'slug': post.slug}) }}">Voir Plus</a>
-
 								</div>
 							</div>
 						</article>
@@ -53,15 +52,13 @@
 					<!-- End blog entry -->
 					<div class="blog-pagination">
 						<ul class="justify-content-center">
-							<li>
-								<a href="#">1</a>
-							</li>
-							<li class="active">
-								<a href="#">2</a>
-							</li>
-							<li>
-								<a href="#">3</a>
-							</li>
+							{% if totalPages is defined %}
+								{% for i in 1..totalPages %}
+									<li {% if i == currentPage %} class="active" {% endif %}>
+										<a href="{{ path('blog') }}?page={{ i }}">{{ i }}</a>
+									</li>
+								{% endfor %}
+							{% endif %}
 						</ul>
 					</div>
 				</div>
@@ -71,4 +68,7 @@
 			</div>
 		</div>
 	</section>
+	{% block javascripts %}
+		<script src="{{ asset('js/script.js') }}"></script>
+	{% endblock %}
 {% endblock %}

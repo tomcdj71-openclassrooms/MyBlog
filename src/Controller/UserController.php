@@ -5,35 +5,24 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\DependencyInjection\Container;
-use App\Helper\SecurityHelper;
 use App\Helper\StringHelper;
-use App\Helper\TwigHelper;
 use App\Manager\UserManager;
-use App\Middleware\AuthenticationMiddleware;
 use App\Model\UserModel;
-use App\Router\Request;
-use App\Router\ServerRequest;
-use App\Router\Session;
 use App\Service\PostService;
 use App\Service\ProfileService;
 use App\Validator\LoginFormValidator;
 use App\Validator\RegisterFormValidator;
 
-class UserController
+class UserController extends AbstractController
 {
-    protected TwigHelper $twig;
-    private UserManager $userManager;
-    private SecurityHelper $securityHelper;
-    private AuthenticationMiddleware $authMiddleware;
-    private Session $session;
-    private ServerRequest $serverRequest;
+    protected UserManager $userManager;
     private ProfileService $profileService;
-    private Request $request;
     private StringHelper $stringHelper;
     private PostService $postService;
 
     public function __construct(Container $container)
     {
+        parent::__construct($container);
         $container->injectProperties($this);
     }
 
@@ -131,8 +120,16 @@ class UserController
      */
     public function register($message = null)
     {
+        try {
+            if ($this->session->getCookie('remember_me_token') && !$this->authMiddleware->isUserOrAdmin()) {
+                $this->securityHelper->checkRememberMeToken($this->session->getCookie('remember_me_token'));
+            }
+        } catch (\Exception $e) {
+            // If there is an issue with the remember_me_token (expired or invalid), remove it
+            setcookie('remember_me_token', '', time() - 3600, '/', '', false, true);
+        }
         if ($this->authMiddleware->isUserOrAdmin()) {
-            return $this->request->redirectToRoute('login');
+            return $this->request->redirectToRoute('blog');
         }
         $csrfToken = $this->securityHelper->generateCsrfToken('register');
         $data = [
@@ -195,12 +192,5 @@ class UserController
         $this->session->destroy();
 
         return $this->request->redirectToRoute('blog');
-    }
-
-    private function authenticate(): void
-    {
-        $middleware = new AuthenticationMiddleware($this->securityHelper);
-
-        $middleware();
     }
 }
