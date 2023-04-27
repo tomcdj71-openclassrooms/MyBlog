@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\DependencyInjection\Container;
-use App\Helper\SecurityHelper;
 use App\Manager\PostManager;
 
-class PostService
+class PostService extends AbstractService
 {
     private PostManager $postManager;
-    private SecurityHelper $securityHelper;
 
     public function __construct(Container $container)
     {
@@ -21,8 +19,8 @@ class PostService
     public function getUserPostsData()
     {
         $user = $this->securityHelper->getUser();
-        $offset = isset($_GET['offset']) ? intval($_GET['offset']) : 1;
-        $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 10;
+        $offset = $this->serverRequest->getQuery('offset') ? intval($this->serverRequest->getQuery('offset')) : 1;
+        $limit = $this->serverRequest->getQuery('limit') ? intval($this->serverRequest->getQuery('limit')) : 10;
         $page = intval($offset / $limit) + 1;
         $userPostsData = $this->postManager->findUserPosts($user->getId(), $page, $limit);
         $userPosts = $userPostsData['posts'];

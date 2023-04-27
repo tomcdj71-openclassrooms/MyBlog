@@ -49,7 +49,7 @@ abstract class BaseValidator
                 break;
 
             default:
-                $error = 'Unknown validation rule';
+                $error = 'Règle de validation inconnue';
         }
 
         return ['valid' => empty($error), 'errorMsg' => $error];

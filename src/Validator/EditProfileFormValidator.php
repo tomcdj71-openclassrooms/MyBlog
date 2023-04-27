@@ -26,7 +26,7 @@ class EditProfileFormValidator
         ];
 
         $validationRules = [
-            'email' => ['type' => 'email', 'errorMsg' => 'Please enter a valid email address!'],
+            'email' => ['type' => 'email', 'errorMsg' => 'Veuillez inscrire une adresse email valide!'],
             'firstName' => ['type' => 'length', 'length' => 60, 'errorMsg' => 'Le prénom ne doit pas dépasser 60 caractères.'],
             'lastName' => ['type' => 'length', 'length' => 60, 'errorMsg' => 'Le nom de famille ne doit pas dépasser 60 caractères.'],
             'bio' => ['type' => 'length', 'length' => 500, 'errorMsg' => 'La biographie ne peut pas dépasser 500 caractères.'],

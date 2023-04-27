@@ -19,11 +19,7 @@ class Configuration
         $data = $this->configuration;
 
         foreach ($segments as $segment) {
-            if (isset($data[$segment])) {
-                $data = $data[$segment];
-            } else {
-                return $default;
-            }
+            $data = isset($data[$segment]) ? $data[$segment] : $default;
         }
 
         return $data;

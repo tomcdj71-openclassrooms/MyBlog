@@ -14,10 +14,10 @@ class RegisterFormValidator extends BaseValidator
     public function validate($data)
     {
         $validationRules = [
-            'email' => ['type' => 'email', 'errorMsg' => 'Please enter a valid email address!', 'required' => true],
-            'username' => ['type' => 'empty', 'errorMsg' => 'Please enter a username.', 'required' => true],
-            'password' => ['type' => 'empty', 'errorMsg' => 'Please enter a password.', 'required' => true],
-            'passwordConfirm' => ['type' => 'confirm', 'compareField' => 'password', 'errorMsg' => 'The password confirmation does not match.', 'required' => true],
+            'email' => ['type' => 'email', 'errorMsg' => 'Veuillez inscrire une adresse email valide!', 'required' => true],
+            'username' => ['type' => 'empty', 'errorMsg' => "Merci d'entrer un nom d'utilisateur.", 'required' => true],
+            'password' => ['type' => 'empty', 'errorMsg' => "Merci d'entrer un mot de passe.", 'required' => true],
+            'passwordConfirm' => ['type' => 'confirm', 'compareField' => 'password', 'errorMsg' => 'La confirmation du mot de passe ne correspond pas.', 'required' => true],
             'csrf_token' => ['type' => 'csrf', 'errorMsg' => 'Jeton CSRF invalide.', 'required' => true],
         ];
 

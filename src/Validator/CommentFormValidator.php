@@ -2,7 +2,7 @@
 
 namespace App\Validator;
 
-class CommentFormValidator extends BaseValidator
+class CommentFormValidator
 {
     private $securityHelper;
 
@@ -13,12 +13,33 @@ class CommentFormValidator extends BaseValidator
 
     public function validate($data)
     {
+        $errors = [];
+        $valid = true;
+
         $validationRules = [
+            'content' => ['type' => 'empty', 'errorMsg' => 'Veuillez entrer un commentaire.', 'required' => true],
             'csrf_token' => ['type' => 'csrf', 'errorMsg' => 'Jeton CSRF invalide.', 'required' => true],
-            'content' => ['type' => 'empty', 'errorMsg' => 'Please enter a comment.', 'required' => true],
         ];
 
-        return $this->validateData($data, $validationRules);
+        foreach ($validationRules as $field => $rule) {
+            if (isset($data[$field])) {
+                switch ($rule['type']) {
+                    case 'empty':
+                        if (empty($data[$field])) {
+                            $valid = false;
+                            $errors[$field] = $rule['errorMsg'];
+                        }
+
+                        break;
+                }
+            }
+        }
+
+        return [
+            'valid' => $valid,
+            'errors' => $errors,
+            'data' => $data,
+        ];
     }
 
     protected function validateCsrfToken($token, $errorMsg)

@@ -5,18 +5,12 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\DependencyInjection\Container;
-use App\Helper\SecurityHelper;
 use App\Manager\CommentManager;
-use App\Middleware\AuthenticationMiddleware;
-use App\Router\ServerRequest;
 use App\Validator\CommentFormValidator;
 
-class CommentService
+class CommentService extends AbstractService
 {
-    private SecurityHelper $securityHelper;
     private CommentManager $commentManager;
-    private AuthenticationMiddleware $authMiddleware;
-    private ServerRequest $request;
 
     public function __construct(Container $container)
     {
@@ -26,20 +20,15 @@ class CommentService
     public function handleCommentPostRequest($postObject, array $postData)
     {
         $errors = [];
-        $csrf_to_check = $_POST['csrf_token'];
-        if (!$this->securityHelper->checkCsrfToken('comment', $csrf_to_check)) {
+        $csrfToCheck = $this->serverRequest->getPost('csrf_token');
+        if (!$this->securityHelper->checkCsrfToken('comment', $csrfToCheck)) {
             $errors[] = 'Jeton CSRF invalide.';
         }
         $postData = $this->getPostData($postObject);
         $commentFV = new CommentFormValidator($this->securityHelper);
         $response = $commentFV->validate($postData);
-
-        if ($response['valid']) {
-            $message = $this->createComment($response['data']);
-        } else {
-            $errors = $response['errors'];
-            $message = null;
-        }
+        $message = $response['valid'] ? $this->createComment($response['data']) : null;
+        $errors = $response['valid'] ? null : $response['errors'];
 
         return [$errors, $message];
     }
@@ -48,13 +37,13 @@ class CommentService
     {
         $fields = ['content', 'parent_id', 'csrf_token'];
         $postData = array_map(function ($field) {
-            return isset($_POST[$field]) ? htmlspecialchars($_POST[$field], ENT_QUOTES, 'UTF-8') : '';
+            return $this->serverRequest->getPost($field, '');
         }, array_combine($fields, $fields));
 
-        $postData['csrf_token'] = $_POST['csrf_token'];
+        $postData['csrf_token'] = $this->serverRequest->getPost('csrf_token');
         $postData['post_id'] = $postObject;
         $postData['author_id'] = $this->securityHelper->getUser();
-        $postData['parent_id'] = $_POST['parentId'] ?? null;
+        $postData['parent_id'] = $this->serverRequest->getPost('parentId') ?? null;
 
         return $postData;
     }
@@ -71,8 +60,9 @@ class CommentService
             'is_enabled' => $isEnabled,
             'created_at' => date('Y-m-d H:i:s'),
         ];
+
         $this->commentManager->create($commentData);
 
-        return 'Comment created successfully!';
+        return 'Commentaire créé avec succès!';
     }
 }

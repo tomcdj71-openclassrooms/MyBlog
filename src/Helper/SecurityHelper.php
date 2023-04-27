@@ -7,6 +7,7 @@ namespace App\Helper;
 use App\Config\DatabaseConnexion;
 use App\Manager\UserManager;
 use App\Model\UserModel;
+use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Validator\LoginFormValidator;
 use App\Validator\RegisterFormValidator;
@@ -16,7 +17,8 @@ class SecurityHelper
     private UserManager $userManager;
     private RegisterFormValidator $registerValidator;
     private LoginFormValidator $loginValidator;
-    private $session;
+    private Session $session;
+    private ServerRequest $serverRequest;
 
     public function __construct(Session $session)
     {
@@ -25,6 +27,7 @@ class SecurityHelper
         $this->userManager = new UserManager($connexion);
         $this->registerValidator = new RegisterFormValidator($this);
         $this->loginValidator = new LoginFormValidator($this->userManager, $this);
+        $this->serverRequest = new ServerRequest();
     }
 
     public function register(array $postData): bool
@@ -115,7 +118,7 @@ class SecurityHelper
 
     public function checkRememberMeToken(): ?UserModel
     {
-        if (!isset($_COOKIE['remember_me_token']) || empty($_COOKIE['remember_me_token'])) {
+        if (!$this->session->get('remember_me_token') || empty($this->session->get('remember_me_token'))) {
             throw new \InvalidArgumentException("Le jeton 'Remember Me' n'est pas défini ou vide.");
         }
         $token = $this->session->getCookie('remember_me_token');

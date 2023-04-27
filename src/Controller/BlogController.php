@@ -66,12 +66,12 @@ class BlogController extends AbstractController
         if (null === $user) {
             $user = null;
         }
-        if ('POST' === $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'content') && filter_input(INPUT_POST, 'csrf_token')) {
+        if ('POST' === $this->serverRequest->getRequestMethod() && $this->serverRequest->getPost('content') && $this->serverRequest->getPost('csrf_token')) {
             $postData = [
-                'content' => filter_input(INPUT_POST, 'content', FILTER_SANITIZE_SPECIAL_CHARS),
+                'content' => $this->serverRequest->getPost('content'),
                 'post_id' => $post,
                 'user_id' => $this->session->getUserFromSession()->getId(),
-                'parent_id' => filter_input(INPUT_POST, 'parentId', FILTER_SANITIZE_SPECIAL_CHARS),
+                'parent_id' => $this->serverRequest->getPost('parentId'),
             ];
             list($errors, $message) = $this->commentService->handleCommentPostRequest($post, $postData);
             if (empty($errors)) {
@@ -86,9 +86,11 @@ class BlogController extends AbstractController
                 $data['comments'] = $this->commentManager->findAllByPost($post->getId());
                 $data['loggedUser'] = $user;
                 $data['session'] = $this->session;
-                $this->twig->render('pages/blog/post.html.twig', $data);
+
+                return $this->twig->render('pages/blog/post.html.twig', $data);
             }
-            $message = implode(', ', $errors); // Combine error messages if there are multiple errors
+            $errors = array_map('strval', $errors);
+            $message = implode(', ', $errors);
         }
         $csrfToken = $this->securityHelper->generateCsrfToken('comment');
         $data['title'] = 'MyBlog - Blog Post';

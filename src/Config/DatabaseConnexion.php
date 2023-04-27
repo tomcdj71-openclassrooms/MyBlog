@@ -6,7 +6,7 @@ namespace App\Config;
 
 class DatabaseConnexion
 {
-    private $PATH_TO_SQLITE_FILE;
+    private $pathToSqliteFile;
 
     /**
      * PDO instance.
@@ -17,7 +17,7 @@ class DatabaseConnexion
 
     public function __construct()
     {
-        $this->PATH_TO_SQLITE_FILE = __DIR__.'/../../var/database.db';
+        $this->pathToSqliteFile = __DIR__.'/../../var/database.db';
     }
 
     /**
@@ -30,7 +30,7 @@ class DatabaseConnexion
     {
         if (null == $this->pdo) {
             try {
-                $this->pdo = new \PDO('sqlite:'.$this->PATH_TO_SQLITE_FILE);
+                $this->pdo = new \PDO('sqlite:'.$this->pathToSqliteFile);
             } catch (\PDOException $e) {
                 throw new \PDOException($e->getMessage(), (int) $e->getCode());
             }

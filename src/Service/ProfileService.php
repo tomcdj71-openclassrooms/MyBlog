@@ -6,19 +6,16 @@ namespace App\Service;
 
 use App\DependencyInjection\Container;
 use App\Helper\ImageHelper;
-use App\Helper\SecurityHelper;
 use App\Manager\UserManager;
 use App\Validator\EditProfileFormValidator;
 
-class ProfileService
+class ProfileService extends AbstractService
 {
-    private $securityHelper;
     private $imageHelper;
     private $userManager;
 
     public function __construct(Container $container)
     {
-        $this->securityHelper = $container->get(SecurityHelper::class);
         $this->imageHelper = new ImageHelper('uploads/avatars/', 200, 200);
         $this->userManager = $container->get(UserManager::class);
     }
@@ -26,19 +23,15 @@ class ProfileService
     public function handleProfilePostRequest($user)
     {
         $errors = [];
-        $csrf_to_check = $_POST['csrf_token'];
-        if (!$this->securityHelper->checkCsrfToken('editProfile', $csrf_to_check)) {
+        $csrfToCheck = $this->serverRequest->getPost('csrf_token');
+        if (!$this->securityHelper->checkCsrfToken('editProfile', $csrfToCheck)) {
             $errors[] = 'Jeton CSRF invalide.';
         }
         $postData = $this->getPostData();
         $editProfileFV = new EditProfileFormValidator($this->securityHelper);
         $response = $editProfileFV->validate($postData);
-        if ($response['valid']) {
-            $message = $this->updateUserProfile($user, $response['data']);
-        } else {
-            $errors = $response['errors'];
-            $message = null;
-        }
+        $message = $response['valid'] ? $this->updateUserProfile($user, $response['data']) : null;
+        $errors = $response['valid'] ? null : $response['errors'];
 
         return [$errors, $message];
     }
@@ -47,10 +40,10 @@ class ProfileService
     {
         $fields = ['firstName', 'lastName', 'email', 'username', 'bio', 'twitter', 'facebook', 'github', 'linkedin'];
         $postData = array_map(function ($field) {
-            return isset($_POST[$field]) ? htmlspecialchars($_POST[$field], ENT_QUOTES, 'UTF-8') : '';
+            return $this->serverRequest->getPost($field, '');
         }, array_combine($fields, $fields));
         $postData['avatar'] = $_FILES['avatar'] ?? null;
-        $postData['csrf_token'] = $_POST['csrf_token'];
+        $postData['csrf_token'] = $this->serverRequest->getPost('csrf_token');
         if (!empty($_FILES['avatar'] || null === $_FILES['avatar'])) {
             unset($postData['avatar']);
         }

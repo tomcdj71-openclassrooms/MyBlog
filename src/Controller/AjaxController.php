@@ -121,23 +121,6 @@ class AjaxController extends AbstractController
         echo json_encode($response);
     }
 
-    public function toggleCommentStatus(int $commentId)
-    {
-        if (!$this->authMiddleware->isUserOrAdmin()) {
-            header('HTTP/1.0 403 Forbidden');
-        }
-
-        $comment = $this->commentManager->find($commentId);
-        $sucess = false;
-        if ($comment) {
-            $comment->setIsEnabled(!$comment->getIsEnabled());
-            $success = $this->commentManager->updateIsEnabled($comment);
-        }
-
-        header('Content-Type: application/json');
-        echo json_encode(['success' => $success]);
-    }
-
     public function allTags()
     {
         $tags = $this->tagManager->findAll();
@@ -253,5 +236,30 @@ class AjaxController extends AbstractController
         ];
         header('Content-Type: application/json');
         echo json_encode($response);
+    }
+
+    public function toggleCommentStatus(int $commentId)
+    {
+        if (!$this->authMiddleware->isUserOrAdmin()) {
+            $this->sendJsonResponse(['error' => 'Interdit'], 403);
+
+            return;
+        }
+        $comment = $this->commentManager->find($commentId);
+        if (null === $comment) {
+            $this->sendJsonResponse(['error' => 'Commentaire non trouvé.'], 404);
+
+            return;
+        }
+        $comment->setIsEnabled(!$comment->getIsEnabled());
+        $success = $this->commentManager->updateIsEnabled($comment);
+        $this->sendJsonResponse(['success' => $success]);
+    }
+
+    private function sendJsonResponse(array $data, int $statusCode = 200)
+    {
+        http_response_code($statusCode);
+        header('Content-Type: application/json');
+        echo json_encode($data);
     }
 }

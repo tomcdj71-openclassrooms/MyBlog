@@ -157,9 +157,8 @@ class UserController extends AbstractController
                     return $this->request->redirectToRoute('login');
                 }
                 $errors[] = "Échec de l'enregistrement. Veuillez réessayer.";
-            } else {
-                $errors = $validationResult['errors'];
             }
+            $errors = array_merge($errors, $validationResult['errors']);
         }
 
         $this->twig->render('pages/security/register.html.twig', array_merge($data, ['errors' => $errors]));

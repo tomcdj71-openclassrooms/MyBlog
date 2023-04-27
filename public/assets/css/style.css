@@ -522,7 +522,7 @@ body {
     font-weight: bold;
 }
 
-.blog .blog-comments .comment {
+.blog .blog-comments > .comment {
     margin-top: 30px;
     position: relative;
     background-color: var(--bs-white);

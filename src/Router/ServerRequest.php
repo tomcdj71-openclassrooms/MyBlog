@@ -8,11 +8,13 @@ class ServerRequest extends Request
 {
     private array $server;
     private array $query;
+    private array $post;
 
-    public function __construct(array $server = [], array $query = [])
+    public function __construct(array $server = [], array $query = [], array $post = [])
     {
         $this->server = $server ?: $_SERVER;
         $this->query = $query ?: $_GET;
+        $this->post = $post ?: $_POST;
     }
 
     public function get(string $key, $default = null)
@@ -58,5 +60,15 @@ class ServerRequest extends Request
     public function getQuery(string $key, $default = null)
     {
         return $this->query[$key] ?? $default;
+    }
+
+    public function getPost(string $key, $default = null)
+    {
+        return $this->post[$key] ?? $default;
+    }
+
+    public function hasPost(string $key): bool
+    {
+        return isset($this->post[$key]);
     }
 }
