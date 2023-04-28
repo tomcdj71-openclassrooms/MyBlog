@@ -1,108 +1,102 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Validator;
 
-use App\Config\DatabaseConnexion;
 use App\Helper\SecurityHelper;
 use App\Manager\UserManager;
 
 abstract class BaseValidator
 {
-    private SecurityHelper $securityHelper;
+    protected UserManager $userManager;
+    protected SecurityHelper $securityHelper;
 
-    public function __construct(SecurityHelper $securityHelper)
+    public function __construct(UserManager $userManager = null, SecurityHelper $securityHelper)
     {
+        $this->userManager = $userManager;
         $this->securityHelper = $securityHelper;
     }
 
-    protected function validateData($data, $validationRules)
+    public function validateData(array $data, array $validationRules): array
     {
         $errors = [];
-        foreach ($validationRules as $field => $rule) {
-            if (isset($data[$field]) || $rule['required']) {
-                $validationResult = $this->validateField($data, $field, $rule);
-                if (!$validationResult['valid']) {
-                    $errors[$field] = $validationResult['errorMsg'];
-                }
+        foreach ($validationRules as $field => $rules) {
+            if ($rules['constraints']['required'] && !isset($data[$field])) {
+                $errors[$field] = $rules['constraints']['errorMsg'] ?? '';
+
+                continue;
+            }
+            if (isset($data[$field])) {
+                $errors = array_merge($errors, $this->validateField($field, $data, $rules));
             }
         }
 
         return [
-            'valid' => empty($errors),
             'errors' => $errors,
+            'valid' => empty($errors),
         ];
     }
 
-    protected function validateField($data, $field, $rule)
+    protected function validateField(string $field, array $data, array $rules): array
     {
-        $error = '';
+        $errors = [];
 
-        switch ($rule['type']) {
+        switch ($rules['constraints']['type'] ?? '') {
             case 'email':
-                $error = $this->validateEmail($data[$field], $rule['errorMsg']);
-
-                break;
-
-            case 'empty':
-                $error = $this->validateNotEmpty($data[$field], $rule['errorMsg']);
-
-                break;
-
-            case 'confirm':
-                $error = $this->validateConfirm($data[$field], $data[$rule['compareField']], $rule['errorMsg']);
+                if (!filter_var($data[$field], FILTER_VALIDATE_EMAIL)) {
+                    $errors[$field] = $rules['constraints']['errorMsg'] ?? '';
+                }
 
                 break;
 
             case 'csrf':
-                $error = call_user_func([$this, 'validateCsrfToken'], $data[$field], $rule['errorMsg']);
+                $error = $this->validateCsrfToken($data[$field], $rules['constraints']['errorMsg'] ?? '');
+                if ($error) {
+                    $errors[$field] = $error;
+                }
 
                 break;
 
-            case 'unique':
-                $error = call_user_func([$this, 'validateUnique'], $field, $data[$field], $rule['errorMsg']);
+            case 'compare':
+                if ($data[$field] !== $data[$rules['constraints']['compareField']]) {
+                    $errors[$field] = $rules['constraints']['errorMsg'] ?? '';
+                }
 
                 break;
-
-            default:
-                $error = 'Règle de validation inconnue';
         }
-        if (empty($error) && isset($rule['constraints'])) {
-            foreach ($rule['constraints'] as $constraint => $constraintInfo) {
-                switch ($constraint) {
-                    case 'unique':
-                        $error = $this->validateUnique($field, $data[$field], $constraintInfo['errorMsg']);
-
-                        break;
-                }
-                if (!empty($error)) {
-                    break;
-                }
+        if (isset($rules['constraints']['length'])) {
+            $errors = array_merge($errors, $this->validateLength($field, $data, $rules));
+        }
+        if (isset($rules['constraints']['unique']) && $this->userManager) {
+            $user = $this->userManager->findOneBy([$field => $data[$field]]);
+            if ($user) {
+                $errors[$field] = $rules['constraints']['unique']['errorMsg'] ?? '';
             }
         }
 
-        return ['valid' => empty($error), 'errorMsg' => $error];
+        return $errors;
     }
 
-    protected function validateEmail($email, $errorMsg)
+    protected function validateLength(string $field, array $data, array $rules): array
     {
-        return filter_var($email, FILTER_VALIDATE_EMAIL) ? '' : $errorMsg;
+        $errors = [];
+        $length = strlen($data[$field]);
+        $minErrorMsg = $rules['constraints']['length']['minErrorMsg'] ?? '';
+        $maxErrorMsg = $rules['constraints']['length']['maxErrorMsg'] ?? '';
+        if ($length < $rules['constraints']['length']['min']) {
+            $errors[$field] = $minErrorMsg;
+
+            return $errors;
+        }
+        if ($length > $rules['constraints']['length']['max']) {
+            $errors[$field] = $maxErrorMsg;
+
+            return $errors;
+        }
+
+        return $errors;
     }
 
-    protected function validateNotEmpty($value, $errorMsg)
-    {
-        return !empty($value) ? '' : $errorMsg;
-    }
-
-    protected function validateConfirm($value1, $value2, $errorMsg)
-    {
-        return $value1 === $value2 ? '' : $errorMsg;
-    }
-
-    protected function validateUnique($field, $value, $errorMsg)
-    {
-        $manager = new UserManager(new DatabaseConnexion());
-        $user = $manager->findOneBy([$field => $value]);
-
-        return $user ? $errorMsg : '';
-    }
+    abstract protected function validateCsrfToken($token, $errorMsg);
 }

@@ -9,12 +9,12 @@ use App\Manager\UserManager;
 
 class LoginFormValidator extends BaseValidator
 {
-    private UserManager $userManager;
-    private SecurityHelper $securityHelper;
+    protected SecurityHelper $securityHelper;
+    protected UserManager $userManager;
 
     public function __construct(UserManager $userManager, SecurityHelper $securityHelper)
     {
-        parent::__construct($securityHelper);
+        parent::__construct($userManager, $securityHelper);
         $this->userManager = $userManager;
         $this->securityHelper = $securityHelper;
     }
@@ -23,10 +23,28 @@ class LoginFormValidator extends BaseValidator
     {
         // Define your validation rules here
         $validationRules = [
-            'email' => ['type' => 'email', 'required' => true, 'errorMsg' => 'Invalid email.'],
-            'password' => ['type' => 'empty', 'required' => true, 'errorMsg' => 'Password is required.'],
-            'remember' => ['type' => 'empty', 'required' => false],
-            'csrfToken' => ['type' => 'csrf', 'required' => true, 'errorMsg' => 'Invalid CSRF token.'],
+            'email' => [
+                'constraints' => [
+                    'required' => true, 'errorMsg' => 'Cet email ne correspond pas à un utilisateur.',
+                    'type' => 'email',
+                ],
+            ],
+            'password' => [
+                'constraints' => [
+                    'required' => true, 'errorMsg' => 'Ce mot de passe est invalide.',
+                ],
+            ],
+            'remember' => [
+                'constraints' => [
+                    'required' => false,
+                ],
+            ],
+            'csrfToken' => [
+                'constraints' => [
+                    'required' => true,
+                    'type' => 'csrf',
+                ],
+            ],
         ];
 
         return $this->validateData($data, $validationRules);

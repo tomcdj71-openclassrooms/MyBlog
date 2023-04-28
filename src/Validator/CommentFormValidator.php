@@ -2,7 +2,7 @@
 
 namespace App\Validator;
 
-class CommentFormValidator
+class CommentFormValidator extends BaseValidator
 {
     private $securityHelper;
 
@@ -17,36 +17,27 @@ class CommentFormValidator
         $valid = true;
 
         $validationRules = [
-            'content' => ['type' => 'empty', 'errorMsg' => 'Veuillez entrer un commentaire.', 'required' => true],
-            'csrfToken' => ['type' => 'csrf', 'errorMsg' => 'Jeton CSRF invalide.', 'required' => true],
+            'content' => [
+                'constraints' => [
+                    'required' => true, 'errorMsg' => 'Veuillez renseigner votre commentaire.',
+                    'length' => [
+                        'min' => 10, 'minErrorMsg' => 'Votre commentaire doit contenir au moins 10 caractères.',
+                        'max' => 500, 'maxErrorMsg' => 'Votre commentaire doit contenir 500 caractères maximum.'],
+                ],
+            ],
+            'csrfToken' => [
+                'constraints' => [
+                    'required' => true,
+                    'type' => 'csrf',
+                ],
+            ],
         ];
 
-        foreach ($validationRules as $field => $rule) {
-            if (isset($data[$field])) {
-                switch ($rule['type']) {
-                    case 'empty':
-                        if (empty($data[$field])) {
-                            $valid = false;
-                            $errors[$field] = $rule['errorMsg'];
-                        }
-
-                        break;
-                }
-            }
-        }
-
-        return [
-            'valid' => $valid,
-            'errors' => $errors,
-            'data' => $data,
-        ];
+        return $this->validateData($data, $validationRules);
     }
 
     protected function validateCsrfToken($token, $errorMsg)
     {
-        return [
-            'valid' => $this->securityHelper->checkCsrfToken('comment', $token),
-            'errorMsg' => $errorMsg,
-        ];
+        return $this->securityHelper->checkCsrfToken('login', $token) ? '' : $errorMsg;
     }
 }

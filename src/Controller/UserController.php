@@ -11,6 +11,7 @@ use App\Service\PostService;
 use App\Service\ProfileService;
 use App\Validator\LoginFormValidator;
 use App\Validator\RegisterFormValidator;
+use Tracy\Debugger;
 
 class UserController extends AbstractController
 {
@@ -90,6 +91,7 @@ class UserController extends AbstractController
                 'csrfToken' => filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS),
             ];
             $validationResult = $this->loginFV->validate($postData);
+            Debugger::barDump($validationResult);
             $errors = $validationResult['errors'];
             if ($validationResult['valid']) {
                 $login = $this->securityHelper->login($postData, $this->loginFV->shouldRemember($postData));
@@ -140,7 +142,7 @@ class UserController extends AbstractController
                 'passwordConfirm' => filter_input(INPUT_POST, 'passwordConfirm', FILTER_SANITIZE_SPECIAL_CHARS),
                 'csrfToken' => $csrfToken,
             ];
-            $registerFV = new RegisterFormValidator($this->securityHelper);
+            $registerFV = new RegisterFormValidator($this->userManager, $this->securityHelper);
             $validationResult = $registerFV->validate($postData);
             if ($validationResult['valid']) {
                 $registered = $this->securityHelper->register($postData);
@@ -153,12 +155,14 @@ class UserController extends AbstractController
             }
             $errors = array_merge($errors, $validationResult['errors']);
         }
+        Debugger::barDump($errors);
         $data = [
             'title' => 'MyBlog - Connexion',
             'route' => 'login',
             'message' => $message,
             'session' => $this->session,
             'csrfToken' => $csrfToken,
+            'errors' => $errors,
         ];
         $this->twig->render('pages/security/register.html.twig', array_merge($data, ['errors' => $errors]));
     }

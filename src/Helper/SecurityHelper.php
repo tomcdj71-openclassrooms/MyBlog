@@ -25,7 +25,7 @@ class SecurityHelper
         $connexion = new DatabaseConnexion();
         $this->session = $session;
         $this->userManager = new UserManager($connexion);
-        $this->registerValidator = new RegisterFormValidator($this);
+        $this->registerValidator = new RegisterFormValidator($this->userManager, $this);
         $this->loginValidator = new LoginFormValidator($this->userManager, $this);
         $this->serverRequest = new ServerRequest();
     }
