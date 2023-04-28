@@ -2,20 +2,19 @@
 
 namespace App\Validator;
 
+use App\Helper\SecurityHelper;
+
 class CommentFormValidator extends BaseValidator
 {
-    private $securityHelper;
+    protected SecurityHelper $securityHelper;
 
-    public function __construct($securityHelper)
+    public function __construct(SecurityHelper $securityHelper)
     {
         $this->securityHelper = $securityHelper;
     }
 
     public function validate($data)
     {
-        $errors = [];
-        $valid = true;
-
         $validationRules = [
             'content' => [
                 'constraints' => [
@@ -38,6 +37,6 @@ class CommentFormValidator extends BaseValidator
 
     protected function validateCsrfToken($token, $errorMsg)
     {
-        return $this->securityHelper->checkCsrfToken('login', $token) ? '' : $errorMsg;
+        return $this->securityHelper->checkCsrfToken('comment', $token) ? '' : $errorMsg;
     }
 }

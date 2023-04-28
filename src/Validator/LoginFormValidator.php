@@ -6,6 +6,7 @@ namespace App\Validator;
 
 use App\Helper\SecurityHelper;
 use App\Manager\UserManager;
+use Tracy\Debugger;
 
 class LoginFormValidator extends BaseValidator
 {
@@ -21,7 +22,7 @@ class LoginFormValidator extends BaseValidator
 
     public function validate(array $data): array
     {
-        // Define your validation rules here
+        Debugger::barDump($data, 'data');
         $validationRules = [
             'email' => [
                 'constraints' => [

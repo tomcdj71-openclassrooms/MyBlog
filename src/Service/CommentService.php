@@ -27,7 +27,7 @@ class CommentService extends AbstractService
         $postData = $this->getPostData($postObject);
         $commentFV = new CommentFormValidator($this->securityHelper);
         $response = $commentFV->validate($postData);
-        $message = $response['valid'] ? $this->createComment($response['data']) : null;
+        $message = $response['valid'] ? $this->createComment($postData) : null;
         $errors = $response['valid'] ? null : $response['errors'];
 
         return [$errors, $message];
