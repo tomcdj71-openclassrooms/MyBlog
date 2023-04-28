@@ -7,7 +7,6 @@ namespace App\Controller;
 use App\DependencyInjection\Container;
 use App\Helper\StringHelper;
 use App\Manager\UserManager;
-use App\Model\UserModel;
 use App\Service\PostService;
 use App\Service\ProfileService;
 use App\Validator\LoginFormValidator;
@@ -19,11 +18,13 @@ class UserController extends AbstractController
     private ProfileService $profileService;
     private StringHelper $stringHelper;
     private PostService $postService;
+    private LoginFormValidator $loginFV;
 
     public function __construct(Container $container)
     {
         parent::__construct($container);
         $container->injectProperties($this);
+        $this->loginFV = new LoginFormValidator($this->userManager, $this->securityHelper);
     }
 
     /*
@@ -39,7 +40,7 @@ class UserController extends AbstractController
         $user = $this->securityHelper->getUser();
         $errors = [];
         $message = null;
-        if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrf_token', FILTER_SANITIZE_SPECIAL_CHARS)) {
+        if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
             list($errors, $message) = $this->profileService->handleProfilePostRequest($user);
         }
         $csrfToken = $this->securityHelper->generateCsrfToken('editProfile');
@@ -51,7 +52,7 @@ class UserController extends AbstractController
             'user' => $user,
             'message' => $message,
             'errors' => $errors,
-            'csrf_token' => $csrfToken,
+            'csrfToken' => $csrfToken,
             'session' => $this->session,
             'hasPost' => $hasPost,
         ];
@@ -74,42 +75,40 @@ class UserController extends AbstractController
             // If there is an issue with the remember_me_token (expired or invalid), remove it
             setcookie('remember_me_token', '', time() - 3600, '/', '', false, true);
         }
+
         if ($this->authMiddleware->isUserOrAdmin()) {
             return $this->request->redirectToRoute('blog');
         }
+
         $errors = [];
+
+        if ('POST' === $this->serverRequest->getRequestMethod()) {
+            $postData = [
+                'email' => filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL),
+                'password' => filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS),
+                'remember' => filter_input(INPUT_POST, 'remember', FILTER_SANITIZE_SPECIAL_CHARS),
+                'csrfToken' => filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS),
+            ];
+            $validationResult = $this->loginFV->validate($postData);
+            $errors = $validationResult['errors'];
+            if ($validationResult['valid']) {
+                $login = $this->securityHelper->login($postData, $this->loginFV->shouldRemember($postData));
+                if ($login) {
+                    return $this->request->redirectToRoute('blog');
+                }
+                $errors = ['email' => 'Email ou mot de passe incorrect.'];
+            }
+        }
+
         $csrfToken = $this->securityHelper->generateCsrfToken('login');
         $data = [
             'title' => 'MyBlog - Connexion',
             'route' => 'login',
             'message' => $message,
-            'csrf_token' => $csrfToken,
+            'session' => $this->session,
+            'csrfToken' => $csrfToken,
+            'errors' => $errors,
         ];
-        if ('POST' === $this->serverRequest->getRequestMethod()) {
-            $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
-            $password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS);
-            $remember = filter_input(INPUT_POST, 'remember', FILTER_SANITIZE_SPECIAL_CHARS);
-            $remember = $remember && 'true' === $remember;
-            $postData = [
-                'email' => $email,
-                'password' => $password,
-                'remember' => $remember,
-                'csrf_token' => $csrfToken,
-            ];
-            $loginFV = new LoginFormValidator($this->userManager, $this->securityHelper);
-            $errors = $loginFV->validate($postData, $postData['remember']);
-            if (empty($errors)) {
-                $user = $this->securityHelper->authenticate($postData);
-                if ($user instanceof UserModel) {
-                    if ($postData['remember']) {
-                        $this->securityHelper->rememberMe($user);
-                    }
-
-                    return $this->request->redirectToRoute('profile');
-                }
-                $errors[] = 'E-mail ou mot de passe incorrect.';
-            }
-        }
         $this->twig->render('pages/security/login.html.twig', array_merge($data, ['errors' => $errors]));
     }
 
@@ -131,36 +130,36 @@ class UserController extends AbstractController
         if ($this->authMiddleware->isUserOrAdmin()) {
             return $this->request->redirectToRoute('blog');
         }
-        $csrfToken = $this->securityHelper->generateCsrfToken('register');
-        $data = [
-            'title' => 'MyBlog - Creer un compte',
-            'route' => 'register',
-            'message' => $message,
-            'session' => $this->session,
-            'csrf_token' => $csrfToken,
-        ];
         $errors = [];
+        $csrfToken = $this->securityHelper->generateCsrfToken('register');
         if ('POST' === $this->serverRequest->getRequestMethod()) {
             $postData = [
                 'email' => filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL),
                 'username' => filter_input(INPUT_POST, 'username', FILTER_SANITIZE_SPECIAL_CHARS),
                 'password' => filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS),
                 'passwordConfirm' => filter_input(INPUT_POST, 'passwordConfirm', FILTER_SANITIZE_SPECIAL_CHARS),
-                'csrf_token' => $csrfToken,
+                'csrfToken' => $csrfToken,
             ];
             $registerFV = new RegisterFormValidator($this->securityHelper);
             $validationResult = $registerFV->validate($postData);
-            $valid = $validationResult['valid'];
-            if ($valid) {
+            if ($validationResult['valid']) {
                 $registered = $this->securityHelper->register($postData);
                 if ($registered) {
+                    $csrfToken = $this->securityHelper->generateCsrfToken('register');
+
                     return $this->request->redirectToRoute('login');
                 }
                 $errors[] = "Échec de l'enregistrement. Veuillez réessayer.";
             }
             $errors = array_merge($errors, $validationResult['errors']);
         }
-
+        $data = [
+            'title' => 'MyBlog - Connexion',
+            'route' => 'login',
+            'message' => $message,
+            'session' => $this->session,
+            'csrfToken' => $csrfToken,
+        ];
         $this->twig->render('pages/security/register.html.twig', array_merge($data, ['errors' => $errors]));
     }
 
@@ -189,6 +188,7 @@ class UserController extends AbstractController
     public function logout()
     {
         $this->session->destroy();
+        header('Location: /blog');
 
         return $this->request->redirectToRoute('blog');
     }

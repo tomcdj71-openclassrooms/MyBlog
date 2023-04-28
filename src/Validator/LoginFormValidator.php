@@ -9,35 +9,27 @@ use App\Manager\UserManager;
 
 class LoginFormValidator extends BaseValidator
 {
-    private $userManager;
-    private $securityHelper;
+    private UserManager $userManager;
+    private SecurityHelper $securityHelper;
 
     public function __construct(UserManager $userManager, SecurityHelper $securityHelper)
     {
+        parent::__construct($securityHelper);
         $this->userManager = $userManager;
         $this->securityHelper = $securityHelper;
     }
 
     public function validate(array $data): array
     {
+        // Define your validation rules here
         $validationRules = [
-            'email' => ['type' => 'empty', 'errorMsg' => 'Veuillez saisir une adresse e-mail.', 'required' => true],
-            'password' => ['type' => 'empty', 'errorMsg' => 'Veuillez entrer un mot de passe.', 'required' => true],
+            'email' => ['type' => 'email', 'required' => true, 'errorMsg' => 'Invalid email.'],
+            'password' => ['type' => 'empty', 'required' => true, 'errorMsg' => 'Password is required.'],
+            'remember' => ['type' => 'empty', 'required' => false],
+            'csrfToken' => ['type' => 'csrf', 'required' => true, 'errorMsg' => 'Invalid CSRF token.'],
         ];
 
-        $errors = $this->validateData($data, $validationRules);
-
-        if (empty($errors)) {
-            $user = $this->userManager->findOneBy(['email' => $data['email']]);
-
-            if (!$user) {
-                $errors['username'] = "Ce nom d'utilisateur n'existe pas.";
-            } elseif (!password_verify($data['password'], $user->getPassword())) {
-                $errors['password'] = 'Ce mot de passe est incorrect.';
-            }
-        }
-
-        return $errors;
+        return $this->validateData($data, $validationRules);
     }
 
     public function shouldRemember(array $data): bool
@@ -47,9 +39,6 @@ class LoginFormValidator extends BaseValidator
 
     protected function validateCsrfToken($token, $errorMsg)
     {
-        return [
-            'valid' => $this->securityHelper->checkCsrfToken('login', $token),
-            'errorMsg' => $errorMsg,
-        ];
+        return $this->securityHelper->checkCsrfToken('login', $token) ? '' : $errorMsg;
     }
 }

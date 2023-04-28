@@ -33,11 +33,9 @@ class SecurityHelper
     public function register(array $postData): bool
     {
         $response = $this->registerValidator->validate($postData);
-
         if (!empty($response['errors']) || false === $response['valid']) {
             return false;
         }
-
         $userData = [
             'username' => $postData['username'],
             'email' => $postData['email'],
@@ -45,48 +43,47 @@ class SecurityHelper
             'role' => 'ROLE_USER',
             'avatar' => 'https://i.pravatar.cc/150?img=6',
         ];
-
         $user = $this->userManager->createUser($userData);
-
         if (!$user instanceof UserModel) {
             return false;
         }
-
-        $authErrors = $this->authenticate([
+        $user = $this->authenticate([
             'email' => $user->getEmail(),
             'password' => $postData['password'],
             'remember' => 'true',
         ]);
-
-        if (!$authErrors) {
-            header('Location: /blog');
+        if (!$user) {
+            return false;
         }
+        header('Location: /blog');
 
         return true;
     }
 
     public function authenticate(array $data, bool $remember = false): ?UserModel
     {
-        $errors = $this->loginValidator->validate([
-            'email' => $data['email'],
-            'password' => $data['password'],
-            'remember' => $remember ? 'true' : 'false',
-        ]);
-
-        if (!empty($errors)) {
-            return $errors;
-        }
-
         $user = $this->userManager->findOneBy(['email' => $data['email']]);
-
         if (!$user || !password_verify($data['password'], $user->getPassword())) {
             return null;
         }
-
         $this->session->regenerateId();
         $this->session->set('user', $user);
+        if ($remember) {
+            $this->rememberMe($user);
+        }
 
-        if ($this->loginValidator->shouldRemember($data)) {
+        return $user;
+    }
+
+    public function login(array $data, bool $remember = false): ?UserModel
+    {
+        $user = $this->userManager->findOneBy(['email' => $data['email']]);
+        if (!$user || !password_verify($data['password'], $user->getPassword())) {
+            return null;
+        }
+        $this->session->regenerateId();
+        $this->session->set('user', $user);
+        if ($remember) {
             $this->rememberMe($user);
         }
 
@@ -140,19 +137,19 @@ class SecurityHelper
     public function generateCsrfToken(string $key): string
     {
         $token = bin2hex(random_bytes(32));
-        $csrfTokens = $this->session->get('csrf_tokens') ?? [];
+        $csrfTokens = $this->session->get('csrfTokens') ?? [];
         $csrfTokens[$key] = $token;
-        $this->session->set('csrf_tokens', $csrfTokens);
+        $this->session->set('csrfTokens', $csrfTokens);
 
         return $token;
     }
 
     public function checkCsrfToken(string $key, string $token): bool
     {
-        $csrfTokens = $this->session->get('csrf_tokens');
+        $csrfTokens = $this->session->get('csrfTokens');
         $expected = $csrfTokens[$key] ?? null;
         if (null === $expected) {
-            throw new \InvalidArgumentException('Aucun jeton CSRF trouvé pour la clé donnée.');
+            throw new \InvalidArgumentException('No CSRF token found for the given key.');
         }
 
         return hash_equals($expected, $token);

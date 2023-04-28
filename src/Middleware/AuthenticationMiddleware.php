@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Middleware;
 
 use App\Helper\SecurityHelper;
+use Tracy\Debugger;
 
 class AuthenticationMiddleware
 {
@@ -28,6 +29,7 @@ class AuthenticationMiddleware
     public function isAdmin(): bool
     {
         $user = $this->securityHelper->getUser();
+        Debugger::barDump($user);
         if (!$user || 'ROLE_ADMIN' !== $user->getRole()) {
             return false;
         }

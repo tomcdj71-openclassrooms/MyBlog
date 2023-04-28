@@ -66,7 +66,7 @@ class BlogController extends AbstractController
         if (null === $user) {
             $user = null;
         }
-        if ('POST' === $this->serverRequest->getRequestMethod() && $this->serverRequest->getPost('content') && $this->serverRequest->getPost('csrf_token')) {
+        if ('POST' === $this->serverRequest->getRequestMethod() && $this->serverRequest->getPost('content') && $this->serverRequest->getPost('csrfToken')) {
             $postData = [
                 'content' => $this->serverRequest->getPost('content'),
                 'post_id' => $post,
@@ -81,7 +81,7 @@ class BlogController extends AbstractController
                 $data['user'] = $user;
                 $data['message'] = 'Comment posted successfully';
                 $data['errors'] = $errors;
-                $data['csrf_token'] = $csrfToken;
+                $data['csrfToken'] = $csrfToken;
                 $data['post'] = $post;
                 $data['comments'] = $this->commentManager->findAllByPost($post->getId());
                 $data['loggedUser'] = $user;
@@ -97,7 +97,7 @@ class BlogController extends AbstractController
         $data['route'] = 'blog';
         $data['user'] = $user;
         $data['message'] = $message;
-        $data['csrf_token'] = $csrfToken;
+        $data['csrfToken'] = $csrfToken;
         $data['post'] = $post;
         $data['comments'] = $this->commentManager->findAllByPost($post->getId());
         $data['loggedUser'] = $user;

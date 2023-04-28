@@ -115,8 +115,8 @@ class UserManager
     public function createUser(array $userData): ?UserModel
     {
         try {
-            $sql = 'INSERT INTO user (username, email, password, created_at, role, avatar, bio)
-                VALUES (:username, :email, :password, :created_at, :role, :avatar, :bio)';
+            $sql = 'INSERT INTO user (username, email, password, created_at, role, avatar, bio, twitter, facebook, linkedin, github)
+            VALUES (:username, :email, :password, :created_at, :role, :avatar, :bio, :twitter, :facebook, :linkedin, :github)';
             $statement = $this->database->prepare($sql);
             $params = [
                 'username' => $userData['username'],

@@ -12,6 +12,7 @@ use App\Middleware\AuthenticationMiddleware;
 use App\Router\Request;
 use App\Router\ServerRequest;
 use App\Router\Session;
+use Tracy\Debugger;
 
 abstract class AbstractController
 {
@@ -57,6 +58,8 @@ abstract class AbstractController
     {
         $this->authenticate();
         if (!$this->authMiddleware->isAdmin()) {
+            Debugger::barDump('User is not admin', 'access');
+
             return $this->request->redirectToRoute('login');
         }
     }

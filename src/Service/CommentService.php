@@ -20,7 +20,7 @@ class CommentService extends AbstractService
     public function handleCommentPostRequest($postObject, array $postData)
     {
         $errors = [];
-        $csrfToCheck = $this->serverRequest->getPost('csrf_token');
+        $csrfToCheck = $this->serverRequest->getPost('csrfToken');
         if (!$this->securityHelper->checkCsrfToken('comment', $csrfToCheck)) {
             $errors[] = 'Jeton CSRF invalide.';
         }
@@ -35,12 +35,12 @@ class CommentService extends AbstractService
 
     public function getPostData($postObject)
     {
-        $fields = ['content', 'parent_id', 'csrf_token'];
+        $fields = ['content', 'parent_id', 'csrfToken'];
         $postData = array_map(function ($field) {
             return $this->serverRequest->getPost($field, '');
         }, array_combine($fields, $fields));
 
-        $postData['csrf_token'] = $this->serverRequest->getPost('csrf_token');
+        $postData['csrfToken'] = $this->serverRequest->getPost('csrfToken');
         $postData['post_id'] = $postObject;
         $postData['author_id'] = $this->securityHelper->getUser();
         $postData['parent_id'] = $this->serverRequest->getPost('parentId') ?? null;

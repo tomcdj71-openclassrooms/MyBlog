@@ -18,7 +18,7 @@ class CommentFormValidator
 
         $validationRules = [
             'content' => ['type' => 'empty', 'errorMsg' => 'Veuillez entrer un commentaire.', 'required' => true],
-            'csrf_token' => ['type' => 'csrf', 'errorMsg' => 'Jeton CSRF invalide.', 'required' => true],
+            'csrfToken' => ['type' => 'csrf', 'errorMsg' => 'Jeton CSRF invalide.', 'required' => true],
         ];
 
         foreach ($validationRules as $field => $rule) {

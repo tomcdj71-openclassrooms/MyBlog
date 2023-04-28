@@ -23,7 +23,7 @@ class ProfileService extends AbstractService
     public function handleProfilePostRequest($user)
     {
         $errors = [];
-        $csrfToCheck = $this->serverRequest->getPost('csrf_token');
+        $csrfToCheck = $this->serverRequest->getPost('csrfToken');
         if (!$this->securityHelper->checkCsrfToken('editProfile', $csrfToCheck)) {
             $errors[] = 'Jeton CSRF invalide.';
         }
@@ -43,7 +43,7 @@ class ProfileService extends AbstractService
             return $this->serverRequest->getPost($field, '');
         }, array_combine($fields, $fields));
         $postData['avatar'] = $_FILES['avatar'] ?? null;
-        $postData['csrf_token'] = $this->serverRequest->getPost('csrf_token');
+        $postData['csrfToken'] = $this->serverRequest->getPost('csrfToken');
         if (!empty($_FILES['avatar'] || null === $_FILES['avatar'])) {
             unset($postData['avatar']);
         }

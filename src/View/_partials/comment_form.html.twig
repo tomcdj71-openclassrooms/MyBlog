@@ -1,7 +1,7 @@
 {% import _self as macros %}
-{{ macros.renderCommentsForm(loggedUser, post, csrf_token) }}
+{{ macros.renderCommentsForm(loggedUser, post, csrfToken) }}
 
-{% macro renderCommentsForm(loggedUser, post, csrf_token) %}
+{% macro renderCommentsForm(loggedUser, post, csrfToken) %}
 	<div class="reply-form">
 		<h4>Laisser un commentaire</h4>
 		{% if not loggedUser %}
@@ -21,7 +21,7 @@
 						<textarea name="content" class="form-control" placeholder="Votre commentaire*"></textarea>
 					</div>
 				</div>
-				<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+				<input type="hidden" name="csrfToken" value="{{ csrfToken }}">
 				<button type="submit" class="btn btn-primary">Envoyer</button>
 			</form>
 		{% endif %}

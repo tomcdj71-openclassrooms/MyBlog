@@ -98,25 +98,29 @@ class Container
         $dependencies = [];
         foreach ($parameters as $parameter) {
             // get the type hinted class
-            $dependency = $parameter->getType() && !$parameter->getType()->isBuiltin() ? new \ReflectionClass($parameter->getType()->getName()) : null;
-            if (null === $dependency) {
-                // check if default value for a parameter is available
-                if ($parameter->isDefaultValueAvailable()) {
-                    $dependencies[] = $parameter->getDefaultValue();
-                } else {
-                    // Get the parameter name
-                    $paramName = $parameter->name;
-                    // Check if the container has the parameter name registered
-                    if (isset($this->instances[$paramName])) {
-                        $dependencies[] = $this->get($paramName);
-                    } else {
-                        throw new \Exception("Impossible de résoudre la dépendance de classe {$parameter->name}");
-                    }
-                }
-            } else {
-                // get dependency resolved
-                $dependencies[] = $this->get($dependency->name);
+            if ($parameter->getType() && !$parameter->getType()->isBuiltin()) {
+                $dependencies[] = $this->get($parameter->getType()->getName());
+
+                continue;
             }
+
+            // check if default value for a parameter is available
+            if ($parameter->isDefaultValueAvailable()) {
+                $dependencies[] = $parameter->getDefaultValue();
+
+                continue;
+            }
+
+            // Get the parameter name
+            $paramName = $parameter->name;
+            // Check if the container has the parameter name registered
+            if (isset($this->instances[$paramName])) {
+                $dependencies[] = $this->get($paramName);
+
+                continue;
+            }
+
+            throw new \Exception("Impossible de résoudre la dépendance de classe {$parameter->name}");
         }
 
         return $dependencies;

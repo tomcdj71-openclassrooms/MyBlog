@@ -67,13 +67,13 @@ class EditProfileFormValidator
             $postData['avatar'] = $_FILES['avatar'];
         }
 
-        if (!isset($data['csrf_token'])) {
+        if (!isset($data['csrfToken'])) {
             $valid = false;
-            $errors['csrf_token'] = 'CSRF token missing.';
+            $errors['csrfToken'] = 'CSRF token missing.';
         }
-        if (!$this->securityHelper->checkCsrfToken('editProfile', $data['csrf_token'])) {
+        if (!$this->securityHelper->checkCsrfToken('editProfile', $data['csrfToken'])) {
             $valid = false;
-            $errors['csrf_token'] = 'Jeton CSRF invalide.';
+            $errors['csrfToken'] = 'Jeton CSRF invalide.';
         }
 
         return [
