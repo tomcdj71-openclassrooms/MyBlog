@@ -43,9 +43,9 @@ class TwigHelper
      * @param mixed $template
      * @param mixed $data
      */
-    public function render($template, $data = [])
+    public function render($template, $data = []): string
     {
-        echo $this->twig->render($template, $data);
+        return $this->twig->render($template, $data);
     }
 
     /**

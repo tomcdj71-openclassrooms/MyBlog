@@ -22,9 +22,9 @@ Injectable::register($container);
 try {
     $router = new Router($_SERVER['REQUEST_URI'], $container);
     $router->run();
-} catch (RouterException $e) {
+} catch (RouterException $error) {
     // Set the error code to 404 by default
-    http_response_code($e->getCode() ?: 404);
+    http_response_code($error->getCode() ?: 404);
     $errorController = new ErrorController($container);
-    $errorController->errorPage($e->getMessage());
+    $errorController->errorPage($error->getMessage());
 }

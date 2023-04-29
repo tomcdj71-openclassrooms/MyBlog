@@ -75,21 +75,6 @@ class SecurityHelper
         return $user;
     }
 
-    public function login(array $data, bool $remember = false): ?UserModel
-    {
-        $user = $this->userManager->findOneBy(['email' => $data['email']]);
-        if (!$user || !password_verify($data['password'], $user->getPassword())) {
-            return null;
-        }
-        $this->session->regenerateId();
-        $this->session->set('user', $user);
-        if ($remember) {
-            $this->rememberMe($user);
-        }
-
-        return $user;
-    }
-
     public function getUser(): ?UserModel
     {
         return $this->session->get('user');
@@ -129,7 +114,9 @@ class SecurityHelper
             throw new \Exception('Le jeton a expiré.');
         }
         $this->session->set('user', $user);
-        header('Location: /blog');
+
+        // No need to manually set the Location header. This should be handled by your controller/router.
+        // header('Location: /blog');
 
         return $user;
     }
@@ -153,5 +140,17 @@ class SecurityHelper
         }
 
         return hash_equals($expected, $token);
+    }
+
+    public function loginById(int $userId): ?UserModel
+    {
+        $user = $this->userManager->findOneBy(['id' => $userId]);
+        if (!$user) {
+            return null;
+        }
+        $this->session->regenerateId();
+        $this->session->set('user', $user);
+
+        return $user;
     }
 }

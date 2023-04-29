@@ -2,11 +2,13 @@
 
 namespace App\Controller;
 
+use App\Config\Configuration;
 use App\DependencyInjection\Container;
 use App\Manager\CategoryManager;
 use App\Manager\CommentManager;
 use App\Manager\PostManager;
 use App\Manager\TagManager;
+use App\Service\MailerService;
 use App\Service\PostService;
 
 class AjaxController extends AbstractController
@@ -16,11 +18,15 @@ class AjaxController extends AbstractController
     private TagManager $tagManager;
     private CategoryManager $categoryManager;
     private PostManager $postManager;
+    private Configuration $configuration;
+    private MailerService $mailerService;
 
-    public function __construct(Container $container)
+    public function __construct(Container $container, Configuration $configuration, MailerService $mailerService)
     {
         parent::__construct($container);
         $container->injectProperties($this);
+        $this->configuration = $configuration;
+        $this->mailerService = $mailerService;
     }
 
     public function myComments()
@@ -253,6 +259,16 @@ class AjaxController extends AbstractController
         }
         $comment->setIsEnabled(!$comment->getIsEnabled());
         $success = $this->commentManager->updateIsEnabled($comment);
+        $subject = 'Commentaire '.$comment->getIsEnabled() ? 'approuvé' : 'refusé';
+        $this->mailerService->sendEmail(
+            $comment->getAuthor()->getEmail(),
+            $this->configuration->get('from_email'),
+            $subject,
+            $this->twig->render('emails/contact.html.twig', [
+                'comment' => $comment,
+            ])
+        );
+
         $this->sendJsonResponse(['success' => $success]);
     }
 

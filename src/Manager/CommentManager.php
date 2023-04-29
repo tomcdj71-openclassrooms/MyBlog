@@ -47,8 +47,8 @@ class CommentManager
             if ($data) {
                 return $this->createCommentModelFromArray($data);
             }
-        } catch (\PDOException $e) {
-            error_log('Error fetching comment: '.$e->getMessage());
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -68,8 +68,8 @@ class CommentManager
             if ($data) {
                 return $this->createCommentModelFromArray($data);
             }
-        } catch (\PDOException $e) {
-            error_log('Error fetching comment: '.$e->getMessage());
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
 
             return null;
         }
@@ -100,8 +100,8 @@ class CommentManager
             }
 
             return $comments;
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -113,8 +113,8 @@ class CommentManager
             $statement->execute(['user' => $userId]);
 
             return (int) $statement->fetchColumn();
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -142,8 +142,8 @@ class CommentManager
             }
 
             return ['comments' => $comments, 'total_comments' => $totalComments];
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -156,8 +156,8 @@ class CommentManager
             $statement->execute(['post' => $postId]);
 
             return (int) $statement->fetchColumn();
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -176,8 +176,8 @@ class CommentManager
             }
 
             return $comments;
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -200,8 +200,8 @@ class CommentManager
             }
 
             return $comments;
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -218,8 +218,8 @@ class CommentManager
                 'parent_id' => $commentData['parent_id'],
                 'post_id' => $commentData['post_id'],
             ]);
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -233,10 +233,8 @@ class CommentManager
             $statement->execute();
 
             return true;
-        } catch (\PDOException $e) {
-            error_log('Error updating comment status: '.$e->getMessage());
-
-            return false;
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 

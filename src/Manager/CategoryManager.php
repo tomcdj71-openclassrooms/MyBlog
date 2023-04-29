@@ -35,8 +35,8 @@ class CategoryManager
                     $data['slug']
                 );
             }
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -54,29 +54,35 @@ class CategoryManager
                     $data['slug']
                 );
             }
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
     public function findAll(): array
     {
         try {
-            $sql = 'SELECT * FROM category';
+            $sql = 'SELECT category.*, COUNT(post.id) as post_count 
+                FROM category 
+                LEFT JOIN post ON category.id = post.category_id 
+                GROUP BY category.id
+                ORDER BY category.name ASC';
             $statement = $this->database->prepare($sql);
             $statement->execute();
             $categories = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                $categories[] = new CategoryModel(
+                $category = new CategoryModel(
                     (int) $data['id'],
                     $data['name'],
                     $data['slug']
                 );
+                $category->setNbPosts((int) $data['post_count']);
+                $categories[] = $category;
             }
 
             return $categories;
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -101,8 +107,8 @@ class CategoryManager
             }
 
             return $categories;
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -116,8 +122,8 @@ class CategoryManager
             if ($data) {
                 return (int) $data['nb_categories'];
             }
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -134,8 +140,8 @@ class CategoryManager
             if ($data) {
                 return (int) $data['nb_posts'];
             }
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -150,8 +156,8 @@ class CategoryManager
             ]);
 
             return true;
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -167,8 +173,8 @@ class CategoryManager
             ]);
 
             return true;
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -180,8 +186,8 @@ class CategoryManager
             $statement->execute(['id' => $id]);
 
             return true;
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 }

@@ -4,28 +4,33 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Config\Configuration;
 use App\DependencyInjection\Container;
 use App\Helper\StringHelper;
 use App\Manager\UserManager;
+use App\Service\MailerService;
 use App\Service\PostService;
 use App\Service\ProfileService;
 use App\Validator\LoginFormValidator;
 use App\Validator\RegisterFormValidator;
-use Tracy\Debugger;
 
 class UserController extends AbstractController
 {
     protected UserManager $userManager;
+    private MailerService $mailerService;
     private ProfileService $profileService;
     private StringHelper $stringHelper;
     private PostService $postService;
     private LoginFormValidator $loginFV;
+    private Configuration $configuration;
 
-    public function __construct(Container $container)
+    public function __construct(MailerService $mailerService, Configuration $configuration, Container $container)
     {
         parent::__construct($container);
         $container->injectProperties($this);
         $this->loginFV = new LoginFormValidator($this->userManager, $this->securityHelper);
+        $this->mailerService = $mailerService;
+        $this->configuration = $configuration;
     }
 
     /*
@@ -35,9 +40,8 @@ class UserController extends AbstractController
     */
     public function profile()
     {
-        if (!$this->authMiddleware->isUserOrAdmin()) {
-            return $this->request->redirectToRoute('login', ['message' => 'Vous devez être connecté pour accéder à cette page.']);
-        }
+        $this->ensureAuthenticatedUser();
+
         $user = $this->securityHelper->getUser();
         $errors = [];
         $message = null;
@@ -58,7 +62,7 @@ class UserController extends AbstractController
             'hasPost' => $hasPost,
         ];
 
-        $this->twig->render('pages/profile/profile.html.twig', $data);
+        return $this->twig->render('pages/profile/profile.html.twig', $data);
     }
 
     /**
@@ -69,20 +73,19 @@ class UserController extends AbstractController
     public function login($message = null)
     {
         try {
-            if ($this->session->getCookie('remember_me_token') && !$this->authMiddleware->isUserOrAdmin()) {
-                $this->securityHelper->checkRememberMeToken($this->session->getCookie('remember_me_token'));
+            if ($this->session->get('remember_me_token') && !$this->authMiddleware->isUserOrAdmin()) {
+                $this->securityHelper->checkRememberMeToken($this->session->get('remember_me_token'));
             }
-        } catch (\Exception $e) {
+        } catch (\Exception $error) {
             // If there is an issue with the remember_me_token (expired or invalid), remove it
+            $this->session->remove('remember_me_token');
             setcookie('remember_me_token', '', time() - 3600, '/', '', false, true);
         }
 
         if ($this->authMiddleware->isUserOrAdmin()) {
             return $this->request->redirectToRoute('blog');
         }
-
         $errors = [];
-
         if ('POST' === $this->serverRequest->getRequestMethod()) {
             $postData = [
                 'email' => filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL),
@@ -91,17 +94,15 @@ class UserController extends AbstractController
                 'csrfToken' => filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS),
             ];
             $validationResult = $this->loginFV->validate($postData);
-            Debugger::barDump($validationResult);
             $errors = $validationResult['errors'];
             if ($validationResult['valid']) {
-                $login = $this->securityHelper->login($postData, $this->loginFV->shouldRemember($postData));
+                $login = $this->securityHelper->authenticate($postData, $this->loginFV->shouldRemember($postData));
                 if ($login) {
                     return $this->request->redirectToRoute('blog');
                 }
                 $errors = ['email' => 'Email ou mot de passe incorrect.'];
             }
         }
-
         $csrfToken = $this->securityHelper->generateCsrfToken('login');
         $data = [
             'title' => 'MyBlog - Connexion',
@@ -111,7 +112,8 @@ class UserController extends AbstractController
             'csrfToken' => $csrfToken,
             'errors' => $errors,
         ];
-        $this->twig->render('pages/security/login.html.twig', array_merge($data, ['errors' => $errors]));
+
+        return $this->twig->render('pages/security/login.html.twig', array_merge($data, ['errors' => $errors]));
     }
 
     /**
@@ -125,7 +127,7 @@ class UserController extends AbstractController
             if ($this->session->getCookie('remember_me_token') && !$this->authMiddleware->isUserOrAdmin()) {
                 $this->securityHelper->checkRememberMeToken($this->session->getCookie('remember_me_token'));
             }
-        } catch (\Exception $e) {
+        } catch (\Exception $error) {
             // If there is an issue with the remember_me_token (expired or invalid), remove it
             setcookie('remember_me_token', '', time() - 3600, '/', '', false, true);
         }
@@ -148,6 +150,13 @@ class UserController extends AbstractController
                 $registered = $this->securityHelper->register($postData);
                 if ($registered) {
                     $csrfToken = $this->securityHelper->generateCsrfToken('register');
+                    $message = 'Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter.';
+                    $this->mailerService->sendEmail(
+                        $this->configuration->get('mailer.from_email'),
+                        $postData['email'],
+                        'Bienvenue sur MyBlog',
+                        $this->twig->render('emails/contact.html.twig')
+                    );
 
                     return $this->request->redirectToRoute('login');
                 }
@@ -155,7 +164,6 @@ class UserController extends AbstractController
             }
             $errors = array_merge($errors, $validationResult['errors']);
         }
-        Debugger::barDump($errors);
         $data = [
             'title' => 'MyBlog - Connexion',
             'route' => 'login',
@@ -164,7 +172,8 @@ class UserController extends AbstractController
             'csrfToken' => $csrfToken,
             'errors' => $errors,
         ];
-        $this->twig->render('pages/security/register.html.twig', array_merge($data, ['errors' => $errors]));
+
+        return $this->twig->render('pages/security/register.html.twig', array_merge($data, ['errors' => $errors]));
     }
 
     /**
@@ -183,7 +192,8 @@ class UserController extends AbstractController
             'user' => $user,
             'session' => $this->session,
         ];
-        $this->twig->render('pages/profile/profile.html.twig', $data);
+
+        return $this->twig->render('pages/profile/profile.html.twig', $data);
     }
 
     /**
@@ -192,7 +202,6 @@ class UserController extends AbstractController
     public function logout()
     {
         $this->session->destroy();
-        header('Location: /blog');
 
         return $this->request->redirectToRoute('blog');
     }

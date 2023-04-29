@@ -31,10 +31,8 @@ class UserManager
             }
 
             return $this->createUserModelFromArray($data);
-        } catch (\PDOException $e) {
-            error_log('Error fetching post: '.$e->getMessage());
-
-            return null;
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -56,10 +54,8 @@ class UserManager
             }
 
             return $users;
-        } catch (\PDOException $e) {
-            error_log('Error fetching posts: '.$e->getMessage());
-
-            return [];
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -82,10 +78,8 @@ class UserManager
             }
 
             return $this->createUserModelFromArray($data);
-        } catch (\PDOException $e) {
-            error_log('Error fetching post: '.$e->getMessage());
-
-            return null;
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -105,10 +99,8 @@ class UserManager
             }
 
             return $users;
-        } catch (\PDOException $e) {
-            error_log('Error fetching posts: '.$e->getMessage());
-
-            return [];
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -137,7 +129,7 @@ class UserManager
             if (null !== $user) {
                 return $user;
             }
-        } catch (\PDOException $e) {
+        } catch (\PDOException $error) {
             return null;
         }
     }

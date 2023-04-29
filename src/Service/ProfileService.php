@@ -16,6 +16,7 @@ class ProfileService extends AbstractService
 
     public function __construct(Container $container)
     {
+        parent::__construct($container);
         $this->imageHelper = new ImageHelper('uploads/avatars/', 200, 200);
         $this->userManager = $container->get(UserManager::class);
     }
@@ -30,7 +31,7 @@ class ProfileService extends AbstractService
         $postData = $this->getPostData();
         $editProfileFV = new EditProfileFormValidator($this->securityHelper);
         $response = $editProfileFV->validate($postData);
-        $message = $response['valid'] ? $this->updateUserProfile($user, $response['data']) : null;
+        $message = $response['valid'] ? $this->updateUserProfile($user, $postData) : null;
         $errors = $response['valid'] ? null : $response['errors'];
 
         return [$errors, $message];
@@ -66,7 +67,9 @@ class ProfileService extends AbstractService
         foreach ($fields as $field) {
             $setter = 'set'.$field;
             $dataKey = lcfirst($field);
-            $user->{$setter}($data[$dataKey]);
+            if (isset($data[$dataKey])) {
+                $user->{$setter}($data[$dataKey]);
+            }
         }
 
         if ($this->userManager->updateProfile($user, $data)) {

@@ -46,7 +46,7 @@ class Router
             }
         }
 
-        call_user_func_array([$controller, $controllerMethod], $matchedRoute['params']);
+        echo call_user_func_array([$controller, $controllerMethod], $matchedRoute['params']);
     }
 
     public function parseUrl(string $url): array

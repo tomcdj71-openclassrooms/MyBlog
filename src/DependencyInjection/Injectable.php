@@ -18,11 +18,9 @@ use App\Router\Request;
 use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Service\CommentService;
-use App\Service\CustomSmtpTransport;
+use App\Service\MailerService;
 use App\Service\PostService;
 use App\Service\ProfileService;
-use Symfony\Component\Mailer\Mailer;
-use Symfony\Component\Mailer\MailerInterface;
 
 class Injectable
 {
@@ -50,11 +48,18 @@ class Injectable
         $container->set(ProfileService::class);
         $container->set(CommentService::class);
         $container->set(PostService::class);
-        $container->set(CustomSmtpTransport::class, function (Container $container) {
-            return new CustomSmtpTransport($container->get(Configuration::class));
+        $container->set(\Symfony\Component\Mailer\MailerInterface::class, function (Container $container) {
+            $transport = new \Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport(
+                $container->get(Configuration::class)->get('mailer.smtp_host'),
+                $container->get(Configuration::class)->get('mailer.smtp_port')
+            );
+
+            return new \Symfony\Component\Mailer\Mailer($transport);
         });
-        $container->set(MailerInterface::class, function (Container $container) {
-            return new Mailer($container->get(CustomSmtpTransport::class));
+        $container->set(MailerService::class, function (Container $container) {
+            $mailerInterface = $container->get(\Symfony\Component\Mailer\MailerInterface::class);
+
+            return new MailerService($mailerInterface);
         });
     }
 }

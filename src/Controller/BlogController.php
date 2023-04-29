@@ -11,21 +11,23 @@ use App\Manager\CommentManager;
 use App\Manager\PostManager;
 use App\Manager\TagManager;
 use App\Service\CommentService;
-use Tracy\Debugger;
 
 class BlogController extends AbstractController
 {
     private CategoryManager $categoryManager;
-    private PostManager $postManager;
     private TagManager $tagManager;
     private StringHelper $stringHelper;
     private CommentManager $commentManager;
     private CommentService $commentService;
+    private PostManager $postManager;
 
     public function __construct(Container $container)
     {
         parent::__construct($container);
         $container->injectProperties($this);
+        $this->postManager = $container->get(PostManager::class);
+        $this->categoryManager = $container->get(CategoryManager::class);
+        $this->tagManager = $container->get(TagManager::class);
     }
 
     /**
@@ -35,17 +37,25 @@ class BlogController extends AbstractController
      */
     public function blogIndex($message = null)
     {
-        $data = $this->resetData();
         $page = $this->serverRequest->getQuery('page') ? intval($this->serverRequest->getQuery('page')) : 1;
         $limit = 10;
         $totalPosts = $this->postManager->countAll();
         $totalPages = ceil($totalPosts / $limit);
         $posts = $this->postManager->findAll($page, $limit);
-        $data['message'] = $message;
-        $data['posts'] = $posts['posts'];
-        $data['currentPage'] = $page;
-        $data['totalPages'] = $totalPages;
-        $this->twig->render('pages/blog/index.html.twig', $data);
+
+        return $this->twig->render('pages/blog/index.html.twig', [
+            'title' => 'MyBlog - Blog',
+            'route' => 'blog',
+            'user' => $this->securityHelper->getUser(),
+            'session' => $this->session,
+            'message' => $message,
+            'posts' => $posts['posts'],
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'categories' => $this->categoryManager->findByPopularity(),
+            'recentPosts' => $this->postManager->findRecentPosts(),
+            'tags' => $this->tagManager->findAll(),
+        ]);
     }
 
     /**
@@ -56,7 +66,6 @@ class BlogController extends AbstractController
      */
     public function blogPost($slug, $message = null)
     {
-        $data = $this->resetData();
         $url = $this->serverRequest->getUri();
         $slug = $this->stringHelper->getLastUrlPart($url);
         $post = $this->postManager->findOneBy('slug', $slug);
@@ -78,34 +87,40 @@ class BlogController extends AbstractController
             list($errors, $message) = $this->commentService->handleCommentPostRequest($post, $postData);
             if (empty($errors)) {
                 $csrfToken = $this->securityHelper->generateCsrfToken('comment');
-                $data['title'] = 'MyBlog - Blog Post';
-                $data['route'] = 'blog';
-                $data['user'] = $user;
-                $data['message'] = 'Commentaire posté avec succès !';
-                $data['errors'] = $errors;
-                $data['csrfToken'] = $csrfToken;
-                $data['post'] = $post;
-                $data['comments'] = $this->commentManager->findAllByPost($post->getId());
-                $data['loggedUser'] = $user;
-                $data['session'] = $this->session;
 
-                return $this->twig->render('pages/blog/post.html.twig', $data);
+                return $this->twig->render('pages/blog/post.html.twig', [
+                    'title' => 'MyBlog - Blog Post',
+                    'route' => 'blog',
+                    'user' => $user,
+                    'message' => 'Commentaire posté avec succès !',
+                    'errors' => $errors,
+                    'csrfToken' => $csrfToken,
+                    'post' => $post,
+                    'comments' => $this->commentManager->findAllByPost($post->getId()),
+                    'loggedUser' => $user,
+                    'session' => $this->session,
+                ]);
             }
             $errors = array_map('strval', $errors);
             $message = implode(', ', $errors);
         }
         $csrfToken = $this->securityHelper->generateCsrfToken('comment');
-        $data['title'] = 'MyBlog - Blog Post';
-        $data['route'] = 'blog';
-        $data['user'] = $user;
-        $data['message'] = $message;
-        $data['csrfToken'] = $csrfToken;
-        $data['post'] = $post;
-        $data['comments'] = $this->commentManager->findAllByPost($post->getId());
-        $data['loggedUser'] = $user;
-        $data['session'] = $this->session;
-        Debugger::barDump($data);
-        $this->twig->render('pages/blog/post.html.twig', $data);
+
+        return $this->twig->render('pages/blog/post.html.twig', [
+            'title' => 'MyBlog - Blog Post',
+            'route' => 'blog',
+            'user' => $user,
+            'message' => $message,
+            'csrfToken' => $csrfToken,
+            'post' => $post,
+            'errors' => $errors ?? '',
+            'tags' => $this->tagManager->findAll(),
+            'categories' => $this->categoryManager->findByPopularity(),
+            'recentPosts' => $this->postManager->findRecentPosts(),
+            'comments' => $this->commentManager->findAllByPost($post->getId()),
+            'loggedUser' => $user,
+            'session' => $this->session,
+        ]);
     }
 
     /**
@@ -117,43 +132,58 @@ class BlogController extends AbstractController
      */
     public function blogCategory($categorySlug, $message = null)
     {
-        $data = $this->resetData();
         $url = $this->serverRequest->getUri();
         $categorySlug = $this->stringHelper->getLastUrlPart($url);
-        $posts = $this->postManager->findBy('category_slug', $categorySlug);
-        $data['searchType'] = 'Catégorie';
-        $data['search'] = $categorySlug;
-        $data['message'] = $message;
-        $data['posts'] = $posts;
-        $this->twig->render('pages/blog/index.html.twig', $data);
+
+        return $this->twig->render('pages/blog/index.html.twig', [
+            'title' => 'MyBlog - Blog',
+            'route' => 'blog',
+            'message' => $message,
+            'posts' => $this->postManager->findBy('category_slug', $categorySlug),
+            'tags' => $this->tagManager->findAll(),
+            'categories' => $this->categoryManager->findByPopularity(),
+            'recentPosts' => $this->postManager->findRecentPosts(),
+            'searchType' => 'Catégorie',
+            'search' => $categorySlug,
+        ]);
     }
 
     public function blogTag($tagSlug, $message = null)
     {
-        $data = $this->resetData();
         $url = $this->serverRequest->getUri();
         $tagSlug = $this->stringHelper->getLastUrlPart($url);
-        $posts = $this->postManager->findPostsWithTag($tagSlug);
-        $data['searchType'] = 'Tag';
-        $data['search'] = $tagSlug;
-        $data['message'] = $message;
-        $data['posts'] = $posts;
-        $this->twig->render('pages/blog/index.html.twig', $data);
+
+        return $this->twig->render('pages/blog/index.html.twig', [
+            'title' => 'MyBlog - Blog',
+            'route' => 'blog',
+            'message' => $message,
+            'posts' => $this->postManager->findPostsWithTag($tagSlug),
+            'tags' => $this->tagManager->findAll(),
+            'categories' => $this->categoryManager->findByPopularity(),
+            'recentPosts' => $this->postManager->findRecentPosts(),
+            'searchType' => 'Tag',
+            'search' => $tagSlug,
+        ]);
     }
 
     public function blogAuthor($username, $message = null)
     {
-        $data = $this->resetData();
         $url = $this->serverRequest->getUri();
         $username = $this->stringHelper->getLastUrlPart($url);
         $author = $this->userManager->findOneBy(['username' => $username]);
         $authorId = $author->getId();
-        $posts = $this->postManager->findBy('author_id', $authorId);
-        $data['searchType'] = 'Auteur';
-        $data['search'] = $username;
-        $data['message'] = $message;
-        $data['posts'] = $posts;
-        $this->twig->render('pages/blog/index.html.twig', $data);
+
+        return $this->twig->render('pages/blog/index.html.twig', [
+            'title' => 'MyBlog - Blog',
+            'route' => 'blog',
+            'message' => $message,
+            'posts' => $this->postManager->findBy('author_id', $authorId),
+            'tags' => $this->tagManager->findAll(),
+            'categories' => $this->categoryManager->findByPopularity(),
+            'recentPosts' => $this->postManager->findRecentPosts(),
+            'searchType' => 'Auteur',
+            'search' => $username,
+        ]);
     }
 
     /**
@@ -164,31 +194,23 @@ class BlogController extends AbstractController
      */
     public function blogDate($date, $message = null)
     {
-        $data = $this->resetData();
         $url = $this->serverRequest->getUri();
         $date = $this->stringHelper->getLastUrlPart($url);
         $endDate = new \DateTime($date);
         $startDate = clone $endDate;
         $startDate->modify('-30 days');
-        $posts = $this->postManager->findPostsBetweenDates($startDate, $endDate);
-        $data['searchType'] = 'Date';
-        $data['search'] = 'Postés entre le '.$startDate->format('d-m-Y').' et le '.$endDate->format('d-m-Y').'.';
-        $data['message'] = $message;
-        $data['posts'] = $posts;
-        $this->twig->render('pages/blog/index.html.twig', $data);
-    }
 
-    private function resetData()
-    {
-        return [
+        return $this->twig->render('pages/blog/index.html.twig', [
             'title' => 'MyBlog - Blog',
             'route' => 'blog',
-            'message' => '',
-            'posts' => [],
+            'message' => $message,
+            'posts' => $this->postManager->findPostsBetweenDates($startDate, $endDate),
             'tags' => $this->tagManager->findAll(),
             'categories' => $this->categoryManager->findByPopularity(),
             'recentPosts' => $this->postManager->findRecentPosts(),
             'session' => $this->session,
-        ];
+            'searchType' => 'Date',
+            'search' => 'Postés entre le '.$startDate->format('d-m-Y').' et le '.$endDate->format('d-m-Y').'.',
+        ]);
     }
 }

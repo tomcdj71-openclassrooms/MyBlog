@@ -4,21 +4,33 @@ declare(strict_types=1);
 
 namespace App\Validator;
 
+use App\Helper\SecurityHelper;
+
 class EditProfileFormValidator extends BaseValidator
 {
-    private $securityHelper;
+    protected SecurityHelper $securityHelper;
 
-    public function __construct($securityHelper)
+    public function __construct(SecurityHelper $securityHelper)
     {
         $this->securityHelper = $securityHelper;
     }
 
     public function validate(array $data): array
     {
+        $fields = ['email', 'firstName', 'lastName', 'bio'];
+        foreach ($fields as $field) {
+            $getter = 'get'.ucfirst($field);
+            if (method_exists($this->securityHelper->getUser(), $getter)) {
+                if (empty($data[$field]) || $data[$field] === $this->securityHelper->getUser()->{$getter}()) {
+                    unset($data[$field]);
+                }
+            }
+        }
+
         $validationRules = [
             'email' => [
                 'constraints' => [
-                    'required' => true, 'errorMsg' => 'Veuillez inscrire une adresse email valide!',
+                    'required' => false, 'errorMsg' => 'Veuillez inscrire une adresse email valide!',
                     'unique' => true, 'errorMsg' => 'Cette adresse e-mail est déjà enregistrée.',
                     'type' => 'email',
                 ],

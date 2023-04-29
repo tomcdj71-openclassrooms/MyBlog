@@ -51,10 +51,8 @@ class PostManager
             }
 
             return $this->createPostModelFromArray($data);
-        } catch (\PDOException $e) {
-            error_log('Error fetching post: '.$e->getMessage());
-
-            return null;
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -81,10 +79,8 @@ class PostManager
             }
 
             return $posts;
-        } catch (\PDOException $e) {
-            error_log('Error fetching posts: '.$e->getMessage());
-
-            return [];
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -112,10 +108,8 @@ class PostManager
             $preparedData = $this->preparePostData($data);
 
             return $this->createPostModelFromArray($preparedData);
-        } catch (\PDOException $e) {
-            error_log('Error fetching post: '.$e->getMessage());
-
-            return null;
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -149,10 +143,8 @@ class PostManager
                 'posts' => $posts,
                 'total_posts' => $this->countAll(),
             ];
-        } catch (\PDOException $e) {
-            error_log('Error fetching posts: '.$e->getMessage());
-
-            return [];
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -165,10 +157,8 @@ class PostManager
             $data = $statement->fetch(\PDO::FETCH_ASSOC);
 
             return (int) $data['total_posts'];
-        } catch (\PDOException $e) {
-            error_log('Error counting posts: '.$e->getMessage());
-
-            return 0;
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -199,10 +189,8 @@ class PostManager
             }
 
             return $posts;
-        } catch (\PDOException $e) {
-            error_log('Error fetching posts: '.$e->getMessage());
-
-            return [];
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -219,7 +207,8 @@ class PostManager
                 LEFT JOIN category c ON p.category_id = c.id
                 LEFT JOIN tag t ON instr(',' || p.tags || ',', ',' || t.id || ',') > 0
                 WHERE instr(',' || p.tags || ',', ',' || (SELECT id FROM tag WHERE slug = :tag_slug) || ',') > 0
-                GROUP BY p.id";
+                GROUP BY p.id
+                ORDER BY p.created_at DESC";
             $statement = $this->database->prepare($sql);
             $statement->execute(['tag_slug' => $tag]);
             $posts = [];
@@ -229,10 +218,8 @@ class PostManager
             }
 
             return $posts;
-        } catch (\PDOException $e) {
-            error_log('Error fetching posts: '.$e->getMessage());
-
-            return [];
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -273,10 +260,8 @@ class PostManager
                 'posts' => $posts,
                 'count' => $count,
             ];
-        } catch (\PDOException $e) {
-            error_log('Error fetching posts: '.$e->getMessage());
-
-            return [];
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -299,10 +284,8 @@ class PostManager
             }
 
             return $posts;
-        } catch (\PDOException $e) {
-            error_log('Error fetching posts: '.$e->getMessage());
-
-            return [];
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -314,10 +297,8 @@ class PostManager
             $statement->execute();
 
             return (int) $statement->fetchColumn();
-        } catch (\PDOException $e) {
-            error_log('Error counting posts: '.$e->getMessage());
-
-            return 0;
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 

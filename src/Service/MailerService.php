@@ -16,19 +16,18 @@ class MailerService
         $this->mailer = $mailer;
     }
 
-    public function send(string $fromEmail, string $toEmail, string $subject, string $body): void
+    public function sendEmail(string $from, string $to, string $subject, string $body): void
     {
-        $email = (new Email())
-            ->from($fromEmail)
-            ->to($toEmail)
-            ->subject($subject)
-            ->html($body)
-        ;
-
         try {
+            $email = (new Email())
+                ->from($from)
+                ->to($to)
+                ->subject($subject)
+                ->text($body)
+            ;
             $this->mailer->send($email);
-        } catch (\Symfony\Component\Mailer\Exception\TransportExceptionInterface $e) {
-            throw new \RuntimeException("Impossible d'envoyer un e-mail: ".$e->getMessage());
+        } catch (\Exception $error) {
+            throw new \Exception('Une erreur est survenue lors de l\'envoi du mail.');
         }
     }
 }

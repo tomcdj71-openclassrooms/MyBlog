@@ -130,19 +130,21 @@ class Container
     {
         $reflectionClass = new \ReflectionClass($object);
         $properties = $reflectionClass->getProperties();
-
         foreach ($properties as $property) {
             $propertyType = $property->getType();
             if (null === $propertyType) {
                 continue;
             }
             $dependency = $propertyType->getName();
+            if (!isset($this->instances[$dependency])) {
+                continue;  // Skip properties that don't have a corresponding service
+            }
 
             try {
                 $dependencyInstance = $this->get($dependency);
                 $property->setAccessible(true);
                 $property->setValue($object, $dependencyInstance);
-            } catch (\Exception $e) {
+            } catch (\Exception $error) {
                 throw new \Exception("Ne peut pas injecter la propriété {$property->name} de la classe {$reflectionClass->name}");
             }
         }

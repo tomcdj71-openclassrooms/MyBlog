@@ -53,21 +53,58 @@ abstract class AbstractController
         return $this->requestParams[$key] ?? null;
     }
 
-    public function ensureAuthenticatedAdmin()
+    public function ensureAdmin()
     {
         $this->authenticate();
+
         if (!$this->authMiddleware->isAdmin()) {
-            return $this->request->redirectToRoute('login');
+            $rememberMeToken = $this->session->getCookie('remember_me_token') ?? null;
+            if ($rememberMeToken) {
+                $user = $this->userManager->findOneBy(['remember_me_token' => $rememberMeToken]);
+                if ($user) {
+                    $this->securityHelper->loginById($user->getId());
+                    $referrer = $this->session->get('referrer');
+                    if ($referrer) {
+                        $this->session->remove('referrer');
+                        header("Location: {$referrer}");
+
+                        exit;
+                    }
+
+                    return;
+                }
+            }
+            $this->session->set('referrer', $this->serverRequest->get('HTTP_REFERER'));
+            header('Location: /login');
+
+            exit;
         }
     }
 
     public function ensureAuthenticatedUser()
     {
         $this->authenticate();
+        if (!$this->authMiddleware->isUserOrAdmin()) {
+            $rememberMeToken = $this->session->getCookie('remember_me_token') ?? null;
+            if ($rememberMeToken) {
+                $user = $this->userManager->findOneBy(['remember_me_token' => $rememberMeToken]);
+                if ($user) {
+                    $this->securityHelper->loginById($user->getId());
 
-        if (!$this->authMiddleware->isUser()) {
-            return $this->request->redirectToRoute('login');
+                    return;
+                }
+            }
+            $this->session->set('referrer', $this->serverRequest->getUri());
+            header('Location: /login');
+
+            exit;
         }
+
+        $referrer = $this->session->get('referrer') ?? '/blog';
+        $this->session->remove('referrer');
+        header("Location: {$referrer}");
+
+        exit;
     }
 
     private function authenticate(): void

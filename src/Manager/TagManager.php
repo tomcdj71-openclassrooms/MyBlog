@@ -36,8 +36,8 @@ class TagManager
             }
 
             return $tags;
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -53,8 +53,8 @@ class TagManager
             }
 
             return null;
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -70,8 +70,8 @@ class TagManager
             }
 
             return null;
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 
@@ -83,8 +83,8 @@ class TagManager
             $statement->execute();
 
             return (int) $statement->fetchColumn();
-        } catch (\PDOException $e) {
-            echo $e->getMessage();
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
 

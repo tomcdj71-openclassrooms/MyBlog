@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="fr">
+	<head>
+		<title>Formulaire de contact</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+	</head>
+
+	<body>
+		<h1>Vous venez de recevoir un message de
+			{{ form.name }}(<a href="mailto:{{ form.email }}">{{ form.email }}</a>)</h1>
+		<h2>Sujet :
+			{{ form.subject }}</h2>
+		<p>Message :
+			{{ form.message }}</p>
+	</body>
+</html>

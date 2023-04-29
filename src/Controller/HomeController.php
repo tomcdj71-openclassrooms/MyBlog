@@ -9,12 +9,12 @@ use App\Service\MailerService;
 
 class HomeController extends AbstractController
 {
-    private MailerService $mailer;
     private Configuration $configuration;
+    private MailerService $mailerService;
 
-    public function __construct(MailerService $mailer, Configuration $configuration)
+    public function __construct(MailerService $mailerService, Configuration $configuration)
     {
-        $this->mailer = $mailer;
+        $this->mailerService = $mailerService;
         $this->configuration = $configuration;
     }
 
@@ -33,17 +33,14 @@ class HomeController extends AbstractController
                 'message' => filter_input(INPUT_POST, 'message', FILTER_SANITIZE_SPECIAL_CHARS),
             ];
             $mailerConfig = $this->configuration->get('mailer');
-
-            try {
-                $this->mailer->send(
-                    $mailerConfig['from_email'],
-                    $postData['email'],
-                    $postData['subject'],
-                    $postData['message']
-                );
-            } catch (\Exception $e) {
-                $message = "Une erreur s'est produite lors de l'envoi de votre message. Veuillez réessayer plus tard.";
-            }
+            $this->mailerService->sendEmail(
+                $postData['email'],
+                $mailerConfig['from_email'],
+                'Demande de contact - MyBlog',
+                $this->twig->render('emails/contact.html.twig', [
+                    'form' => $postData,
+                ])
+            );
             $message = 'Votre message a été envoyé avec succès.';
         }
         $data = [
@@ -53,6 +50,6 @@ class HomeController extends AbstractController
             'session' => $this->session,
         ];
 
-        $this->twig->render('pages/portfolio/index.html.twig', $data);
+        return $this->twig->render('pages/portfolio/index.html.twig', $data);
     }
 }

@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\DependencyInjection\Container;
-use App\Manager\PostManager;
 
 class PostService extends AbstractService
 {
-    private PostManager $postManager;
-
     public function __construct(Container $container)
     {
+        parent::__construct($container);
         $container->injectProperties($this);
     }
 
