@@ -48,4 +48,38 @@ class PostService extends AbstractService
             'total' => $totalPosts,
         ];
     }
+
+    public function getOtherUserPostsData(int $userId)
+    {
+        $offset = $this->serverRequest->getQuery('offset') ? intval($this->serverRequest->getQuery('offset')) : 1;
+        $limit = $this->serverRequest->getQuery('limit') ? intval($this->serverRequest->getQuery('limit')) : 10;
+        $page = intval($offset / $limit) + 1;
+        $otherUserPostsData = $this->postManager->findUserPosts($userId, $page, $limit);
+        $otherUserPosts = $otherUserPostsData['posts'];
+        $otherUserPostsArray = [];
+        $comments = '';
+        foreach ($otherUserPosts as $post) {
+            $numberOfComments = isset($comments['number_of_comments']) ? $comments['number_of_comments'] : 0;
+            $tags = array_map(function ($tag) {
+                return $tag->getName();
+            }, $post->getTags());
+            $otherUserPostsArray[] = [
+                'id' => $post->getId(),
+                'title' => $post->getTitle(),
+                'slug' => $post->getSlug(),
+                'created_at' => $post->getCreatedAt(),
+                'is_enabled' => $post->getIsEnabled(),
+                'category' => $post->getCategory()->getName(),
+                'comments' => $numberOfComments.' commentaire(s)',
+                'tags' => $tags,
+                'type' => 'otherPosts',
+            ];
+        }
+        $totalPosts = $otherUserPostsData['count'];
+
+        return [
+            'rows' => $otherUserPostsArray,
+            'total' => $totalPosts,
+        ];
+    }
 }

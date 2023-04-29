@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Config\Configuration;
 use App\DependencyInjection\Container;
 use App\Helper\StringHelper;
+use App\Manager\PostManager;
 use App\Manager\UserManager;
 use App\Service\MailerService;
 use App\Service\PostService;
@@ -23,6 +24,7 @@ class UserController extends AbstractController
     private PostService $postService;
     private LoginFormValidator $loginFV;
     private Configuration $configuration;
+    private $postManager;
 
     public function __construct(MailerService $mailerService, Configuration $configuration, Container $container)
     {
@@ -31,6 +33,7 @@ class UserController extends AbstractController
         $this->loginFV = new LoginFormValidator($this->userManager, $this->securityHelper);
         $this->mailerService = $mailerService;
         $this->configuration = $configuration;
+        $this->postManager = $this->container->get(PostManager::class);
     }
 
     /*
@@ -186,10 +189,15 @@ class UserController extends AbstractController
         $url = $this->serverRequest->getUri();
         $username = $this->stringHelper->getLastUrlPart($url);
         $user = $this->userManager->findOneBy(['username' => $username]);
+        $userPostsData = $this->postService->getOtherUserPostsData($user->getId());
+        $hasPost = ($userPostsData['total'] > 0) ? true : false;
+
         $data = [
             'title' => 'MyBlog - Profile',
             'route' => 'profile',
             'user' => $user,
+            'userPostsData' => $userPostsData,
+            'hasPost' => $hasPost,
             'session' => $this->session,
         ];
 
