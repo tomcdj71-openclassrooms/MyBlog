@@ -23,11 +23,7 @@
 				<div class="col-lg-3">
 					<div class="card">
 						<div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
-							{% if user.avatar starts with 'http://' or user.avatar starts with 'https://' %}
-								<img src="{{ user.avatar }}" alt="avatar of user {{ user.username }}" class="rounded-circle">
-							{% else %}
-								<img src="{{ asset('../uploads/avatars/' ~ user.avatar ~ '.jpg') }}" alt="avatar of user {{ user.username }}" class="rounded-circle">
-							{% endif %}
+							<img src="{{ (user.avatar starts with 'http://' or user.avatar starts with 'https://') ? user.avatar : (asset('../uploads/avatars/' ~ user.avatar ~ '.jpg')) }}" alt="avatar of user {{ user.username }}" class="rounded-circle">
 							<h2>{{ user.firstName ? user.firstName : '' }}
 								{{ user.lastName ? user.lastName : ''}}</h2>
 							<h3>{{ user.role == 'ROLE_USER' ? 'Utilisateur' : 'Administrateur' }}</h3>

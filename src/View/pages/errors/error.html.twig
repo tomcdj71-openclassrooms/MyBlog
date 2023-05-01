@@ -10,7 +10,10 @@
 			<p class="lead">
 				{{ explanations }}
 			</p>
-			<a href="{{ path('home') }}" class="btn btn-primary">Retour à l'accueil</a>
+			<a href="{{ path('home') }}" class="btn btn-indigo">Retour à l'accueil</a>
+			{% if status_code == 401 or status_code == 403 %}
+				<a href="{{ path('login') }}" class="btn btn-success">Se connecter</a>
+			{% endif %}
 		</div>
 	</div>
 {% endblock %}

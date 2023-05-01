@@ -23,7 +23,7 @@
 					<div class="post-item clearfix">
 						<img src="{{ post.featuredImage }}" alt="Illustration of the post {{ post.slug }}" class="img-fluid">
 						<h4>
-							<a href="/blog/post/{{ post.slug }}">{{ post.title }}</a>
+							<a href="{{path('blog_post',{'slug':post.slug})}}">{{ post.title }}</a>
 						</h4>
 						<time datetime="{{ post.createdAt }}">
 							{{ post.createdAt|date("d/m/Y") }}</time>

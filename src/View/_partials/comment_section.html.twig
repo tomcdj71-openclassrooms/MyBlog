@@ -4,40 +4,44 @@
 	{% set enabledComments = comments|filter(c => c.isEnabled) %}
 	<h4 class="comments-count">{{ enabledComments|length }}
 		Commentaire{{ enabledComments|length > 1 ? 's' : '' }}</h4>
-	{{ macros.renderComments(comments, loggedUser) }}
+	{{ macros.renderComments(comments, loggedUser, null, true) }}
 
-	{% macro renderComments(comments, user, parentId = null) %}
+	{% macro renderComments(comments, user, parentId = null, isParent = false) %}
 		{% for comment in comments %}
 			{% if comment.parentId == parentId %}
-				{% set hasReplies = comments|filter(c => c.parentId == comment.id)|length > 0 %}
-				<div id="comment-{{ comment.id }}" class="comment{% if not comment.isEnabled %} comment-not-validated{% endif %}{% if hasReplies %} comment-reply{% endif %}">
-					<div class="d-flex text-break text-wrap">
-						<div class="comment-img">
-							{% if comment.author.avatar starts with 'http://' or comment.author.avatar starts with 'https://' %}
-								<img src="{{ comment.author.avatar }}" alt="avatar of user {{ comment.author.username }}">
-							{% else %}
-								<img src="{{ asset('../uploads/avatars/' ~ comment.author.avatar ~ '.jpg') }}" alt="avatar of user {{ comment.author.username }}">
-							{% endif %}
-						</div>
-						<div class="w-100">
-							<h5>
-								<a href="{{ path('user_profile', {'slug': comment.author.username }) }}">{{ comment.author.username }}</a>
-								<a href="#" class="reply" data-comment-id="{{ comment.id }}" data-author="{{ comment.author.username }}" data-content="{{ comment.content }}">
-									<i class="bi bi-reply-fill"></i>
-									<small>Répondre</small>
-								</a>
-							</h5>
-							<time datetime="{{ comment.createdAt }}">{{ comment.createdAt|date("d/m/Y") }}</time>
-							{% if not comment.isEnabled %}
-								<div class="alert alert-warning fade show" role="alert">
-									<strong>Commentaire en attente de validation</strong>
-								</div>
-							{% endif %}
-							{% if comment.parentId %}
-								{% set parentComment = comments|filter(c => c.id == comment.parentId)|first %}
-								{% set previewLength = 50 %}
-								{% set preview = parentComment.content|slice(0, previewLength) %}
-								{% if parentComment.content|length > previewLength %}
+				{% set isAuthor = user is not empty and user.username == comment.author.username %}
+				{% if comment.isEnabled or isAuthor %}
+					{% set hasReplies = comments|filter(c => c.parentId == comment.id)|length > 0 %}
+					<div id="comment-{{ comment.id }}" class="comment{% if not comment.isEnabled %} comment-not-validated{% endif %}
+																																				{{ hasReplies ? (isParent ? ' comment-reply-parent' : ' comment-reply') : '' }}">
+						<div class="d-flex text-break text-wrap">
+							<div class="comment-img">
+								{% if comment.author.avatar starts with 'http://' or comment.author.avatar starts with 'https://' %}
+									<img src="{{ comment.author.avatar }}" alt="avatar of user {{ comment.author.username }}">
+								{% else %}
+									<img src="{{ asset('../uploads/avatars/' ~ comment.author.avatar ~ '.jpg') }}" alt="avatar of user {{ comment.author.username }}">
+								{% endif %}
+							</div>
+							<div class="w-100">
+								<h5>
+									<a href="{{ path('user_profile', {'slug': comment.author.username }) }}">{{ comment.author.username }}</a>
+									{% if user is not empty %}
+										<a href="#" class="reply" data-comment-id="{{ comment.id }}" data-author="{{ comment.author.username }}" data-content="{{ comment.content }}">
+											<i class="bi bi-reply-fill"></i>
+											<small>Répondre</small>
+										</a>
+									{% endif %}
+								</h5>
+								<time datetime="{{ comment.createdAt }}">{{ comment.createdAt|date("d/m/Y") }}</time>
+								{% if not comment.isEnabled and isAuthor %}
+									<div class="alert alert-warning fade show" role="alert">
+										<strong>Commentaire en attente de validation</strong>
+									</div>
+								{% endif %}
+								{% if comment.parentId %}
+									{% set parentComment = comments|filter(c => c.id == comment.parentId)|first %}
+									{% set previewLength = 50 %}
+									{% set preview = parentComment.content|slice(0, previewLength) %}
 									<figure class="alert fade show text-muted border-bottom border-start pb-0">
 										<figcaption class="blockquote-footer">
 											<small>En réponse à
@@ -50,21 +54,20 @@
 										</figcaption>
 									</figure>
 								{% endif %}
-							{% endif %}
-							<p class="{% if not comment.isEnabled %}comment-not-validated-content{% endif %}">
-								{{ comment.content }}
-							</p>
+								<p class="{% if not comment.isEnabled or isAuthor %}comment-not-validated-content{% endif %}">
+									{{ comment.content }}
+								</p>
+							</div>
 						</div>
+						{% if hasReplies %}
+							<div id="comment-reply-{{ comment.id }}" class="comment-reply">
+								{{ macros.renderComments(comments, user, comment.id) }}
+							</div>
+						{% endif %}
 					</div>
-					{% if hasReplies %}
-						<div id="comment-reply-{{ comment.id }}" class="comment-reply">
-							{{ macros.renderComments(comments, user, comment.id) }}
-						</div>
-					{% endif %}
-				</div>
+				{% endif %}
 			{% endif %}
 		{% endfor %}
 	{% endmacro %}
 
-	{% include "_partials/comment_form.html.twig" %}
-</div>
+	{% include "_partials/comment_form.html.twig" %}</div>

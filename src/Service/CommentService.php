@@ -5,16 +5,26 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\DependencyInjection\Container;
+use App\Helper\SecurityHelper;
 use App\Manager\CommentManager;
+use App\Middleware\AuthenticationMiddleware;
+use App\Router\ServerRequest;
 use App\Validator\CommentFormValidator;
 
 class CommentService extends AbstractService
 {
-    private CommentManager $commentManager;
+    protected SecurityHelper $securityHelper;
+    protected ServerRequest $serverRequest;
+    protected AuthenticationMiddleware $authMiddleware;
+    protected CommentManager $commentManager;
 
     public function __construct(Container $container)
     {
         $container->injectProperties($this);
+        $this->serverRequest = $container->get(ServerRequest::class);
+        $this->securityHelper = $container->get(SecurityHelper::class);
+        $this->authMiddleware = $container->get(AuthenticationMiddleware::class);
+        $this->commentManager = $container->get(CommentManager::class);
     }
 
     public function handleCommentPostRequest($postObject, array $postData)
@@ -60,7 +70,6 @@ class CommentService extends AbstractService
             'is_enabled' => $isEnabled,
             'created_at' => date('Y-m-d H:i:s'),
         ];
-
         $this->commentManager->create($commentData);
 
         return 'Commentaire créé avec succès!';

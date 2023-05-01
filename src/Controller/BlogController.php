@@ -11,6 +11,7 @@ use App\Manager\CommentManager;
 use App\Manager\PostManager;
 use App\Manager\TagManager;
 use App\Service\CommentService;
+use Tracy\Debugger;
 
 class BlogController extends AbstractController
 {
@@ -93,9 +94,12 @@ class BlogController extends AbstractController
                     'route' => 'blog',
                     'user' => $user,
                     'message' => 'Commentaire posté avec succès !',
-                    'errors' => $errors,
                     'csrfToken' => $csrfToken,
                     'post' => $post,
+                    'errors' => $errors ?? '',
+                    'tags' => $this->tagManager->findAll(),
+                    'categories' => $this->categoryManager->findByPopularity(),
+                    'recentPosts' => $this->postManager->findRecentPosts(),
                     'comments' => $this->commentManager->findAllByPost($post->getId()),
                     'loggedUser' => $user,
                     'session' => $this->session,
@@ -105,6 +109,7 @@ class BlogController extends AbstractController
             $message = implode(', ', $errors);
         }
         $csrfToken = $this->securityHelper->generateCsrfToken('comment');
+        Debugger::barDump($this->commentManager->findAllByPost($post->getId()));
 
         return $this->twig->render('pages/blog/post.html.twig', [
             'title' => 'MyBlog - Blog Post',

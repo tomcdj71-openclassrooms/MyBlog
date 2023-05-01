@@ -34,9 +34,10 @@ class Injectable
         $container->set(Request::class, function (Container $container) {
             return new Request($container);
         });
-        $container->set(ServerRequest::class, new ServerRequest($_SERVER));
+
         $container->set(Session::class, new Session());
         $container->set(SecurityHelper::class, new SecurityHelper($container->get(Session::class)));
+        $container->set(ServerRequest::class, new ServerRequest($_SERVER));
         $container->set(AuthenticationMiddleware::class);
         $container->set(CategoryManager::class);
         $container->set(TagManager::class);
