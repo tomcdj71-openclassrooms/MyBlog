@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Config\Configuration;
 use App\DependencyInjection\Container;
+use App\Helper\StringHelper;
 use App\Manager\CategoryManager;
 use App\Manager\CommentManager;
 use App\Manager\PostManager;
@@ -20,6 +21,7 @@ class AjaxController extends AbstractController
     private PostManager $postManager;
     private Configuration $configuration;
     private MailerService $mailerService;
+    private StringHelper $stringHelper;
 
     public function __construct(Container $container, Configuration $configuration, MailerService $mailerService)
     {
@@ -29,12 +31,18 @@ class AjaxController extends AbstractController
         $this->mailerService = $mailerService;
     }
 
-    public function myComments()
+    public function myComments(bool $impersonate = false)
     {
-        if (!$this->authMiddleware->isUserOrAdmin()) {
-            header('HTTP/1.0 403 Forbidden');
+        if ($impersonate) {
+            $url = $this->serverRequest->getUri();
+            $username = $this->stringHelper->getLastUrlPart($url);
+            $user = $this->userManager->findOneBy(['username' => $username]);
+        } else {
+            $user = $this->securityHelper->getUser();
         }
-        $user = $this->securityHelper->getUser();
+        if (!$user) {
+            throw new \Exception('Utilisateur non trouvé');
+        }
         $offset = $this->serverRequest->getQuery('offset', 1);
         $limit = $this->serverRequest->getQuery('limit', 10);
         $page = intval($offset / $limit) + 1;
@@ -69,7 +77,12 @@ class AjaxController extends AbstractController
 
     public function myPosts()
     {
-        $userPostsData = $this->postService->getUserPostsData();
+        $userId = $_GET['userId'] ?? null;
+        if ($userId) {
+            $userPostsData = $this->postService->getOtherUserPostsData($userId);
+        } else {
+            $userPostsData = $this->postService->getUserPostsData();
+        }
         foreach ($userPostsData['rows'] as $key => $row) {
             $userPostsData['rows'][$key]['actions'] = [
                 'voir' => '/blog/post/'.$userPostsData['rows'][$key]['slug'],

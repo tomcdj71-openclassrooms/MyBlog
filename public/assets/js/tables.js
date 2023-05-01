@@ -219,6 +219,27 @@ $(document).ready(function () {
         }));
     }
 
+    var userId = $("#user-id").data("user-id");
+    var ajaxUrl = '/ajax/user-posts';
+    if ($('#table-user-profile-posts-impersonate').length) {
+        ajaxUrl += '?userId=' + userId;
+    }
+    if ($('#table-user-profile-posts-impersonate').length) {
+        initBootstrapTable('#table-user-profile-posts-impersonate', generateTableConfig(ajaxUrl, [
+            { field: 'title', title: 'Titre', formatter: titleFormatter, width: '35', widthUnit: '', widthUnit: '%' },
+            { field: 'category', title: 'Categorie', width: '15', widthUnit: '%' },
+            { field: 'created_at', title: 'Créé le', formatter: dateFormatter, width: '10', widthUnit: '%' },
+            { field: 'tags', title: 'Tags', formatter: tagsFormatter, width: '15', widthUnit: '%' },
+            { field: 'status', title: 'Statut', formatter: isEnabledFormatter, width: '10', widthUnit: '%' },
+            { field: 'actions', title: 'Actions', formatter: actionFormatter, width: '15', widthUnit: '%' }
+        ], function () {
+            var table = $('#table-user-profile-posts-impersonate');
+            var page = table.bootstrapTable('getOptions').pageNumber;
+            var limit = table.bootstrapTable('getOptions').pageSize;
+            updateBootstrapTableOptions(page, limit);
+        }));
+    }
+
     if ($('#table-user-profile-posts').length) {
         initBootstrapTable('#table-user-profile-comments', generateTableConfig('/ajax/user-comments', [
             { field: 'post_title', title: 'Post', formatter: titleFormatter, width: '15', widthUnit: '%' },

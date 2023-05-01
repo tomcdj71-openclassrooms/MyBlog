@@ -38,7 +38,7 @@ class Router
         }
         // Checks if the user is an admin and redirects them if they are not.
         if ($controller instanceof AdminController) {
-            $response = $controller->ensureAuthenticatedAdmin();
+            $response = $controller->ensureAdmin();
             if ($response) {
                 echo $response->getBody();
 

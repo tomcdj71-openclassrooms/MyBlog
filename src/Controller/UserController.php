@@ -43,7 +43,10 @@ class UserController extends AbstractController
     */
     public function profile()
     {
-        $this->ensureAuthenticatedUser();
+        $redirect = $this->ensureAuthenticatedUser();
+        if ($redirect) {
+            return $redirect;
+        }
 
         $user = $this->securityHelper->getUser();
         $errors = [];
@@ -54,7 +57,8 @@ class UserController extends AbstractController
         $csrfToken = $this->securityHelper->generateCsrfToken('editProfile');
         $userPostsData = $this->postService->getUserPostsData();
         $hasPost = ($userPostsData['total'] > 0) ? true : false;
-        $data = [
+
+        return $this->twig->render('pages/profile/profile.html.twig', [
             'title' => 'MyBlog - Profile',
             'route' => 'profile',
             'user' => $user,
@@ -63,9 +67,8 @@ class UserController extends AbstractController
             'csrfToken' => $csrfToken,
             'session' => $this->session,
             'hasPost' => $hasPost,
-        ];
-
-        return $this->twig->render('pages/profile/profile.html.twig', $data);
+            'impersonate' => false,
+        ]);
     }
 
     /**
@@ -75,17 +78,8 @@ class UserController extends AbstractController
      */
     public function login($message = null)
     {
-        try {
-            if ($this->session->get('remember_me_token') && !$this->authMiddleware->isUserOrAdmin()) {
-                $this->securityHelper->checkRememberMeToken($this->session->get('remember_me_token'));
-            }
-        } catch (\Exception $error) {
-            // If there is an issue with the remember_me_token (expired or invalid), remove it
-            $this->session->remove('remember_me_token');
-            setcookie('remember_me_token', '', time() - 3600, '/', '', false, true);
-        }
-
-        if ($this->authMiddleware->isUserOrAdmin()) {
+        $this->ensureAuthenticatedUser();
+        if ($this->securityHelper->getUser()) {
             return $this->request->redirectToRoute('blog');
         }
         $errors = [];
@@ -107,16 +101,15 @@ class UserController extends AbstractController
             }
         }
         $csrfToken = $this->securityHelper->generateCsrfToken('login');
-        $data = [
+
+        return $this->twig->render('pages/security/login.html.twig', [
             'title' => 'MyBlog - Connexion',
             'route' => 'login',
             'message' => $message,
             'session' => $this->session,
             'csrfToken' => $csrfToken,
             'errors' => $errors,
-        ];
-
-        return $this->twig->render('pages/security/login.html.twig', array_merge($data, ['errors' => $errors]));
+        ]);
     }
 
     /**
@@ -126,15 +119,8 @@ class UserController extends AbstractController
      */
     public function register($message = null)
     {
-        try {
-            if ($this->session->getCookie('remember_me_token') && !$this->authMiddleware->isUserOrAdmin()) {
-                $this->securityHelper->checkRememberMeToken($this->session->getCookie('remember_me_token'));
-            }
-        } catch (\Exception $error) {
-            // If there is an issue with the remember_me_token (expired or invalid), remove it
-            setcookie('remember_me_token', '', time() - 3600, '/', '', false, true);
-        }
-        if ($this->authMiddleware->isUserOrAdmin()) {
+        $this->ensureAuthenticatedUser();
+        if ($this->securityHelper->getUser()) {
             return $this->request->redirectToRoute('blog');
         }
         $errors = [];
@@ -167,16 +153,15 @@ class UserController extends AbstractController
             }
             $errors = array_merge($errors, $validationResult['errors']);
         }
-        $data = [
+
+        return $this->twig->render('pages/security/register.html.twig', [
             'title' => 'MyBlog - Connexion',
             'route' => 'login',
             'message' => $message,
             'session' => $this->session,
             'csrfToken' => $csrfToken,
             'errors' => $errors,
-        ];
-
-        return $this->twig->render('pages/security/register.html.twig', array_merge($data, ['errors' => $errors]));
+        ]);
     }
 
     /**
@@ -192,16 +177,15 @@ class UserController extends AbstractController
         $userPostsData = $this->postService->getOtherUserPostsData($user->getId());
         $hasPost = ($userPostsData['total'] > 0) ? true : false;
 
-        $data = [
+        return $this->twig->render('pages/profile/profile.html.twig', [
             'title' => 'MyBlog - Profile',
             'route' => 'profile',
             'user' => $user,
             'userPostsData' => $userPostsData,
             'hasPost' => $hasPost,
             'session' => $this->session,
-        ];
-
-        return $this->twig->render('pages/profile/profile.html.twig', $data);
+            'impersonate' => true,
+        ]);
     }
 
     /**

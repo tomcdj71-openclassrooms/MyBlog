@@ -17,6 +17,7 @@
 
 {% block body %}
 	<section id="blog" class="blog mt-4">
+		<div id="user-id" data-user-id="{{ user.id }}"></div>
 		<div class="container pt-4" style="max-width:1800px" data-aos="fade-up">
 			<div class="row">
 				<div class="col-lg-3">
@@ -112,7 +113,7 @@
 											</div>
 											<div class="card-body">
 												<div class="table-wrapper">
-													<table id="table-user-profile-comments"></table>
+													<table id="table-user-profile-comments{{ impersonate ? '-impersonate' : '' }}"></table>
 												</div>
 											</div>
 										</div>
@@ -128,15 +129,16 @@
 												<h4>Mes articles</h4>
 											</div>
 											<div class="card-body">
-												<div class="table-wrapper"></div>
-												<table id="table-user-profile-posts"></table>
+												<div class="table-wrapper">
+													<table id="table-user-profile-posts{{ impersonate ? '-impersonate' : '' }}"></table>
+												</div>
 											</div>
 										</div>
+										<!-- End Post Table -->
 									</div>
-									<!-- End Post Table -->
 								</div>
+								<!-- End Bordered Tabs -->
 							</div>
-							<!-- End Bordered Tabs -->
 						</div>
 					</div>
 				</div>

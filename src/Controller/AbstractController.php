@@ -12,12 +12,13 @@ use App\Middleware\AuthenticationMiddleware;
 use App\Router\Request;
 use App\Router\ServerRequest;
 use App\Router\Session;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Tracy\Debugger;
 
 abstract class AbstractController
 {
     protected Container $container;
     protected $requestParams = [];
-
     protected TwigHelper $twig;
     protected Session $session;
     protected ServerRequest $serverRequest;
@@ -56,28 +57,24 @@ abstract class AbstractController
     public function ensureAdmin()
     {
         $this->authenticate();
-
         if (!$this->authMiddleware->isAdmin()) {
             $rememberMeToken = $this->session->getCookie('remember_me_token') ?? null;
             if ($rememberMeToken) {
                 $user = $this->userManager->findOneBy(['remember_me_token' => $rememberMeToken]);
                 if ($user) {
                     $this->securityHelper->loginById($user->getId());
-                    $referrer = $this->session->get('referrer');
-                    if ($referrer) {
-                        $this->session->remove('referrer');
-                        header("Location: {$referrer}");
-
-                        exit;
+                    $referrer = $this->session->get('referrer') ?? '/blog';
+                    $this->session->remove('referrer');
+                    if ($referrer !== $this->serverRequest->getUri()) {
+                        return $this->request->redirectToRoute($referrer);
                     }
 
                     return;
                 }
             }
-            $this->session->set('referrer', $this->serverRequest->get('HTTP_REFERER'));
-            header('Location: /login');
+            $this->session->set('referrer', $this->serverRequest->getUri());
 
-            exit;
+            return $this->request->redirectToRoute('/login');
         }
     }
 
@@ -90,21 +87,22 @@ abstract class AbstractController
                 $user = $this->userManager->findOneBy(['remember_me_token' => $rememberMeToken]);
                 if ($user) {
                     $this->securityHelper->loginById($user->getId());
+                    $referrer = $this->session->get('referrer') ?? '/blog';
+                    $this->session->remove('referrer');
+                    if ($referrer !== $this->serverRequest->getUri()) {
+                        Debugger::barDump(new RedirectResponse($referrer));
+
+                        return new RedirectResponse($referrer);
+                    }
 
                     return;
                 }
             }
             $this->session->set('referrer', $this->serverRequest->getUri());
-            header('Location: /login');
+            Debugger::barDump(new RedirectResponse('/login'));
 
-            exit;
+            return new RedirectResponse('/login');
         }
-
-        $referrer = $this->session->get('referrer') ?? '/blog';
-        $this->session->remove('referrer');
-        header("Location: {$referrer}");
-
-        exit;
     }
 
     private function authenticate(): void
