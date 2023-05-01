@@ -19,14 +19,14 @@ class ErrorController extends AbstractController
     /**
      * Display the error page.
      *
-     * @param null $message
+     * @param int statusCode
      */
     public function errorPage(int $statusCode)
     {
         http_response_code($statusCode);
 
         $this->resetData();
-        // switch case to display the correct error page
+
         switch ($statusCode) {
             case 404:
                 $this->data['title'] = 'Erreur 404 - Page non trouvée';

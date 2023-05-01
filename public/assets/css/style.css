@@ -562,6 +562,18 @@ body {
     transition: 0.3s;
 }
 
+.blog .blog-comments .comment h5 div.approve a {
+    font-weight: bold;
+    color: var(--bs-green);
+    transition: 0.3s;
+}
+
+.blog .blog-comments .comment h5 div.decline a {
+    font-weight: bold;
+    color: var(--bs-danger);
+    transition: 0.3s;
+}
+
 .blog .blog-comments .comment h5 a:hover {
     color: var(--bs-purple);
 }

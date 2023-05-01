@@ -31,7 +31,9 @@ class TwigHelper
          */
         $this->twig->addFunction(new TwigFunction('asset', [$this, 'asset']));
         $this->twig->addFunction(new TwigFunction('path', [$this, 'path']));
-        $this->twig->addFunction(new TwigFunction('paginate', [$this, 'paginate']));
+        $this->twig->addFunction(new TwigFunction('current_route', [$this, 'currentRoute']));
+        $this->twig->addFunction(new TwigFunction('route_name', [$this, 'routeName']));
+
         // Required for the dump() function
         // VSCode don't like this line but it's working
         $this->twig->addExtension(new \Twig\Extension\DebugExtension());
@@ -91,5 +93,28 @@ class TwigHelper
         $baseURL = "{$protocol}://{$host}";
 
         return sprintf('%s/assets/%s', $baseURL, ltrim($asset, '/'));
+    }
+
+    public function currentRoute($routeName)
+    {
+        $currentRoute = $this->serverRequest->getUri();
+        $targetRoute = $this->path($routeName);
+
+        return $currentRoute === $targetRoute;
+    }
+
+    public function routeName(): string
+    {
+        $currentUri = $this->serverRequest->getUri();
+        $routes = (new Route())->getRoutes();
+
+        foreach ($routes as $route) {
+            $pattern = '@^'.preg_replace('@\\\{[^/]+@', '([^/]+)', preg_quote($route[0], '@')).'$@D';
+            if (preg_match($pattern, $currentUri, $matches)) {
+                return $route[4]; // Return the route name.
+            }
+        }
+
+        throw new \Exception('No route found for the current URL');
     }
 }

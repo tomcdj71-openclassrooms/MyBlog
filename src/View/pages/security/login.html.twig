@@ -12,11 +12,6 @@
 							</div>
 							<form class="row g-3 needs-validation" action="/login" method="POST" novalidate="" data-np-autofill-type="login" data-np-checked="1" data-np-watching="1">
 								<input type="hidden" name="login" value="1">
-								{% if message is not null %}
-									{% for msg in message %}
-										<div class="text-danger">{{ msg }}</div>
-									{% endfor %}
-								{% endif %}
 								<div class="col-12">
 									<label for="email" class="form-label">Email</label>
 									<div class="input-group has-validation">

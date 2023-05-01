@@ -26,6 +26,7 @@ abstract class AbstractController
     protected UserManager $userManager;
     protected Request $request;
     protected AuthenticationMiddleware $authMiddleware;
+    protected string $path;
 
     public function __construct(Container $container)
     {
@@ -38,6 +39,7 @@ abstract class AbstractController
         $this->userManager = $this->container->get(UserManager::class);
         $this->request = $this->container->get(Request::class);
         $this->authMiddleware = $this->container->get(AuthenticationMiddleware::class);
+        $this->path = $this->serverRequest->getPath();
     }
 
     public function setRequestParams(array $params)

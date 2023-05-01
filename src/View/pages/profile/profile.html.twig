@@ -54,7 +54,7 @@
 								<li class="nav-item" role="presentation">
 									<button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview" aria-selected="false" role="tab" tabindex="-1">Résumé</button>
 								</li>
-								{% if session.get('user') is not null and session.get('user').id == user.id %}
+								{% if session.getUserFromSession() is not null and session.getUserFromSession().id == user.id %}
 									<li class="nav-item" role="presentation">
 										<button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit" aria-selected="true" role="tab">Modifier Profil</button>
 									</li>

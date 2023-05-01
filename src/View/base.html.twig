@@ -6,7 +6,8 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<meta name="description" content="">
 		<meta name="author" content="">
-		<title>{{ title }}</title>
+		<title>{{ 'MyBlog - ' ~ route_name() }}
+		</title>
 		{% block stylesheets %}
 			<link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
 			<link href="{{ asset('font/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
@@ -18,7 +19,6 @@
 			<script src="https://unpkg.com/typed.js@2.0.14/dist/typed.umd.js"></script>
 		{% endblock %}
 	</head>
-	<!-- Body dark  -->
 	<body>
 		{% include '_partials/navbar.html.twig' %}
 		{% block body %}{% endblock %}

@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Config\Configuration;
 use App\DependencyInjection\Container;
-use App\Helper\StringHelper;
 use App\Manager\CategoryManager;
 use App\Manager\CommentManager;
 use App\Manager\PostManager;
@@ -21,7 +20,6 @@ class AjaxController extends AbstractController
     private PostManager $postManager;
     private Configuration $configuration;
     private MailerService $mailerService;
-    private StringHelper $stringHelper;
 
     public function __construct(Container $container, Configuration $configuration, MailerService $mailerService)
     {
@@ -34,8 +32,7 @@ class AjaxController extends AbstractController
     public function myComments(bool $impersonate = false)
     {
         if ($impersonate) {
-            $url = $this->serverRequest->getUri();
-            $username = $this->stringHelper->getLastUrlPart($url);
+            $username = $this->serverRequest->getPath();
             $user = $this->userManager->findOneBy(['username' => $username]);
         } else {
             $user = $this->securityHelper->getUser();
@@ -274,10 +271,10 @@ class AjaxController extends AbstractController
         $success = $this->commentManager->updateIsEnabled($comment);
         $subject = 'Commentaire '.$comment->getIsEnabled() ? 'approuvé' : 'refusé';
         $this->mailerService->sendEmail(
+            $this->configuration->get('mailer.from_email'),
             $comment->getAuthor()->getEmail(),
-            $this->configuration->get('from_email'),
             $subject,
-            $this->twig->render('emails/contact.html.twig', [
+            $this->twig->render('emails/comment_status.html.twig', [
                 'comment' => $comment,
             ])
         );

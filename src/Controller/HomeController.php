@@ -20,10 +20,8 @@ class HomeController extends AbstractController
 
     /**
      * Display the home page.
-     *
-     * @param null $message
      */
-    public function index($message = null)
+    public function index()
     {
         if ('POST' == $this->serverRequest->getRequestMethod()) {
             $postData = [
@@ -45,9 +43,9 @@ class HomeController extends AbstractController
         }
         $data = [
             'title' => 'MyBlog - Portfolio',
-            'message' => $message,
             'route' => 'portfolio',
             'session' => $this->session,
+            'message' => $message ?? null,
         ];
 
         return $this->twig->render('pages/portfolio/index.html.twig', $data);

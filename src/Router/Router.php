@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Router;
 
-use App\Controller\AdminController;
 use App\Controller\BlogController;
-use App\Controller\ErrorController;
 use App\DependencyInjection\Container;
 
 class Router
@@ -36,20 +34,6 @@ class Router
         $this->container->injectProperties($controller);
         if ($controller instanceof BlogController) {
             $controller->setRequestParams($matchedRoute['params']);
-        }
-        // Checks if the user is an admin and redirects them if they are not.
-        if ($controller instanceof AdminController) {
-            $response = $controller->ensureAdmin();
-            if (!$response) {
-                $errorController = $this->container->get(ErrorController::class);
-                $this->container->injectProperties($errorController);
-                echo call_user_func_array([$errorController, 'errorPage'], [401]);
-
-                return;
-            }
-            echo $response->getBody();
-
-            return;
         }
 
         echo call_user_func_array([$controller, $controllerMethod], $matchedRoute['params']);

@@ -8,27 +8,19 @@
 			<ul class="navbar-nav">
 				<div class="centered-pill">
 					<li class="nav-item">
-						{# Due to my routing system, I need to make this if/esle statement in order to always redirect to / the "home" route #}
-						{# If I don't do that, if I'm on 'blog_post' for example, the 'home' route generated will be 'blog_post' too ! #}
-						{% set home = path('home' ) %}
-							{% if home == '' %}
-							{% set home = '/' %}
-						{% else %}
-							{% set home = '/' ~ home %}
-						{% endif %}
-
-						<a class="nav-link centered-pill-button {{ route == 'portfolio' ? 'active' : '' }}" href="{{ path('home') }}">Accueil</a>
+						<a class="nav-link centered-pill-button {{ current_route('home') ? 'active' : '' }}" href="{{ path('home') }}">
+							Accueil</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link centered-pill-button {{ route == 'blog' ? 'active' : '' }}" href="{{ path('blog') }}">Blog</a>
+						<a class="nav-link centered-pill-button {{ current_route('blog') ? 'active' : '' }}" href="{{ path('blog') }}">Blog</a>
 					</li>
 				</div>
 			</ul>
 		</div>
 		<div class="navbar-nav ml-auto">
-			{% if session.get('user') is not defined or session.get('user') is null %}
+			{% if session.user is defined and not null %}
 				<a class="nav-item nav-link" href="{{ path('login') }}">Connexion</a>
-			{% elseif session.get('user') is not null %}
+			{% else %}
 				<a class="nav-item nav-link" href="{{ path('logout') }}">Déconnexion</a>
 			{% endif %}
 		</div>

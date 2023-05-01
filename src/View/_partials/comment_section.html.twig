@@ -4,16 +4,16 @@
 	{% set enabledComments = comments|filter(c => c.isEnabled) %}
 	<h4 class="comments-count">{{ enabledComments|length }}
 		Commentaire{{ enabledComments|length > 1 ? 's' : '' }}</h4>
-	{{ macros.renderComments(comments, loggedUser, null, true) }}
+	{{ macros.renderComments(comments, user , null, true) }}
 
 	{% macro renderComments(comments, user, parentId = null, isParent = false) %}
 		{% for comment in comments %}
 			{% if comment.parentId == parentId %}
-				{% set isAuthor = user is not empty and user.username == comment.author.username %}
-				{% if comment.isEnabled or isAuthor %}
+				{% set isAuthor = user is not null and user.username == comment.author.username %}
+				{% if comment.isEnabled == true or isAuthor == true %}
 					{% set hasReplies = comments|filter(c => c.parentId == comment.id)|length > 0 %}
 					<div id="comment-{{ comment.id }}" class="comment{% if not comment.isEnabled %} comment-not-validated{% endif %}
-																																				{{ hasReplies ? (isParent ? ' comment-reply-parent' : ' comment-reply') : '' }}">
+																																																{{ hasReplies ? (isParent ? ' comment-reply-parent' : ' comment-reply') : '' }}">
 						<div class="d-flex text-break text-wrap">
 							<div class="comment-img">
 								{% if comment.author.avatar starts with 'http://' or comment.author.avatar starts with 'https://' %}
@@ -23,13 +23,37 @@
 								{% endif %}
 							</div>
 							<div class="w-100">
-								<h5>
-									<a href="{{ path('user_profile', {'slug': comment.author.username }) }}">{{ comment.author.username }}</a>
-									{% if user is not empty %}
-										<a href="#" class="reply" data-comment-id="{{ comment.id }}" data-author="{{ comment.author.username }}" data-content="{{ comment.content }}">
-											<i class="bi bi-reply-fill"></i>
-											<small>Répondre</small>
-										</a>
+								<h5 class="d-flex justify-content-between align-items-center">
+									<div>
+										<a href="{{ path('user_profile', {'slug': comment.author.username }) }}">{{ comment.author.username }}</a>
+										{% if user is not null %}
+											<a href="#" class="reply" data-comment-id="{{ comment.id }}" data-author="{{ comment.author.username }}" data-content="{{ comment.content }}">
+												<i class="bi bi-reply-fill"></i>
+												<small>Répondre</small>
+											</a>
+										{% endif %}
+									</div>
+									{% if user is not null and user.role == 'ROLE_ADMIN' %}
+										<div class="d-flex action-box">
+											{% if comment.isEnabled and comment.author.role is same as ('ROLE_ADMIN') %}
+												<div class="decline px-3">
+													<a href="#" class="toggle-status" data-comment-url="{{ path('ajax_admin_toggle_comment', {'id': comment.id })}}" title="Approuver">
+														<i class="bi bi-x-square h4"></i>
+													</a>
+												</div>
+											{% else %}
+												<div class="approve px-1">
+													<a href="#" class="toggle-status" data-comment-url="{{ path('ajax_admin_toggle_comment', {'id': comment.id })}}" title="Approuver">
+														<i class="bi bi-check-square h4"></i>
+													</a>
+												</div>
+											{% endif %}
+											<div class="edit px-1">
+												<a href="" title="Editer">
+													<i class="bi bi-pencil-square h4"></i>
+												</a>
+											</div>
+										</div>
 									{% endif %}
 								</h5>
 								<time datetime="{{ comment.createdAt }}">{{ comment.createdAt|date("d/m/Y") }}</time>
@@ -69,5 +93,32 @@
 			{% endif %}
 		{% endfor %}
 	{% endmacro %}
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+var toggleStatusLinks = document.querySelectorAll('.toggle-status');
+toggleStatusLinks.forEach(function (link) {
+link.addEventListener('click', function (event) {
+event.preventDefault();
+var commentUrl = event.currentTarget.getAttribute('data-comment-url');
+var xhr = new XMLHttpRequest();
+xhr.open('POST', commentUrl);
+xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+xhr.onload = function () {
+if (xhr.status === 200) {
+var response = JSON.parse(xhr.responseText);
+if (response.success) {
+location.reload();
+} else {
+console.error('An error occurred:', response.error);
+}
+} else {
+console.error('Request failed. Returned status of ', xhr.status);
+}
+};
+xhr.send();
+});
+});
+});
+	</script>
 
 	{% include "_partials/comment_form.html.twig" %}</div>

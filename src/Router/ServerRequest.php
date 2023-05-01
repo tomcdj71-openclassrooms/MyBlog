@@ -71,4 +71,9 @@ class ServerRequest extends Request
     {
         return isset($this->post[$key]);
     }
+
+    public function getPath(): string
+    {
+        return pathinfo(parse_url($this->getUri(), PHP_URL_PATH), PATHINFO_BASENAME);
+    }
 }
