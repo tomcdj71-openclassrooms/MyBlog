@@ -6,30 +6,38 @@ namespace App\Service;
 
 use App\DependencyInjection\Container;
 use App\Helper\ImageHelper;
+use App\Helper\SecurityHelper;
 use App\Manager\UserManager;
+use App\Router\Session;
 use App\Validator\EditProfileFormValidator;
 
 class ProfileService extends AbstractService
 {
+    protected CsrfTokenService $csrfTokenService;
+    protected UserManager $userManager;
+    protected SecurityHelper $securityHelper;
+    protected Session $session;
     private $imageHelper;
-    private $userManager;
 
     public function __construct(Container $container)
     {
         parent::__construct($container);
         $this->imageHelper = new ImageHelper('uploads/avatars/', 200, 200);
         $this->userManager = $container->get(UserManager::class);
+        $this->csrfTokenService = $container->get(CsrfTokenService::class);
+        $this->session = $container->get(Session::class);
+        $this->securityHelper = $container->get(SecurityHelper::class);
     }
 
     public function handleProfilePostRequest($user)
     {
         $errors = [];
         $csrfToCheck = $this->serverRequest->getPost('csrfToken');
-        if (!$this->securityHelper->checkCsrfToken('editProfile', $csrfToCheck)) {
+        if (!$this->csrfTokenService->checkCsrfToken('editProfile', $csrfToCheck)) {
             $errors[] = 'Jeton CSRF invalide.';
         }
         $postData = $this->getPostData();
-        $editProfileFV = new EditProfileFormValidator($this->securityHelper);
+        $editProfileFV = new EditProfileFormValidator($this->userManager, $this->session, $this->csrfTokenService, $this->securityHelper);
         $response = $editProfileFV->validate($postData);
         $message = $response['valid'] ? $this->updateUserProfile($user, $postData) : null;
         $errors = $response['valid'] ? null : $response['errors'];

@@ -4,38 +4,23 @@ declare(strict_types=1);
 
 namespace App\Helper;
 
-use App\Config\DatabaseConnexion;
 use App\Manager\UserManager;
 use App\Model\UserModel;
-use App\Router\ServerRequest;
 use App\Router\Session;
-use App\Validator\LoginFormValidator;
-use App\Validator\RegisterFormValidator;
 
 class SecurityHelper
 {
     private UserManager $userManager;
-    private RegisterFormValidator $registerValidator;
-    private LoginFormValidator $loginValidator;
     private Session $session;
-    private ServerRequest $serverRequest;
 
-    public function __construct(Session $session)
+    public function __construct(UserManager $userManager, Session $session)
     {
-        $connexion = new DatabaseConnexion();
+        $this->userManager = $userManager;
         $this->session = $session;
-        $this->userManager = new UserManager($connexion);
-        $this->registerValidator = new RegisterFormValidator($this->userManager, $this);
-        $this->loginValidator = new LoginFormValidator($this->userManager, $this);
-        $this->serverRequest = new ServerRequest();
     }
 
     public function register(array $postData): bool
     {
-        $response = $this->registerValidator->validate($postData);
-        if (!empty($response['errors']) || false === $response['valid']) {
-            return false;
-        }
         $userData = [
             'username' => $postData['username'],
             'email' => $postData['email'],
@@ -55,7 +40,6 @@ class SecurityHelper
         if (!$user) {
             return false;
         }
-        header('Location: /blog');
 
         return true;
     }
@@ -82,25 +66,16 @@ class SecurityHelper
 
     public function rememberMe(UserModel $user): void
     {
-        $token = bin2hex(random_bytes(16));
+        $token = $this->generateToken(16);
         $expiresAt = time() + 3600 * 24 * 30; // 30 days
-
         $this->userManager->setRememberMeToken($user->getId(), $token, $expiresAt);
 
         setcookie('remember_me_token', $token, $expiresAt, '/', '', false, true);
     }
 
-    public function generateRememberMeToken(): array
-    {
-        $token = bin2hex(random_bytes(32));
-        $expiresAt = time() + 86400 * 7;
-
-        return ['token' => $token, 'expiresAt' => $expiresAt];
-    }
-
     public function checkRememberMeToken(): ?UserModel
     {
-        if (!$this->session->get('remember_me_token') || empty($this->session->get('remember_me_token'))) {
+        if (empty($this->session->get('remember_me_token'))) {
             throw new \InvalidArgumentException("Le jeton 'Remember Me' n'est pas défini ou vide.");
         }
         $token = $this->session->getCookie('remember_me_token');
@@ -113,33 +88,10 @@ class SecurityHelper
         if ($expiresAt < time()) {
             throw new \Exception('Le jeton a expiré.');
         }
+        $this->session->regenerateId();
         $this->session->set('user', $user);
 
-        // No need to manually set the Location header. This should be handled by your controller/router.
-        // header('Location: /blog');
-
         return $user;
-    }
-
-    public function generateCsrfToken(string $key): string
-    {
-        $token = bin2hex(random_bytes(32));
-        $csrfTokens = $this->session->get('csrfTokens') ?? [];
-        $csrfTokens[$key] = $token;
-        $this->session->set('csrfTokens', $csrfTokens);
-
-        return $token;
-    }
-
-    public function checkCsrfToken(string $key, string $token): bool
-    {
-        $csrfTokens = $this->session->get('csrfTokens');
-        $expected = $csrfTokens[$key] ?? null;
-        if (null === $expected) {
-            throw new \InvalidArgumentException('No CSRF token found for the given key.');
-        }
-
-        return hash_equals($expected, $token);
     }
 
     public function loginById(int $userId): ?UserModel
@@ -152,5 +104,17 @@ class SecurityHelper
         $this->session->set('user', $user);
 
         return $user;
+    }
+
+    public function hasRole(string $role): bool
+    {
+        $user = $this->getUser();
+
+        return $user && $user->getRole() === $role;
+    }
+
+    private function generateToken(int $length = 32): string
+    {
+        return bin2hex(random_bytes($length));
     }
 }

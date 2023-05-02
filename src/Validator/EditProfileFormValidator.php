@@ -5,13 +5,21 @@ declare(strict_types=1);
 namespace App\Validator;
 
 use App\Helper\SecurityHelper;
+use App\Manager\UserManager;
+use App\Router\Session;
+use App\Service\CsrfTokenService;
 
 class EditProfileFormValidator extends BaseValidator
 {
+    protected Session $session;
+    protected UserManager $userManager;
+    protected CsrfTokenService $csrfTokenService;
     protected SecurityHelper $securityHelper;
 
-    public function __construct(SecurityHelper $securityHelper)
+    public function __construct(UserManager $userManager, Session $session, CsrfTokenService $csrfTokenService, SecurityHelper $securityHelper)
     {
+        parent::__construct($userManager, $session, $csrfTokenService);
+        $this->csrfTokenService = $csrfTokenService;
         $this->securityHelper = $securityHelper;
     }
 
@@ -66,15 +74,11 @@ class EditProfileFormValidator extends BaseValidator
                 'constraints' => [
                     'required' => true,
                     'type' => 'csrf',
+                    'csrfKey' => 'editProfile',
                 ],
             ],
         ];
 
         return $this->validateData($data, $validationRules);
-    }
-
-    protected function validateCsrfToken($token, $errorMsg)
-    {
-        return $this->securityHelper->checkCsrfToken('editProfile', $token) ? '' : $errorMsg;
     }
 }

@@ -9,9 +9,8 @@ namespace App\Router;
  */
 class RouterException extends \Exception
 {
-    public function __construct($code = 404, \Exception $previous = null)
+    public function __construct(string $message = '', int $code = 404, \Exception $previous = null)
     {
-        $message = 'Exception code = '.$code.', previous = '.$previous;
         parent::__construct($message, $code, $previous);
         error_log($message);
     }

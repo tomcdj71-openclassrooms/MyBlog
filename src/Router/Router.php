@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Router;
 
+use App\Controller\AdminController;
 use App\Controller\BlogController;
 use App\DependencyInjection\Container;
 
@@ -33,7 +34,11 @@ class Router
         $controller = $this->container->get($controllerClass);
         $this->container->injectProperties($controller);
         if ($controller instanceof BlogController) {
-            $controller->setRequestParams($matchedRoute['params']);
+            $controller->updateRequestParams($matchedRoute['params']);
+        }
+
+        if ($controller instanceof AdminController) {
+            $controller->ensureAdminAccess();
         }
 
         echo call_user_func_array([$controller, $controllerMethod], $matchedRoute['params']);

@@ -42,9 +42,6 @@ class HomeController extends AbstractController
             $message = 'Votre message a été envoyé avec succès.';
         }
         $data = [
-            'title' => 'MyBlog - Portfolio',
-            'route' => 'portfolio',
-            'session' => $this->session,
             'message' => $message ?? null,
         ];
 

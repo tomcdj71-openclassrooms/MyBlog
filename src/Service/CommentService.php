@@ -7,8 +7,10 @@ namespace App\Service;
 use App\DependencyInjection\Container;
 use App\Helper\SecurityHelper;
 use App\Manager\CommentManager;
+use App\Manager\UserManager;
 use App\Middleware\AuthenticationMiddleware;
 use App\Router\ServerRequest;
+use App\Router\Session;
 use App\Validator\CommentFormValidator;
 
 class CommentService extends AbstractService
@@ -17,6 +19,9 @@ class CommentService extends AbstractService
     protected ServerRequest $serverRequest;
     protected AuthenticationMiddleware $authMiddleware;
     protected CommentManager $commentManager;
+    protected CsrfTokenService $csrfTokenService;
+    protected UserManager $userManager;
+    protected Session $session;
 
     public function __construct(Container $container)
     {
@@ -25,17 +30,20 @@ class CommentService extends AbstractService
         $this->securityHelper = $container->get(SecurityHelper::class);
         $this->authMiddleware = $container->get(AuthenticationMiddleware::class);
         $this->commentManager = $container->get(CommentManager::class);
+        $this->csrfTokenService = $container->get(CsrfTokenService::class);
+        $this->userManager = $container->get(UserManager::class);
+        $this->session = $container->get(Session::class);
     }
 
     public function handleCommentPostRequest($postObject, array $postData)
     {
         $errors = [];
         $csrfToCheck = $this->serverRequest->getPost('csrfToken');
-        if (!$this->securityHelper->checkCsrfToken('comment', $csrfToCheck)) {
+        if (!$this->csrfTokenService->checkCsrfToken('comment', $csrfToCheck)) {
             $errors[] = 'Jeton CSRF invalide.';
         }
         $postData = $this->getPostData($postObject);
-        $commentFV = new CommentFormValidator($this->securityHelper);
+        $commentFV = new CommentFormValidator($this->userManager, $this->session, $this->csrfTokenService);
         $response = $commentFV->validate($postData);
         $message = $response['valid'] ? $this->createComment($postData) : null;
         $errors = $response['valid'] ? null : $response['errors'];

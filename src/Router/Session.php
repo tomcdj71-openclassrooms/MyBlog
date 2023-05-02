@@ -65,4 +65,9 @@ class Session
     {
         session_regenerate_id(true);
     }
+
+    public function isLoggedIn(): bool
+    {
+        return isset($this->sessionData['user']);
+    }
 }

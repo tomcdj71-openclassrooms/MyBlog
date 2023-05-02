@@ -5,22 +5,22 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\DependencyInjection\Container;
-use App\Helper\StringHelper;
 use App\Manager\CategoryManager;
 use App\Manager\CommentManager;
 use App\Manager\PostManager;
 use App\Manager\TagManager;
 use App\Service\CommentService;
+use App\Service\CsrfTokenService;
 
 class BlogController extends AbstractController
 {
     private CategoryManager $categoryManager;
     private TagManager $tagManager;
-    private StringHelper $stringHelper;
     private CommentManager $commentManager;
     private CommentService $commentService;
     private PostManager $postManager;
     private $sidebar;
+    private CsrfTokenService $csrfTokenService;
 
     public function __construct(Container $container)
     {
@@ -30,6 +30,7 @@ class BlogController extends AbstractController
         $this->categoryManager = $container->get(CategoryManager::class);
         $this->tagManager = $container->get(TagManager::class);
         $this->sidebar = $this->getSidebar();
+        $this->csrfTokenService = $container->get(CsrfTokenService::class);
     }
 
     /**
@@ -78,10 +79,9 @@ class BlogController extends AbstractController
             ];
             $errors = $this->commentService->handleCommentPostRequest($post, $postData);
             if (empty($errors)) {
-                $csrfToken = $this->securityHelper->generateCsrfToken('comment');
+                $csrfToken = $this->csrfTokenService->generateToken('comment');
 
                 return $this->twig->render('pages/blog/post.html.twig', array_merge([
-                    'title' => 'MyBlog - Blog Post',
                     'message' => 'Commentaire posté avec succès !',
                     'csrfToken' => $csrfToken,
                     'post' => $post,
@@ -91,10 +91,9 @@ class BlogController extends AbstractController
             }
             $errors = array_map('strval', $errors);
         }
-        $csrfToken = $this->securityHelper->generateCsrfToken('comment');
+        $csrfToken = $this->csrfTokenService->generateToken('comment');
 
         return $this->twig->render('pages/blog/post.html.twig', array_merge([
-            'title' => 'MyBlog - Blog Post',
             'user' => $user,
             'csrfToken' => $csrfToken,
             'post' => $post,
@@ -112,7 +111,6 @@ class BlogController extends AbstractController
     public function blogCategory($slug)
     {
         return $this->twig->render('pages/blog/index.html.twig', array_merge([
-            'title' => 'MyBlog - Blog',
             'posts' => $this->postManager->findBy('category_slug', $this->path),
             'searchType' => 'Catégorie',
             'search' => $slug,
@@ -144,7 +142,7 @@ class BlogController extends AbstractController
     /**
      * Return the posts made in the last 30 days.
      *
-     * @param [type] $date
+     * @param mixed $date
      */
     public function blogDate($date)
     {
@@ -153,13 +151,17 @@ class BlogController extends AbstractController
         $startDate->modify('-30 days');
 
         return $this->twig->render('pages/blog/index.html.twig', array_merge([
-            'title' => 'MyBlog - Blog',
             'posts' => $this->postManager->findPostsBetweenDates($startDate, $endDate),
             'searchType' => 'Date',
             'search' => 'Postés entre le '.$startDate->format('d-m-Y').' et le '.$endDate->format('d-m-Y').'.',
         ], $this->sidebar));
     }
 
+    /**
+     * Return the sidebar data.
+     *
+     * @return array
+     */
     private function getSidebar()
     {
         return [

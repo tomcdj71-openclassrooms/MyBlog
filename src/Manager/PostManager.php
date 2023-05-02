@@ -29,33 +29,6 @@ class PostManager
         $this->tagModelParams = new TagModelParameters();
     }
 
-    public function find(int $postId): ?PostModel
-    {
-        try {
-            $sql = 'SELECT p.*, u.*, c.*,
-                    GROUP_CONCAT(DISTINCT t.name) as tag_names,
-                    GROUP_CONCAT(DISTINCT t.id) as tag_ids,
-                    GROUP_CONCAT(DISTINCT t.slug) as tag_slugs,
-                    (SELECT COUNT(*) FROM comment cm WHERE cm.post_id = p.id AND cm.is_enabled = 1) as number_of_comments
-                    FROM post p
-                    LEFT JOIN user u ON p.author_id = u.id
-                    LEFT JOIN category c ON p.category_id = c.id
-                    LEFT JOIN tag t ON instr("," || p.tags || ",", "," || t.id || ",") > 0
-                    WHERE p.id = :id
-                    GROUP BY p.id';
-            $statement = $this->database->prepare($sql);
-            $statement->execute(['id' => $postId]);
-            $data = $statement->fetch(\PDO::FETCH_ASSOC);
-            if (!$data) {
-                return null;
-            }
-
-            return $this->createPostModelFromArray($data);
-        } catch (\PDOException $error) {
-            throw new \PDOException($error->getMessage(), (int) $error->getCode());
-        }
-    }
-
     public function findBy(string $field, $value): array
     {
         try {

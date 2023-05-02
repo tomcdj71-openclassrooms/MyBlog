@@ -15,41 +15,18 @@ class AuthenticationMiddleware
         $this->securityHelper = $securityHelper;
     }
 
-    public function __invoke(): void
-    {
-        $user = $this->securityHelper->getUser();
-
-        if (!$user || !$this->isUserOrAdmin()) {
-        }
-    }
-
     public function isAdmin(): bool
     {
-        $user = $this->securityHelper->getUser();
-        if (!$user || 'ROLE_ADMIN' !== $user->getRole()) {
-            return false;
-        }
-
-        return true;
+        return $this->securityHelper->hasRole('ROLE_ADMIN');
     }
 
     public function isUser(): bool
     {
-        $user = $this->securityHelper->getUser();
-        if (!$user || 'ROLE_USER' !== $user->getRole()) {
-            return false;
-        }
-
-        return true;
+        return $this->securityHelper->hasRole('ROLE_USER');
     }
 
     public function isUserOrAdmin(): bool
     {
-        $user = $this->securityHelper->getUser();
-        if (!$user || ('ROLE_USER' !== $user->getRole() && 'ROLE_ADMIN' !== $user->getRole())) {
-            return false;
-        }
-
-        return true;
+        return $this->isAdmin() || $this->isUser();
     }
 }

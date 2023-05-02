@@ -1,10 +1,10 @@
 {% import _self as macros %}
-{{ macros.renderCommentsForm(post, csrfToken) }}
+{{ macros.renderCommentsForm(post, csrfToken, user) }}
 
-{% macro renderCommentsForm(post, csrfToken) %}
+{% macro renderCommentsForm(post, csrfToken, user) %}
 	<div class="reply-form">
 		<h4>Laisser un commentaire</h4>
-		{% if user is not defined %}
+		{% if user is null %}
 			<div class="alert alert-info" role="alert">
 				<p>Vous devez être connecté pour pouvoir poster un commentaire.</p>
 				<p>

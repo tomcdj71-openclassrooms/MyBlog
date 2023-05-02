@@ -14,26 +14,6 @@ class StringHelper
     }
 
     /**
-     * Get a string between two strings.
-     *
-     * @param string $string
-     * @param string $start
-     * @param string $end
-     */
-    public function getStringBetween($string, $start, $end)
-    {
-        $string = ' '.$string;
-        $ini = strpos($string, $start);
-        if (0 == $ini) {
-            return '';
-        }
-        $ini += strlen($start);
-        $len = strpos($string, $end, $ini) - $ini;
-
-        return substr($string, $ini, $len);
-    }
-
-    /**
      * This function transform a string to a slug.
      *
      * @param string $string

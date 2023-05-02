@@ -9,11 +9,11 @@ use App\Helper\SecurityHelper;
 use App\Helper\TwigHelper;
 use App\Manager\UserManager;
 use App\Middleware\AuthenticationMiddleware;
+use App\Model\UserModel;
 use App\Router\Request;
 use App\Router\ServerRequest;
 use App\Router\Session;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Tracy\Debugger;
 
 abstract class AbstractController
 {
@@ -42,12 +42,12 @@ abstract class AbstractController
         $this->path = $this->serverRequest->getPath();
     }
 
-    public function setRequestParams(array $params)
+    public function updateRequestParams(array $params): void
     {
         $this->requestParams = $params;
     }
 
-    public function getRequestParams(string $key = null)
+    public function getRequestParam(string $key = null): ?string
     {
         if (null === $key) {
             return $this->requestParams;
@@ -56,61 +56,79 @@ abstract class AbstractController
         return $this->requestParams[$key] ?? null;
     }
 
-    public function ensureAdmin()
+    public function ensureAdminAccess(): ?UserModel
     {
-        $this->authenticate();
-        if (!$this->authMiddleware->isAdmin()) {
-            $rememberMeToken = $this->session->getCookie('remember_me_token') ?? null;
-            if ($rememberMeToken) {
-                $user = $this->userManager->findOneBy(['remember_me_token' => $rememberMeToken]);
-                if ($user) {
-                    $this->securityHelper->loginById($user->getId());
-                    $referrer = $this->session->get('referrer') ?? '/blog';
-                    $this->session->remove('referrer');
-                    if ($referrer !== $this->serverRequest->getUri()) {
-                        return $this->request->redirectToRoute($referrer);
-                    }
+        return $this->authenticate('ROLE_ADMIN', '/login');
+    }
 
-                    return;
-                }
+    public function ensureUserIsAuthenticated(): ?UserModel
+    {
+        return $this->authenticate();
+    }
+
+    public function handleRequestWithRememberMeCheck(string $role = 'ROLE_USER')
+    {
+        try {
+            $this->authenticate($role);
+        } catch (\Exception $exception) {
+            $response = $this->redirectIfRememberMeTokenExists();
+            if ($response) {
+                return $response;
             }
-            $this->session->set('referrer', $this->serverRequest->getUri());
 
-            return $this->request->redirectToRoute('/login');
+            return $exception;
+        }
+
+        return null;
+    }
+
+    protected function authenticate(string $role = 'ROLE_USER'): ?UserModel
+    {
+        $user = $this->confirmUserHasRole($role);
+        if (null === $user) {
+            $this->redirectIfRememberMeTokenExists();
+            if (!$this->securityHelper->getUser()) {
+                $this->session->set('referrer', $this->serverRequest->getUri());
+
+                throw new \Exception('You must be logged in to access this page');
+            }
+        }
+
+        return $user;
+    }
+
+    protected function ensureUnauthenticatedUser(): void
+    {
+        $user = $this->securityHelper->getUser();
+        if (null !== $user) {
+            header('Location: /blog');
         }
     }
 
-    public function ensureAuthenticatedUser()
+    private function confirmUserHasRole(string $role = 'ROLE_USER'): ?UserModel
     {
-        $this->authenticate();
-        if (!$this->authMiddleware->isUserOrAdmin()) {
-            $rememberMeToken = $this->session->getCookie('remember_me_token') ?? null;
-            if ($rememberMeToken) {
-                $user = $this->userManager->findOneBy(['remember_me_token' => $rememberMeToken]);
-                if ($user) {
-                    $this->securityHelper->loginById($user->getId());
-                    $referrer = $this->session->get('referrer') ?? '/blog';
-                    $this->session->remove('referrer');
-                    if ($referrer !== $this->serverRequest->getUri()) {
-                        Debugger::barDump(new RedirectResponse($referrer));
-
-                        return new RedirectResponse($referrer);
-                    }
-
-                    return;
-                }
-            }
-            $this->session->set('referrer', $this->serverRequest->getUri());
-            Debugger::barDump(new RedirectResponse('/login'));
-
-            return new RedirectResponse('/login');
+        $user = $this->securityHelper->getUser();
+        if (null === $user || !$this->securityHelper->hasRole($role)) {
+            return null;
         }
+
+        return $user;
     }
 
-    private function authenticate(): void
+    private function redirectIfRememberMeTokenExists(): ?RedirectResponse
     {
-        $middleware = new AuthenticationMiddleware($this->securityHelper);
-
-        $middleware();
+        $rememberMeToken = $this->session->getCookie('remember_me_token');
+        if (!$rememberMeToken) {
+            return null;
+        }
+        $user = $this->userManager->findOneBy(['remember_me_token' => $rememberMeToken]);
+        if ($user) {
+            $this->securityHelper->loginById($user->getId());
+            $referrer = $this->session->get('referrer') ?? '/blog';
+            $this->session->remove('referrer');
+            if ($referrer !== $this->serverRequest->getUri()) {
+                return new RedirectResponse($referrer);
+            }
+        }
     }
 }

@@ -4,18 +4,21 @@ declare(strict_types=1);
 
 namespace App\Validator;
 
-use App\Helper\SecurityHelper;
 use App\Manager\UserManager;
+use App\Router\Session;
+use App\Service\CsrfTokenService;
 
 abstract class BaseValidator
 {
     protected UserManager $userManager;
-    protected SecurityHelper $securityHelper;
+    protected Session $session;
+    protected CsrfTokenService $csrfTokenService;
 
-    public function __construct(UserManager $userManager = null, SecurityHelper $securityHelper)
+    public function __construct(UserManager $userManager, Session $session, CsrfTokenService $csrfTokenService)
     {
         $this->userManager = $userManager;
-        $this->securityHelper = $securityHelper;
+        $this->session = $session;
+        $this->csrfTokenService = $csrfTokenService;
     }
 
     public function validateData(array $data, array $validationRules): array
@@ -51,7 +54,7 @@ abstract class BaseValidator
                 break;
 
             case 'csrf':
-                $error = $this->validateCsrfToken($data[$field], $rules['constraints']['errorMsg'] ?? '');
+                $error = $this->csrfTokenService->checkCsrfToken($rules['constraints']['csrfKey'], $data[$field], $rules['constraints']['errorMsg'] ?? '');
                 if ($error) {
                     $errors[$field] = $error;
                 }
@@ -97,6 +100,4 @@ abstract class BaseValidator
 
         return $errors;
     }
-
-    abstract protected function validateCsrfToken($token, $errorMsg);
 }

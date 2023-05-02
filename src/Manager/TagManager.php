@@ -41,23 +41,6 @@ class TagManager
         }
     }
 
-    public function find(int $tagId): ?TagModel
-    {
-        try {
-            $sql = 'SELECT * FROM tag WHERE id = :id';
-            $statement = $this->database->prepare($sql);
-            $statement->execute(['id' => $tagId]);
-            $data = $statement->fetch(\PDO::FETCH_ASSOC);
-            if ($data) {
-                $this->createTagModelFromArray($data);
-            }
-
-            return null;
-        } catch (\PDOException $error) {
-            throw new \PDOException($error->getMessage(), (int) $error->getCode());
-        }
-    }
-
     public function findBySlug(string $slug): ?TagModel
     {
         try {

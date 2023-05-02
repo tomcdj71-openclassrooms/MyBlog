@@ -1,23 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Validator;
 
-use App\Helper\SecurityHelper;
 use App\Manager\UserManager;
+use App\Router\Session;
+use App\Service\CsrfTokenService;
 
-class RegisterFormValidator extends BaseValidator
+class RegistrationFormValidator extends BaseValidator
 {
-    protected SecurityHelper $securityHelper;
+    protected Session $session;
     protected UserManager $userManager;
+    protected CsrfTokenService $csrfTokenService;
 
-    public function __construct(UserManager $userManager, SecurityHelper $securityHelper)
+    public function __construct(UserManager $userManager, Session $session, CsrfTokenService $csrfTokenService)
     {
-        parent::__construct($userManager, $securityHelper);
-        $this->securityHelper = $securityHelper;
+        parent::__construct($userManager, $session, $csrfTokenService);
+        $this->csrfTokenService = $csrfTokenService;
     }
 
-    public function validate($data)
+    public function validate(array $data): array
     {
+        $errors = [];
         $validationRules = [
             'email' => [
                 'constraints' => [
@@ -56,15 +61,11 @@ class RegisterFormValidator extends BaseValidator
                 'constraints' => [
                     'required' => true,
                     'type' => 'csrf',
+                    'csrfKey' => 'register',
                 ],
             ],
         ];
 
         return $this->validateData($data, $validationRules);
-    }
-
-    protected function validateCsrfToken($token, $errorMsg)
-    {
-        return $this->securityHelper->checkCsrfToken('register', $token) ? '' : $errorMsg;
     }
 }

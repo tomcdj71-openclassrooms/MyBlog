@@ -6,13 +6,14 @@ namespace App\Controller;
 
 use App\Config\Configuration;
 use App\DependencyInjection\Container;
-use App\Manager\PostManager;
 use App\Manager\UserManager;
+use App\Service\CsrfTokenService;
 use App\Service\MailerService;
 use App\Service\PostService;
 use App\Service\ProfileService;
 use App\Validator\LoginFormValidator;
-use App\Validator\RegisterFormValidator;
+use App\Validator\RegistrationFormValidator;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Tracy\Debugger;
 
 class UserController extends AbstractController
@@ -23,36 +24,38 @@ class UserController extends AbstractController
     private PostService $postService;
     private LoginFormValidator $loginFV;
     private Configuration $configuration;
-    private PostManager $postManager;
+    private RegistrationFormValidator $registrationFV;
+    private CsrfTokenService $csrfTokenService;
 
     public function __construct(MailerService $mailerService, Configuration $configuration, Container $container)
     {
         parent::__construct($container);
         $container->injectProperties($this);
-        $this->loginFV = new LoginFormValidator($this->userManager, $this->securityHelper);
+        $this->csrfTokenService = $this->container->get(CsrfTokenService::class);
+        $this->loginFV = new LoginFormValidator($this->userManager, $this->session, $this->csrfTokenService);
         $this->mailerService = $mailerService;
         $this->configuration = $configuration;
-        $this->postManager = $this->container->get(PostManager::class);
+        $this->registrationFV = $this->container->get(RegistrationFormValidator::class);
     }
 
     // Display the profile page.
     public function profile()
     {
-        $redirect = $this->ensureAuthenticatedUser();
-        if ($redirect) {
-            return $redirect;
+        // Redirect the user to the login page if he is not authenticated.
+        if (!$this->authMiddleware->isUserOrAdmin()) {
+            return new RedirectResponse('/login');
         }
         $user = $this->securityHelper->getUser();
         $errors = [];
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
             $errors = $this->profileService->handleProfilePostRequest($user);
         }
-        $csrfToken = $this->securityHelper->generateCsrfToken('editProfile');
+        $csrfToken = $this->csrfTokenService->generateToken('editProfile');
+        Debugger::barDump($csrfToken);
         $userPostsData = $this->postService->getUserPostsData();
         $hasPost = ($userPostsData['total'] > 0) ? true : false;
 
         return $this->twig->render('pages/profile/profile.html.twig', [
-            'title' => 'MyBlog - Profile',
             'errors' => $errors ?? null,
             'csrfToken' => $csrfToken,
             'hasPost' => $hasPost,
@@ -67,8 +70,12 @@ class UserController extends AbstractController
      */
     public function login()
     {
-        $this->ensureAuthenticatedUser();
-        Debugger::barDump($this->securityHelper->getUser());
+        // Redirect the user to the blog page if he is already authenticated.
+        $this->ensureUnauthenticatedUser();
+        $this->handleRequestWithRememberMeCheck();
+        if ($this->authMiddleware->isUserOrAdmin()) {
+            return new RedirectResponse('/blog');
+        }
         $errors = [];
         if ('POST' === $this->serverRequest->getRequestMethod()) {
             $postData = [
@@ -87,10 +94,9 @@ class UserController extends AbstractController
                 $errors = ['email' => 'Email ou mot de passe incorrect.'];
             }
         }
-        $csrfToken = $this->securityHelper->generateCsrfToken('login');
+        $csrfToken = $this->csrfTokenService->generateToken('login');
 
         return $this->twig->render('pages/security/login.html.twig', [
-            'title' => 'MyBlog - Connexion',
             'csrfToken' => $csrfToken,
             'errors' => $errors ?? null,
         ]);
@@ -101,12 +107,14 @@ class UserController extends AbstractController
      */
     public function register()
     {
-        $this->ensureAuthenticatedUser();
-        if ($this->securityHelper->getUser()) {
-            return $this->request->redirectToRoute('blog');
+        // Redirect the user to the blog page if he is already authenticated.
+        $this->ensureUnauthenticatedUser();
+        $this->handleRequestWithRememberMeCheck();
+        if ($this->authMiddleware->isUserOrAdmin()) {
+            return new RedirectResponse('/blog');
         }
         $errors = [];
-        $csrfToken = $this->securityHelper->generateCsrfToken('register');
+        $csrfToken = $this->csrfTokenService->generateToken('register');
         if ('POST' === $this->serverRequest->getRequestMethod()) {
             $postData = [
                 'email' => filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL),
@@ -115,18 +123,17 @@ class UserController extends AbstractController
                 'passwordConfirm' => filter_input(INPUT_POST, 'passwordConfirm', FILTER_SANITIZE_SPECIAL_CHARS),
                 'csrfToken' => $csrfToken,
             ];
-            $registerFV = new RegisterFormValidator($this->userManager, $this->securityHelper);
-            $validationResult = $registerFV->validate($postData);
+            $validationResult = $this->registrationFV->validate($postData);
             if ($validationResult['valid']) {
                 $registered = $this->securityHelper->register($postData);
                 if ($registered) {
-                    $csrfToken = $this->securityHelper->generateCsrfToken('register');
+                    $csrfToken = $this->csrfTokenService->generateToken('register');
                     $message = 'Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter.';
                     $this->mailerService->sendEmail(
                         $this->configuration->get('mailer.from_email'),
                         $postData['email'],
                         'Bienvenue sur MyBlog',
-                        $this->twig->render('emails/contact.html.twig')
+                        $this->twig->render('emails/registration.html.twig')
                     );
 
                     return $this->request->redirectToRoute('login');
@@ -137,9 +144,8 @@ class UserController extends AbstractController
         }
 
         return $this->twig->render('pages/security/register.html.twig', [
-            'title' => 'MyBlog - Connexion',
             'csrfToken' => $csrfToken,
-            'errors' => $errors,
+            'errors' => $errors ?? null,
         ]);
     }
 
@@ -156,7 +162,6 @@ class UserController extends AbstractController
         $hasPost = ($userPostsData['total'] > 0) ? true : false;
 
         return $this->twig->render('pages/profile/profile.html.twig', [
-            'title' => 'MyBlog - Profile',
             'userPostsData' => $userPostsData,
             'hasPost' => $hasPost,
             'impersonate' => true,

@@ -52,29 +52,6 @@ class CommentManager
         }
     }
 
-    public function findOneBy(string $field, string $value): ?CommentModel
-    {
-        try {
-            $sql = 'SELECT comment.id, comment.content, comment.author_id, comment.post_id, comment.created_at, comment.is_enabled, comment.parent_id,
-                    user.id AS author_id, user.username, user.email, user.password, user.role, user.firstName, user.lastName, user.avatar, user.bio, user.twitter, user.facebook, user.github, user.linkedin, user.remember_me_token, user.remember_me_expires_at,
-                    post.title, post.chapo, post.updated_at, post.featured_image, post.category_id, post.slug, post.tags
-                FROM comment 
-                INNER JOIN user ON comment.author_id = user.id 
-                INNER JOIN post ON comment.post_id = post.id 
-                WHERE {$field} = :value';
-            $statement = $this->database->prepare($sql);
-            $statement->execute(['value' => $value]);
-            $data = $statement->fetch(\PDO::FETCH_ASSOC);
-            if ($data) {
-                return $this->createCommentModelFromArray($data);
-            }
-        } catch (\PDOException $error) {
-            throw new \PDOException($error->getMessage(), (int) $error->getCode());
-
-            return null;
-        }
-    }
-
     public function findUserComments(int $userId, int $page, int $limit): array
     {
         try {
