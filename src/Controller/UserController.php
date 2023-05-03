@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Config\Configuration;
-use App\DependencyInjection\Container;
+use App\Helper\SecurityHelper;
+use App\Helper\TwigHelper;
 use App\Manager\UserManager;
+use App\Router\Request;
+use App\Router\ServerRequest;
+use App\Router\Session;
 use App\Service\CsrfTokenService;
 use App\Service\MailerService;
 use App\Service\PostService;
@@ -26,15 +30,15 @@ class UserController extends AbstractController
     private RegistrationFormValidator $registrationFV;
     private CsrfTokenService $csrfTokenService;
 
-    public function __construct(MailerService $mailerService, Configuration $configuration, Container $container)
-    {
-        parent::__construct($container);
-        $container->injectProperties($this);
-        $this->csrfTokenService = $this->container->get(CsrfTokenService::class);
-        $this->loginFV = new LoginFormValidator($this->userManager, $this->session, $this->csrfTokenService);
-        $this->mailerService = $mailerService;
-        $this->configuration = $configuration;
-        $this->registrationFV = $this->container->get(RegistrationFormValidator::class);
+    public function __construct(
+        TwigHelper $twig,
+        Session $session,
+        ServerRequest $serverRequest,
+        SecurityHelper $securityHelper,
+        UserManager $userManager,
+        Request $request,
+    ) {
+        parent::__construct($twig, $session, $serverRequest, $securityHelper, $userManager, $request);
     }
 
     // Display the profile page.

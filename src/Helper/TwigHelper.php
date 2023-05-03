@@ -14,10 +14,12 @@ class TwigHelper
 {
     protected $twig;
     private $serverRequest;
+    private $route;
 
-    public function __construct(ServerRequest $serverRequest)
+    public function __construct(ServerRequest $serverRequest, Route $route)
     {
         $this->serverRequest = $serverRequest;
+        $this->route = $route;
         $loader = new FilesystemLoader(dirname(__DIR__).'/View');
 
         $this->twig = new Environment($loader, [
@@ -60,8 +62,7 @@ class TwigHelper
      */
     public function path($name, $params = [])
     {
-        $route = new Route();
-        $routes = $route->getRoutes();
+        $routes = $this->route->getRoutes();
 
         if (isset($routes[$name])) {
             $path = $routes[$name][0];
@@ -76,7 +77,7 @@ class TwigHelper
             }, $path);
         }
 
-        throw new \Exception(sprintf('Route "%s" introuvable', $name));
+        throw new \Exception(sprintf('Route "%s" introuvable', implode(', ', array_keys($routes))));
     }
 
     /**
@@ -111,10 +112,10 @@ class TwigHelper
         foreach ($routes as $route) {
             $pattern = '@^'.preg_replace('@\\\{[^/]+@', '([^/]+)', preg_quote($route[0], '@')).'$@D';
             if (preg_match($pattern, $currentUri, $matches)) {
-                return $route[4]; // Return the route name.
+                return $route[4];
             }
         }
 
-        throw new \Exception('No route found for the current URL');
+        throw new \App\Router\RouterException('Pas de route trouvée pour cette URL.', 404);
     }
 }

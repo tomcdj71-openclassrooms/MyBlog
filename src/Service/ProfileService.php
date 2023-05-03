@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\DependencyInjection\Container;
 use App\Helper\ImageHelper;
 use App\Helper\SecurityHelper;
 use App\Manager\UserManager;
@@ -13,20 +12,19 @@ use App\Validator\EditProfileFormValidator;
 
 class ProfileService extends AbstractService
 {
-    protected CsrfTokenService $csrfTokenService;
     protected UserManager $userManager;
-    protected SecurityHelper $securityHelper;
+    protected CsrfTokenService $csrfTokenService;
     protected Session $session;
+    protected SecurityHelper $securityHelper;
     private $imageHelper;
 
-    public function __construct(Container $container)
+    public function __construct(UserManager $userManager, CsrfTokenService $csrfTokenService, Session $session, SecurityHelper $securityHelper)
     {
-        parent::__construct($container);
         $this->imageHelper = new ImageHelper('uploads/avatars/', 200, 200);
-        $this->userManager = $container->get(UserManager::class);
-        $this->csrfTokenService = $container->get(CsrfTokenService::class);
-        $this->session = $container->get(Session::class);
-        $this->securityHelper = $container->get(SecurityHelper::class);
+        $this->userManager = $userManager;
+        $this->csrfTokenService = $csrfTokenService;
+        $this->session = $session;
+        $this->securityHelper = $securityHelper;
     }
 
     public function handleProfilePostRequest($user)

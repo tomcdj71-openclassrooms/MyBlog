@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\DependencyInjection\Container;
 use App\Helper\SecurityHelper;
 use App\Manager\CommentManager;
 use App\Manager\UserManager;
@@ -14,22 +13,21 @@ use App\Validator\CommentFormValidator;
 
 class CommentService extends AbstractService
 {
-    protected SecurityHelper $securityHelper;
-    protected ServerRequest $serverRequest;
     protected CommentManager $commentManager;
-    protected CsrfTokenService $csrfTokenService;
-    protected UserManager $userManager;
     protected Session $session;
+    protected CsrfTokenService $csrfTokenService;
+    protected ServerRequest $serverRequest;
+    protected SecurityHelper $securityHelper;
+    protected UserManager $userManager;
 
-    public function __construct(Container $container)
+    public function __construct(CommentManager $commentManager, Session $session, CsrfTokenService $csrfTokenService, ServerRequest $serverRequest, SecurityHelper $securityHelper, UserManager $userManager)
     {
-        $container->injectProperties($this);
-        $this->serverRequest = $container->get(ServerRequest::class);
-        $this->securityHelper = $container->get(SecurityHelper::class);
-        $this->commentManager = $container->get(CommentManager::class);
-        $this->csrfTokenService = $container->get(CsrfTokenService::class);
-        $this->userManager = $container->get(UserManager::class);
-        $this->session = $container->get(Session::class);
+        $this->commentManager = $commentManager;
+        $this->session = $session;
+        $this->csrfTokenService = $csrfTokenService;
+        $this->serverRequest = $serverRequest;
+        $this->securityHelper = $securityHelper;
+        $this->userManager = $userManager;
     }
 
     public function handleCommentPostRequest($postObject, array $postData)

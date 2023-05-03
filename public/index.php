@@ -25,6 +25,6 @@ try {
 } catch (RouterException $error) {
     // Set the error code to 404 by default
     $errorCode = $error->getCode() ?: 404;
-    $errorController = new ErrorController($container);
+    $errorController = $container->get(ErrorController::class);
     $errorController->errorPage($errorCode);
 }

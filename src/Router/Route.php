@@ -22,7 +22,7 @@ class Route
     {
         return [
             'home' => ['/', HomeController::class, 'index', 'GET|POST', 'Portfolio'],
-            'error_page' => ['error', ErrorController::class, 'notFound', 'GET', 'erreur'],
+            'error_page' => ['error', ErrorController::class, 'notFound', 'GET', 'Erreur'],
             'user_profile' => ['/profile/{slug}', UserController::class, 'userProfile', 'GET', 'Utilisateur'],
             'blog' => ['/blog', BlogController::class, 'blogIndex', 'GET', 'Blog'],
             'blog_post' => ['/blog/post/{slug}', BlogController::class, 'blogPost', 'GET|POST', 'Article'],

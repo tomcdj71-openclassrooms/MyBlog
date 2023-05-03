@@ -3,11 +3,16 @@
 namespace App\Controller;
 
 use App\Config\Configuration;
-use App\DependencyInjection\Container;
+use App\Helper\SecurityHelper;
+use App\Helper\TwigHelper;
 use App\Manager\CategoryManager;
 use App\Manager\CommentManager;
 use App\Manager\PostManager;
 use App\Manager\TagManager;
+use App\Manager\UserManager;
+use App\Router\Request;
+use App\Router\ServerRequest;
+use App\Router\Session;
 use App\Service\MailerService;
 use App\Service\PostService;
 
@@ -21,10 +26,17 @@ class AjaxController extends AbstractController
     private Configuration $configuration;
     private MailerService $mailerService;
 
-    public function __construct(Container $container, Configuration $configuration, MailerService $mailerService)
-    {
-        parent::__construct($container);
-        $container->injectProperties($this);
+    public function __construct(
+        TwigHelper $twig,
+        Session $session,
+        ServerRequest $serverRequest,
+        SecurityHelper $securityHelper,
+        UserManager $userManager,
+        Request $request,
+        Configuration $configuration,
+        MailerService $mailerService
+    ) {
+        parent::__construct($twig, $session, $serverRequest, $securityHelper, $userManager, $request);
         $this->configuration = $configuration;
         $this->mailerService = $mailerService;
     }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\DependencyInjection\Container;
 use App\Helper\SecurityHelper;
 use App\Helper\TwigHelper;
 use App\Manager\UserManager;
@@ -16,7 +15,6 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 abstract class AbstractController
 {
-    protected Container $container;
     protected $requestParams = [];
     protected TwigHelper $twig;
     protected Session $session;
@@ -26,16 +24,20 @@ abstract class AbstractController
     protected Request $request;
     protected string $path;
 
-    public function __construct(Container $container)
-    {
-        $this->container = $container;
-        $this->container->injectProperties($this);
-        $this->twig = $this->container->get(TwigHelper::class);
-        $this->session = $this->container->get(Session::class);
-        $this->serverRequest = $this->container->get(ServerRequest::class);
-        $this->securityHelper = $this->container->get(SecurityHelper::class);
-        $this->userManager = $this->container->get(UserManager::class);
-        $this->request = $this->container->get(Request::class);
+    public function __construct(
+        TwigHelper $twig,
+        Session $session,
+        ServerRequest $serverRequest,
+        SecurityHelper $securityHelper,
+        UserManager $userManager,
+        Request $request
+    ) {
+        $this->twig = $twig;
+        $this->session = $session;
+        $this->serverRequest = $serverRequest;
+        $this->securityHelper = $securityHelper;
+        $this->userManager = $userManager;
+        $this->request = $request;
         $this->path = $this->serverRequest->getPath();
     }
 

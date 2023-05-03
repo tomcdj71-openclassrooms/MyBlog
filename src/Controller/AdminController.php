@@ -4,14 +4,24 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\DependencyInjection\Container;
+use App\Helper\SecurityHelper;
+use App\Helper\TwigHelper;
+use App\Manager\UserManager;
+use App\Router\Request;
+use App\Router\ServerRequest;
+use App\Router\Session;
 
 class AdminController extends AbstractController
 {
-    public function __construct(Container $container)
-    {
-        parent::__construct($container);
-        $container->injectProperties($this);
+    public function __construct(
+        TwigHelper $twig,
+        Session $session,
+        ServerRequest $serverRequest,
+        SecurityHelper $securityHelper,
+        UserManager $userManager,
+        Request $request,
+    ) {
+        parent::__construct($twig, $session, $serverRequest, $securityHelper, $userManager, $request);
     }
 
     public function index()

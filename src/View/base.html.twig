@@ -6,7 +6,8 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<meta name="description" content="">
 		<meta name="author" content="">
-		<title>{{ 'MyBlog - ' ~ route_name() }}
+		{% set route = '' %}
+		<title>{{ 'MyBlog - ' ~ route }}
 		</title>
 		{% block stylesheets %}
 			<link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">

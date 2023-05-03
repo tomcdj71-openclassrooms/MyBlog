@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\DependencyInjection\Container;
+use App\Helper\SecurityHelper;
+use App\Manager\PostManager;
+use App\Router\ServerRequest;
 
 class PostService extends AbstractService
 {
-    public function __construct(Container $container)
+    public function __construct(ServerRequest $serverRequest, SecurityHelper $securityHelper, PostManager $postManager)
     {
-        parent::__construct($container);
-        $container->injectProperties($this);
+        $this->serverRequest = $serverRequest;
+        $this->securityHelper = $securityHelper;
+        $this->postManager = $postManager;
     }
 
     public function getUserPostsData()

@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\DependencyInjection\Container;
+use App\Helper\SecurityHelper;
+use App\Helper\TwigHelper;
 use App\Manager\CategoryManager;
 use App\Manager\CommentManager;
 use App\Manager\PostManager;
 use App\Manager\TagManager;
+use App\Manager\UserManager;
+use App\Router\Request;
+use App\Router\ServerRequest;
+use App\Router\Session;
 use App\Service\CommentService;
 use App\Service\CsrfTokenService;
 
@@ -22,15 +27,32 @@ class BlogController extends AbstractController
     private $sidebar;
     private CsrfTokenService $csrfTokenService;
 
-    public function __construct(Container $container)
-    {
-        parent::__construct($container);
-        $container->injectProperties($this);
-        $this->postManager = $container->get(PostManager::class);
-        $this->categoryManager = $container->get(CategoryManager::class);
-        $this->tagManager = $container->get(TagManager::class);
-        $this->sidebar = $this->getSidebar();
-        $this->csrfTokenService = $container->get(CsrfTokenService::class);
+    public function __construct(
+        TwigHelper $twig,
+        Session $session,
+        ServerRequest $serverRequest,
+        SecurityHelper $securityHelper,
+        UserManager $userManager,
+        Request $request,
+        CategoryManager $categoryManager,
+        TagManager $tagManager,
+        CommentManager $commentManager,
+        CommentService $commentService,
+        PostManager $postManager,
+        CsrfTokenService $csrfTokenService
+    ) {
+        parent::__construct($twig, $session, $serverRequest, $securityHelper, $userManager, $request);
+        $this->postManager = $postManager;
+        $this->categoryManager = $categoryManager;
+        $this->tagManager = $tagManager;
+        $this->commentManager = $commentManager;
+        $this->commentService = $commentService;
+        $this->csrfTokenService = $csrfTokenService;
+        $this->sidebar = [
+            'categories' => $this->categoryManager->findAll(),
+            'tags' => $this->tagManager->findAll(),
+            'recentPosts' => $this->postManager->findRecentPosts(),
+        ];
     }
 
     /**

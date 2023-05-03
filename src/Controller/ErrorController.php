@@ -4,16 +4,27 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\DependencyInjection\Container;
+use App\Helper\SecurityHelper;
+use App\Helper\TwigHelper;
+use App\Manager\UserManager;
+use App\Router\Request;
+use App\Router\ServerRequest;
+use App\Router\Session;
 
 class ErrorController extends AbstractController
 {
+    protected UserManager $userManager;
     private $data;
 
-    public function __construct(Container $container)
-    {
-        parent::__construct($container);
-        $container->injectProperties($this);
+    public function __construct(
+        TwigHelper $twig,
+        Session $session,
+        ServerRequest $serverRequest,
+        SecurityHelper $securityHelper,
+        UserManager $userManager,
+        Request $request,
+    ) {
+        parent::__construct($twig, $session, $serverRequest, $securityHelper, $userManager, $request);
     }
 
     /**
@@ -29,6 +40,7 @@ class ErrorController extends AbstractController
             404 => [
                 'title' => 'Erreur 404 - Page non trouvée',
                 'message_title' => '404',
+                'route_name' => 'home',
                 'message' => 'Page non trouvée',
                 'explanations' => 'La page que vous recherchez a peut-être été supprimée, son nom a changé ou est temporairement indisponible.',
             ],
