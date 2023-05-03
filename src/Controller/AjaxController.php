@@ -93,10 +93,6 @@ class AjaxController extends AbstractController
 
     public function manageAllComments()
     {
-        if (!$this->authMiddleware->isUserOrAdmin()) {
-            header('HTTP/1.0 403 Forbidden');
-        }
-
         $offset = $this->serverRequest->getQuery('offset', 1);
         $limit = $this->serverRequest->getQuery('limit', 10);
         $page = intval($offset / $limit) + 1;
@@ -256,11 +252,6 @@ class AjaxController extends AbstractController
 
     public function toggleCommentStatus(int $commentId)
     {
-        if (!$this->authMiddleware->isUserOrAdmin()) {
-            $this->sendJsonResponse(['error' => 'Interdit'], 403);
-
-            return;
-        }
         $comment = $this->commentManager->find($commentId);
         if (null === $comment) {
             $this->sendJsonResponse(['error' => 'Commentaire non trouvé.'], 404);

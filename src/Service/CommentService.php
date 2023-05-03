@@ -8,7 +8,6 @@ use App\DependencyInjection\Container;
 use App\Helper\SecurityHelper;
 use App\Manager\CommentManager;
 use App\Manager\UserManager;
-use App\Middleware\AuthenticationMiddleware;
 use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Validator\CommentFormValidator;
@@ -17,7 +16,6 @@ class CommentService extends AbstractService
 {
     protected SecurityHelper $securityHelper;
     protected ServerRequest $serverRequest;
-    protected AuthenticationMiddleware $authMiddleware;
     protected CommentManager $commentManager;
     protected CsrfTokenService $csrfTokenService;
     protected UserManager $userManager;
@@ -28,7 +26,6 @@ class CommentService extends AbstractService
         $container->injectProperties($this);
         $this->serverRequest = $container->get(ServerRequest::class);
         $this->securityHelper = $container->get(SecurityHelper::class);
-        $this->authMiddleware = $container->get(AuthenticationMiddleware::class);
         $this->commentManager = $container->get(CommentManager::class);
         $this->csrfTokenService = $container->get(CsrfTokenService::class);
         $this->userManager = $container->get(UserManager::class);
@@ -68,7 +65,7 @@ class CommentService extends AbstractService
 
     public function createComment(array $data)
     {
-        $this->authMiddleware->isAdmin() ? $isEnabled = true : $isEnabled = false;
+        $this->securityHelper->hasRole('ROLE_ADMIN') ? $isEnabled = true : $isEnabled = false;
 
         $commentData = [
             'content' => $data['content'] ?? '',

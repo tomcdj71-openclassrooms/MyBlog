@@ -7,19 +7,22 @@ namespace App\Helper;
 use App\Manager\UserManager;
 use App\Model\UserModel;
 use App\Router\Session;
+use App\Service\CsrfTokenService;
 
 class SecurityHelper
 {
     private UserManager $userManager;
     private Session $session;
+    private CsrfTokenService $csrfTokenService;
 
     public function __construct(UserManager $userManager, Session $session)
     {
         $this->userManager = $userManager;
         $this->session = $session;
+        $this->csrfTokenService = new CsrfTokenService($session);
     }
 
-    public function register(array $postData): bool
+    public function registerUser(array $postData): bool
     {
         $userData = [
             'username' => $postData['username'],
@@ -32,7 +35,7 @@ class SecurityHelper
         if (!$user instanceof UserModel) {
             return false;
         }
-        $user = $this->authenticate([
+        $user = $this->authenticateUser([
             'email' => $user->getEmail(),
             'password' => $postData['password'],
             'remember' => 'true',
@@ -44,7 +47,7 @@ class SecurityHelper
         return true;
     }
 
-    public function authenticate(array $data, bool $remember = false): ?UserModel
+    public function authenticateUser(array $data, bool $remember = false): ?UserModel
     {
         $user = $this->userManager->findOneBy(['email' => $data['email']]);
         if (!$user || !password_verify($data['password'], $user->getPassword())) {
@@ -53,7 +56,7 @@ class SecurityHelper
         $this->session->regenerateId();
         $this->session->set('user', $user);
         if ($remember) {
-            $this->rememberMe($user);
+            $this->createRememberMeToken($user);
         }
 
         return $user;
@@ -64,16 +67,17 @@ class SecurityHelper
         return $this->session->get('user');
     }
 
-    public function rememberMe(UserModel $user): void
+    public function createRememberMeToken(UserModel $user): void
     {
-        $token = $this->generateToken(16);
+        $token = $this->csrfTokenService->generateToken('remember_me_token');
         $expiresAt = time() + 3600 * 24 * 30; // 30 days
         $this->userManager->setRememberMeToken($user->getId(), $token, $expiresAt);
+        $this->session->remove('remember_me_token');
 
         setcookie('remember_me_token', $token, $expiresAt, '/', '', false, true);
     }
 
-    public function checkRememberMeToken(): ?UserModel
+    public function validateAndReturnUserFromRememberMeToken(): ?UserModel
     {
         if (empty($this->session->get('remember_me_token'))) {
             throw new \InvalidArgumentException("Le jeton 'Remember Me' n'est pas défini ou vide.");
@@ -94,27 +98,10 @@ class SecurityHelper
         return $user;
     }
 
-    public function loginById(int $userId): ?UserModel
-    {
-        $user = $this->userManager->findOneBy(['id' => $userId]);
-        if (!$user) {
-            return null;
-        }
-        $this->session->regenerateId();
-        $this->session->set('user', $user);
-
-        return $user;
-    }
-
     public function hasRole(string $role): bool
     {
         $user = $this->getUser();
 
         return $user && $user->getRole() === $role;
-    }
-
-    private function generateToken(int $length = 32): string
-    {
-        return bin2hex(random_bytes($length));
     }
 }

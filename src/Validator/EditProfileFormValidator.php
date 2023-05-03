@@ -19,7 +19,6 @@ class EditProfileFormValidator extends BaseValidator
     public function __construct(UserManager $userManager, Session $session, CsrfTokenService $csrfTokenService, SecurityHelper $securityHelper)
     {
         parent::__construct($userManager, $session, $csrfTokenService);
-        $this->csrfTokenService = $csrfTokenService;
         $this->securityHelper = $securityHelper;
     }
 

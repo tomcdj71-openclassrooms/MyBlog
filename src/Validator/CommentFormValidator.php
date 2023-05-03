@@ -15,7 +15,6 @@ class CommentFormValidator extends BaseValidator
     public function __construct(UserManager $userManager, Session $session, CsrfTokenService $csrfTokenService)
     {
         parent::__construct($userManager, $session, $csrfTokenService);
-        $this->csrfTokenService = $csrfTokenService;
     }
 
     public function validate($data)

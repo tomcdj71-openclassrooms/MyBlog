@@ -38,7 +38,7 @@ class Router
         }
 
         if ($controller instanceof AdminController) {
-            $controller->ensureAdminAccess();
+            $controller->getAuthenticatedAdmin();
         }
 
         echo call_user_func_array([$controller, $controllerMethod], $matchedRoute['params']);

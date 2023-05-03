@@ -13,7 +13,6 @@ use App\Service\PostService;
 use App\Service\ProfileService;
 use App\Validator\LoginFormValidator;
 use App\Validator\RegistrationFormValidator;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Tracy\Debugger;
 
 class UserController extends AbstractController
@@ -42,9 +41,6 @@ class UserController extends AbstractController
     public function profile()
     {
         // Redirect the user to the login page if he is not authenticated.
-        if (!$this->authMiddleware->isUserOrAdmin()) {
-            return new RedirectResponse('/login');
-        }
         $user = $this->securityHelper->getUser();
         $errors = [];
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
@@ -71,11 +67,8 @@ class UserController extends AbstractController
     public function login()
     {
         // Redirect the user to the blog page if he is already authenticated.
-        $this->ensureUnauthenticatedUser();
-        $this->handleRequestWithRememberMeCheck();
-        if ($this->authMiddleware->isUserOrAdmin()) {
-            return new RedirectResponse('/blog');
-        }
+        $this->isUserUnauthenticated();
+        $this->authenticateWithRememberMeOption();
         $errors = [];
         if ('POST' === $this->serverRequest->getRequestMethod()) {
             $postData = [
@@ -87,7 +80,7 @@ class UserController extends AbstractController
             $validationResult = $this->loginFV->validate($postData);
             $errors = $validationResult['errors'];
             if ($validationResult['valid']) {
-                $login = $this->securityHelper->authenticate($postData, $this->loginFV->shouldRemember($postData));
+                $login = $this->securityHelper->authenticateUser($postData, $this->loginFV->shouldRemember($postData));
                 if ($login) {
                     return $this->request->redirectToRoute('blog');
                 }
@@ -108,11 +101,8 @@ class UserController extends AbstractController
     public function register()
     {
         // Redirect the user to the blog page if he is already authenticated.
-        $this->ensureUnauthenticatedUser();
-        $this->handleRequestWithRememberMeCheck();
-        if ($this->authMiddleware->isUserOrAdmin()) {
-            return new RedirectResponse('/blog');
-        }
+        $this->isUserUnauthenticated();
+        $this->authenticateWithRememberMeOption();
         $errors = [];
         $csrfToken = $this->csrfTokenService->generateToken('register');
         if ('POST' === $this->serverRequest->getRequestMethod()) {
@@ -125,7 +115,7 @@ class UserController extends AbstractController
             ];
             $validationResult = $this->registrationFV->validate($postData);
             if ($validationResult['valid']) {
-                $registered = $this->securityHelper->register($postData);
+                $registered = $this->securityHelper->registerUser($postData);
                 if ($registered) {
                     $csrfToken = $this->csrfTokenService->generateToken('register');
                     $message = 'Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter.';

@@ -14,7 +14,6 @@ use App\Manager\CommentManager;
 use App\Manager\PostManager;
 use App\Manager\TagManager;
 use App\Manager\UserManager;
-use App\Middleware\AuthenticationMiddleware;
 use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Service\CommentService;
@@ -81,7 +80,6 @@ class Injectable
         });
 
         $container->set(ServerRequest::class, new ServerRequest($_SERVER));
-        $container->set(AuthenticationMiddleware::class);
         $container->set(CategoryManager::class);
         $container->set(TagManager::class);
         $container->set(PostManager::class);
