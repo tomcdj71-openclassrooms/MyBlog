@@ -8,6 +8,7 @@ use App\Helper\SecurityHelper;
 use App\Helper\TwigHelper;
 use App\Manager\UserManager;
 use App\Model\UserModel;
+use App\Router\HttpException;
 use App\Router\Request;
 use App\Router\ServerRequest;
 use App\Router\Session;
@@ -24,14 +25,8 @@ abstract class AbstractController
     protected Request $request;
     protected string $path;
 
-    public function __construct(
-        TwigHelper $twig,
-        Session $session,
-        ServerRequest $serverRequest,
-        SecurityHelper $securityHelper,
-        UserManager $userManager,
-        Request $request
-    ) {
+    public function __construct(TwigHelper $twig, Session $session, ServerRequest $serverRequest, SecurityHelper $securityHelper, UserManager $userManager, Request $request)
+    {
         $this->twig = $twig;
         $this->session = $session;
         $this->serverRequest = $serverRequest;
@@ -46,55 +41,41 @@ abstract class AbstractController
         $this->requestParams = $params;
     }
 
-    public function getAuthenticatedAdmin(): ?UserModel
+    public function denyAccessUnlessAdmin(): void
     {
-        return $this->authenticateOrThrow('ROLE_ADMIN');
+        $this->denyAccessUnless(
+            fn () => $this->securityHelper->hasRole('ROLE_ADMIN'),
+            "Accès refusé. Vous n'avez pas la permission d'accéder à cette page."
+        );
     }
 
-    protected function getRequestParam(string $key = null): ?string
+    public function denyAccessIfAuthenticated(): void
     {
-        if (null === $key) {
-            return $this->requestParams;
-        }
-
-        return $this->requestParams[$key] ?? null;
+        $this->denyAccessUnless(
+            fn () => $this->isUserUnauthenticated(),
+            'Accès refusé. Vous êtes déjà connecté.'
+        );
     }
 
-    protected function getAuthenticatedUser(): ?UserModel
-    {
-        return $this->authenticateOrThrow();
-    }
-
-    protected function isUserUnauthenticated(): bool
-    {
-        return null === $this->securityHelper->getUser();
-    }
-
-    protected function authenticateWithRememberMeOption(string $role = 'ROLE_USER')
-    {
-        try {
-            $this->authenticateOrThrow($role);
-        } catch (\Exception $exception) {
-            $response = $this->redirectIfRememberMeTokenValid();
-            if ($response) {
-                return $response;
-            }
-
-            return $exception;
-        }
-
-        return null;
-    }
-
-    protected function authenticateOrThrow(string $role = 'ROLE_USER'): ?UserModel
+    protected function authenticateWithRememberMeOption(string $role = 'ROLE_USER', bool $allowUnauthenticated = false)
     {
         $user = $this->getUserWithRole($role);
         if (null === $user) {
-            $this->redirectIfRememberMeTokenValid();
+            try {
+                $response = $this->redirectIfRememberMeTokenValid();
+            } catch (\Exception $exception) {
+                return null;
+            }
+            if ($response) {
+                return $response;
+            }
             if (!$this->securityHelper->getUser()) {
+                if ($allowUnauthenticated) {
+                    return null;
+                }
                 $this->session->set('referrer', $this->serverRequest->getUri());
 
-                throw new \Exception('Vous devez être connecté pour accéder à cette page.');
+                throw new HttpException(401, 'Vous devez être connecté pour accéder à cette page.');
             }
         }
 
@@ -125,5 +106,17 @@ abstract class AbstractController
         }
 
         return null;
+    }
+
+    private function isUserUnauthenticated(): bool
+    {
+        return null === $this->securityHelper->getUser();
+    }
+
+    private function denyAccessUnless(callable $condition, string $message): void
+    {
+        if (!call_user_func($condition)) {
+            throw new HttpException(403, $message);
+        }
     }
 }

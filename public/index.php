@@ -7,8 +7,8 @@ require_once __DIR__.'/../vendor/autoload.php';
 use App\Controller\ErrorController;
 use App\DependencyInjection\Container;
 use App\DependencyInjection\Injectable;
+use App\Router\HttpException;
 use App\Router\Router;
-use App\Router\RouterException;
 use Tracy\Debugger;
 
 Debugger::enable();
@@ -22,9 +22,7 @@ Injectable::register($container);
 try {
     $router = new Router($_SERVER['REQUEST_URI'], $container);
     $router->run();
-} catch (RouterException $error) {
-    // Set the error code to 404 by default
-    $errorCode = $error->getCode() ?: 404;
+} catch (HttpException $httpException) {
     $errorController = $container->get(ErrorController::class);
-    $errorController->errorPage($errorCode);
+    echo $errorController->errorPage($httpException->getStatusCode());
 }

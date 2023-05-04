@@ -27,7 +27,7 @@ class Router
         $parsedUrl = $this->parseUrl($this->url);
         $matchedRoute = $this->matchRoute($parsedUrl['path']);
         if (!$matchedRoute) {
-            throw new RouterException('Aucune route trouvée');
+            throw new HttpException(404, 'Pas de route trouvée pour cette URL.');
         }
         $controllerClass = $matchedRoute[1];
         $controllerMethod = $matchedRoute[2];
@@ -38,7 +38,7 @@ class Router
         }
 
         if ($controller instanceof AdminController) {
-            $controller->getAuthenticatedAdmin();
+            $controller->denyAccessUnlessAdmin();
         }
 
         echo call_user_func_array([$controller, $controllerMethod], $matchedRoute['params']);

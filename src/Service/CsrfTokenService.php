@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Router\Session;
-use Tracy\Debugger;
 
 class CsrfTokenService
 {
@@ -29,7 +28,6 @@ class CsrfTokenService
     public function checkCsrfToken(string $key, string $token, string $errorMsg = ''): string
     {
         $csrfTokens = $this->session->get('csrfTokens');
-        Debugger::barDump($csrfTokens);
         $expected = $csrfTokens[$key] ?? null;
         if (null === $expected) {
             throw new \InvalidArgumentException('Pas de jeton CSRF trouvé pour cette clé.');

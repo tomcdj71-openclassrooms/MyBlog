@@ -38,4 +38,26 @@ class DatabaseConnexion
 
         return $this->pdo;
     }
+
+    /**
+     * This function returns a prepared statement for the given SQL query.
+     *
+     * @param string $sql the SQL query to prepare
+     *
+     * @return \PDOStatement the prepared statement
+     */
+    public function prepare($sql): \PDOStatement
+    {
+        return $this->pdo->prepare($sql);
+    }
+
+    /**
+     * This method returns the last inserted ID.
+     * This method is used in the session class to get the ID of the last inserted session.
+     * The ID is then used to update the session table.
+     */
+    public function lastInsertId(): int
+    {
+        return $this->pdo->lastInsertId();
+    }
 }

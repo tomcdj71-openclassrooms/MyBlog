@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Helper;
 
+use App\Router\HttpException;
 use App\Router\Route;
 use App\Router\ServerRequest;
 use Twig\Environment;
@@ -77,7 +78,7 @@ class TwigHelper
             }, $path);
         }
 
-        throw new \Exception(sprintf('Route "%s" introuvable', implode(', ', array_keys($routes))));
+        throw new HttpException(404, sprintf('Route "%s" introuvable', implode(', ', array_keys($routes))));
     }
 
     /**
@@ -107,7 +108,7 @@ class TwigHelper
     public function routeName(): string
     {
         $currentUri = $this->serverRequest->getUri();
-        $routes = (new Route())->getRoutes();
+        $routes = $this->route->getRoutes(); // use the injected instance
 
         foreach ($routes as $route) {
             $pattern = '@^'.preg_replace('@\\\{[^/]+@', '([^/]+)', preg_quote($route[0], '@')).'$@D';
@@ -116,6 +117,29 @@ class TwigHelper
             }
         }
 
-        throw new \App\Router\RouterException('Pas de route trouvée pour cette URL.', 404);
+        throw new HttpException(404, 'Pas de route trouvée pour cette URL.');
+    }
+
+    /**
+     * Get a message based on the provided HTTP status code.
+     *
+     * @param int $statusCode The HTTP status code
+     *
+     * @return string The message associated with the status code
+     */
+    public function getHttpStatusCodeMessage(int $statusCode): string
+    {
+        $messages = [
+            400 => 'Mauvaise requête',
+            401 => 'Non autorisé',
+            403 => 'Interdit',
+            404 => 'Non trouvé',
+            405 => 'Méthode non autorisée',
+            408 => 'Expiration de la demande',
+            500 => 'Erreur interne du serveur',
+            503 => 'Service indisponible',
+        ];
+
+        return $messages[$statusCode] ?? 'Erreur Inconnue';
     }
 }

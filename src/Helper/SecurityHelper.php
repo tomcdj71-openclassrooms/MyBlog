@@ -79,7 +79,7 @@ class SecurityHelper
 
     public function validateAndReturnUserFromRememberMeToken(): ?UserModel
     {
-        if (empty($this->session->get('remember_me_token'))) {
+        if (empty($this->session->getCookie('remember_me_token'))) {
             throw new \InvalidArgumentException("Le jeton 'Remember Me' n'est pas défini ou vide.");
         }
         $token = $this->session->getCookie('remember_me_token');

@@ -17,7 +17,7 @@ use App\Service\PostService;
 use App\Service\ProfileService;
 use App\Validator\LoginFormValidator;
 use App\Validator\RegistrationFormValidator;
-use Tracy\Debugger;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class UserController extends AbstractController
 {
@@ -51,7 +51,6 @@ class UserController extends AbstractController
             $errors = $this->profileService->handleProfilePostRequest($user);
         }
         $csrfToken = $this->csrfTokenService->generateToken('editProfile');
-        Debugger::barDump($csrfToken);
         $userPostsData = $this->postService->getUserPostsData();
         $hasPost = ($userPostsData['total'] > 0) ? true : false;
 
@@ -70,9 +69,11 @@ class UserController extends AbstractController
      */
     public function login()
     {
-        // Redirect the user to the blog page if he is already authenticated.
-        $this->isUserUnauthenticated();
-        $this->authenticateWithRememberMeOption();
+        $this->denyAccessIfAuthenticated();
+        $response = $this->authenticateWithRememberMeOption('ROLE_USER', true);
+        if ($response instanceof RedirectResponse) {
+            return $response;
+        }
         $errors = [];
         if ('POST' === $this->serverRequest->getRequestMethod()) {
             $postData = [
@@ -105,8 +106,11 @@ class UserController extends AbstractController
     public function register()
     {
         // Redirect the user to the blog page if he is already authenticated.
-        $this->isUserUnauthenticated();
-        $this->authenticateWithRememberMeOption();
+        $this->denyAccessIfAuthenticated();
+        $response = $this->authenticateWithRememberMeOption();
+        if ($response instanceof RedirectResponse) {
+            return $response;
+        }
         $errors = [];
         $csrfToken = $this->csrfTokenService->generateToken('register');
         if ('POST' === $this->serverRequest->getRequestMethod()) {
