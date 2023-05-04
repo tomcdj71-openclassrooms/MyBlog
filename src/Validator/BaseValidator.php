@@ -67,6 +67,20 @@ abstract class BaseValidator
                 }
 
                 break;
+
+            case 'int':
+                if (!is_numeric($data[$field])) {
+                    $errors[$field] = $rules['constraints']['errorMsg'] ?? '';
+                }
+
+                break;
+
+            case 'array':
+                if (!is_array($data[$field])) {
+                    $errors[$field] = $rules['constraints']['errorMsg'] ?? '';
+                }
+
+                break;
         }
         if (isset($rules['constraints']['length'])) {
             $errors = array_merge($errors, $this->validateLength($field, $data, $rules));

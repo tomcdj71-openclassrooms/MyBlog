@@ -13,6 +13,7 @@ use App\Model\UserModel;
 use App\ModelParameters\PostModelParameters;
 use App\ModelParameters\TagModelParameters;
 use App\ModelParameters\UserModelParameters;
+use Tracy\Debugger;
 
 class PostManager
 {
@@ -27,6 +28,23 @@ class PostManager
         $this->postModelParams = new PostModelParameters();
         $this->userModelParams = new UserModelParameters();
         $this->tagModelParams = new TagModelParameters();
+    }
+
+    public function find(int $id): ?PostModel
+    {
+        try {
+            $sql = 'SELECT * FROM post WHERE id = :id';
+            $statement = $this->database->prepare($sql);
+            $statement->execute(['id' => $id]);
+            $data = $statement->fetch(\PDO::FETCH_ASSOC);
+            if (!$data) {
+                return null;
+            }
+
+            return $this->createPostModelFromArray($data);
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
+        }
     }
 
     public function findBy(string $field, $value): array
@@ -275,6 +293,57 @@ class PostManager
         }
     }
 
+    public function create(array $postData): ?PostModel
+    {
+        try {
+            $sql = 'INSERT INTO post (title, content, author_id, chapo, created_at, updated_at, is_enabled, featured_image, category_id, slug, tags) VALUES (:title, :content, :author_id, :chapo, :created_at, :updated_at, :is_enabled, :featured_image, :category_id, :slug, :tags)';
+            $statement = $this->database->prepare($sql);
+            $params = [
+                'title' => $postData['title'],
+                'content' => $postData['content'],
+                'author_id' => $postData['author'],
+                'chapo' => $postData['chapo'],
+                'created_at' => $postData['createdAt'],
+                'updated_at' => $postData['updatedAt'],
+                'is_enabled' => $postData['isEnabled'],
+                'featured_image' => $postData['featuredImage'],
+                'category_id' => $postData['category'],
+                'slug' => $postData['slug'],
+                'tags' => $postData['tags'],
+            ];
+            Debugger::barDump($params);
+            $statement->execute($params);
+            $lastInsertId = $this->database->lastInsertId();
+            Debugger::barDump($lastInsertId);
+            $post = $this->find((int) $lastInsertId);
+            Debugger::barDump($post);
+            if (null !== $post) {
+                return $post;
+            }
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
+        }
+    }
+
+    protected function createPostModelFromArray(array $data): PostModel
+    {
+        if (!isset($data['tags_array'])) {
+            $data['tags_array'] = [];
+        }
+        if (!isset($data['comments'])) {
+            $data['comments'] = [];
+        }
+        if (empty($data['author'])) {
+            $data['author'] = null;
+        }
+        if (empty($data['category'])) {
+            $data['category'] = null;
+        }
+        $postModelParams = $this->postModelParams->createFromData($data);
+
+        return new PostModel($postModelParams);
+    }
+
     private function prepareAuthor(array $data): ?UserModel
     {
         $authorModelParams = $this->userModelParams->createFromData($data);
@@ -339,24 +408,5 @@ class PostManager
         $data['comments'] = $this->prepareComments($data);
 
         return $data;
-    }
-
-    private function createPostModelFromArray(array $data): PostModel
-    {
-        if (!isset($data['tags_array'])) {
-            $data['tags_array'] = [];
-        }
-        if (!isset($data['comments'])) {
-            $data['comments'] = [];
-        }
-        if (empty($data['author'])) {
-            $data['author'] = null;
-        }
-        if (empty($data['category'])) {
-            $data['category'] = null;
-        }
-        $postModelParams = $this->postModelParams->createFromData($data);
-
-        return new PostModel($postModelParams);
     }
 }

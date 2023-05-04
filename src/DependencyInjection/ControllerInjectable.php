@@ -24,6 +24,7 @@ use App\Router\Session;
 use App\Service\CommentService;
 use App\Service\CsrfTokenService;
 use App\Service\MailerService;
+use App\Service\PostService;
 
 class ControllerInjectable
 {
@@ -37,7 +38,7 @@ class ControllerInjectable
     ];
 
     public const CONTROLLER_DEPENDENCIES = [
-        'admin' => [TwigHelper::class, Session::class, ServerRequest::class, SecurityHelper::class, UserManager::class, Request::class, PostManager::class, CategoryManager::class, TagManager::class, CommentManager::class, CommentService::class, CsrfTokenService::class],
+        'admin' => [TwigHelper::class, Session::class, ServerRequest::class, SecurityHelper::class, UserManager::class, Request::class, CategoryManager::class, TagManager::class, PostService::class, CsrfTokenService::class],
         'ajax' => [TwigHelper::class, Session::class, ServerRequest::class, SecurityHelper::class, UserManager::class, Request::class, Configuration::class, MailerService::class],
         'blog' => [TwigHelper::class, Session::class, ServerRequest::class, SecurityHelper::class, UserManager::class, Request::class, CategoryManager::class, TagManager::class, CommentManager::class, CommentService::class, PostManager::class, CsrfTokenService::class],
         'error' => [TwigHelper::class, Session::class, ServerRequest::class, SecurityHelper::class, UserManager::class, Request::class],

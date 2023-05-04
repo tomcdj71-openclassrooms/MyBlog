@@ -4,17 +4,43 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Helper\ImageHelper;
 use App\Helper\SecurityHelper;
+use App\Helper\StringHelper;
 use App\Manager\PostManager;
+use App\Manager\UserManager;
 use App\Router\ServerRequest;
+use App\Router\Session;
+use App\Validator\PostFormValidator;
 
 class PostService extends AbstractService
 {
-    public function __construct(ServerRequest $serverRequest, SecurityHelper $securityHelper, PostManager $postManager)
-    {
+    protected PostManager $postManager;
+    protected Session $session;
+    protected CsrfTokenService $csrfTokenService;
+    protected ServerRequest $serverRequest;
+    protected SecurityHelper $securityHelper;
+    protected UserManager $userManager;
+    protected StringHelper $stringHelper;
+    protected ImageHelper $imageHelper;
+
+    public function __construct(
+        ServerRequest $serverRequest,
+        SecurityHelper $securityHelper,
+        PostManager $postManager,
+        Session $session,
+        CsrfTokenService $csrfTokenService,
+        UserManager $userManager,
+        StringHelper $stringHelper,
+    ) {
+        $this->postManager = $postManager;
+        $this->session = $session;
+        $this->csrfTokenService = $csrfTokenService;
         $this->serverRequest = $serverRequest;
         $this->securityHelper = $securityHelper;
-        $this->postManager = $postManager;
+        $this->userManager = $userManager;
+        $this->stringHelper = $stringHelper;
+        $this->imageHelper = new ImageHelper('uploads/featured/', 1200, 900);
     }
 
     public function getUserPostsData()
@@ -84,5 +110,66 @@ class PostService extends AbstractService
             'rows' => $otherUserPostsArray,
             'total' => $totalPosts,
         ];
+    }
+
+    public function handleAddPostRequest()
+    {
+        $errors = [];
+        $csrfToCheck = $this->serverRequest->getPost('csrfToken');
+        if (!$this->csrfTokenService->checkCsrfToken('addPost', $csrfToCheck)) {
+            $errors[] = 'Jeton CSRF invalide.';
+        }
+        $postData = $this->getPostData();
+        $postFormValidator = new PostFormValidator($this->userManager, $this->session, $this->csrfTokenService);
+        $response = $postFormValidator->validate($postData);
+        $message = $response['valid'] ? $this->createPost($postData) : null;
+        $errors = $response['valid'] ? null : $response['errors'];
+
+        return [$errors, $message];
+    }
+
+public function getPostData()
+{
+    $fields = ['title', 'chapo', 'content', 'category', 'tags'];
+    $postData = array_map(function ($field) {
+        return $this->serverRequest->getPost($field, '');
+    }, array_combine($fields, $fields));
+    // Convert tags array to string
+    $postData['tags'] = implode(',', $postData['tags']);
+    $postData['featuredImage'] = $_FILES['featuredImage'] ?? null;
+    $postData['csrfToken'] = $this->serverRequest->getPost('csrfToken');
+
+    return $postData;
+}
+
+    public function createPost(array $data)
+    {
+        $user = $this->securityHelper->getUser();
+        $createdAt = new \DateTime();
+        $createdAt = $createdAt->format('Y-m-d H:i:s');
+        $filename = $this->imageHelper->uploadImage($data['featuredImage'], 1200, 900);
+        if (0 === strpos($filename, 'Error')) {
+            throw new \RuntimeException($filename);
+        }
+        $filename = explode('.', $filename)[0];
+        $data['avatar'] = $filename;
+
+        $postData = [
+            'title' => $data['title'],
+            'content' => $data['content'],
+            'author' => $user->getId(),
+            'chapo' => $data['chapo'],
+            'createdAt' => $createdAt,
+            'updatedAt' => $createdAt,
+            'isEnabled' => false,
+            'featuredImage' => $filename,
+            'category' => $data['category'],
+            'slug' => $this->stringHelper->slugify($data['title']),
+            'tags' => $data['tags'],
+            'csrfToken' => $data['csrfToken'],
+        ];
+        $this->postManager->create($postData);
+
+        return 'Votre article a été ajouté avec succès!';
     }
 }

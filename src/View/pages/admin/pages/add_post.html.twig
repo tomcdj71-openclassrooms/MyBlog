@@ -1,0 +1,74 @@
+{% extends "pages/admin/base.html.twig" %}
+{% block body %}
+	<div class="d-flex justify-content-between align-items-center">
+		<h2>Ajouter un Article</h2>
+	</div>
+	<div class="row my-4">
+		<div class="col-12 col-xl-12 mb-4 mb-lg-0">
+			<div class="d-flex align-items-center">
+				<div class="card w-100">
+					<div class="card-body">
+						<form method="POST" action="{{ path('admin_add_post') }}" data-np-autofill-type="identity" data-np-checked="1" enctype="multipart/form-data">
+							<div class="row">
+								<div class="col form-group">
+									<label for="title">Title</label>
+									<input type="text" id="title" name="title" class="form-control">
+								</div>
+							</div>
+							<div class="row">
+								<div class="col form-group">
+									<label for="chapo">Chapo</label>
+									<input type="text" id="chapo" name="chapo" class="form-control">
+								</div>
+							</div>
+							<div class="row">
+								<div class="col form-group">
+									<label for="content">Content</label>
+									<textarea id="content" name="content" class="form-control" rows="5"></textarea>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col form-group">
+									<label for="featuredImage">Featured Image</label>
+									<input type="file" id="featuredImage" name="featuredImage" class="form-control-file">
+								</div>
+							</div>
+							<div class="col row">
+								<div class="form-group">
+									<label for="category">Category</label>
+									<select
+										id="category" name="category" class="form-control">
+										{# Iterate over categories and create options #}
+										{% for category in categories %}
+											<option value="{{ category.id }}">{{ category.name }}</option>
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col form-group">
+									<label for="tags">Tags</label>
+									<select class="form-select" name="tags[]" id="tags-selector" data-placeholder="Choose anything" multiple>
+										{% for tag in tags %}
+											<option value="{{ tag.id }}">{{ tag.name }}</option>
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+							<input type="hidden" name="csrfToken" value="{{ csrfToken }}">
+							<button type="submit" class="btn btn-indigo">Envoyer</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+		$('#tags-selector').select2({
+theme: "bootstrap-5",
+width: $(this).data('width') ? $(this).data('width') : $(this).hasClass('w-100') ? '100%' : 'style',
+placeholder: $(this).data('placeholder'),
+closeOnSelect: false
+});
+	</script>
+{% endblock %}

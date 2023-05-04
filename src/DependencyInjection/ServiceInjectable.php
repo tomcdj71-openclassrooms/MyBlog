@@ -6,6 +6,7 @@ namespace App\DependencyInjection;
 
 use App\Config\Configuration;
 use App\Helper\SecurityHelper;
+use App\Helper\StringHelper;
 use App\Manager\CommentManager;
 use App\Manager\PostManager;
 use App\Manager\UserManager;
@@ -30,7 +31,7 @@ class ServiceInjectable
     public const SERVICE_DEPENDENCIES = [
         'comment' => [CommentManager::class, Session::class, CsrfTokenService::class, ServerRequest::class, SecurityHelper::class, UserManager::class],
         'csrfToken' => [Session::class],
-        'post' => [ServerRequest::class, SecurityHelper::class, PostManager::class],
+        'post' => [ServerRequest::class, SecurityHelper::class, PostManager::class, Session::class, CsrfTokenService::class, UserManager::class, StringHelper::class],
         'profile' => [UserManager::class, CsrfTokenService::class, Session::class, SecurityHelper::class],
     ];
 
