@@ -39,8 +39,8 @@ class Route
             'admin_categories' => ['/admin/categories', AdminController::class, 'categories', 'GET|POST', 'Gestion des Catégories'],
             'admin_posts' => ['/admin/posts', AdminController::class, 'posts', 'GET|POST', 'Gestion des Articles'],
             'admin_post_delete' => ['/admin/post/{id}/delete', AdminController::class, 'post', 'POST', 'Supprimer un Article'],
-            'edit_post' => ['/post/{id}/edit', BlogController::class, 'editPost', 'GET|POST', 'Modifier un Article'],
-            'admin_add_post' => ['/admin/post/add', AdminController::class, 'addPost', 'GET|POST', 'Ajouter un Article'],
+            'admin_post_edit' => ['/admin/post/{id}/edit', AdminController::class, 'editPost', 'GET|POST', 'Modifier un Article'],
+            'admin_past_add' => ['/admin/post/add', AdminController::class, 'addPost', 'GET|POST', 'Ajouter un Article'],
             'admin_users' => ['/admin/users', AdminController::class, 'users', 'GET|POST', 'Gestion des Utilisateurs'],
             'admin_comments' => ['/admin/comments', AdminController::class, 'comments', 'GET|POST', 'Gestion des Commentaires'],
             'admin_comment_delete' => ['/admin/comment/{id}/delete', AdminController::class, 'comment', 'POST', 'Supprimer un Commentaire'],
@@ -53,6 +53,7 @@ class Route
             'ajax_admin_all_tags' => ['/ajax/admin-all-tags', AjaxController::class, 'allTags', 'GET', 'Gestion des Tags'],
             'ajax_admin_all_categories' => ['/ajax/admin-all-categories', AjaxController::class, 'allCategories', 'GET', 'Gestion des Catégories'],
             'ajax_admin_toggle_comment' => ['/ajax/admin-toggle-comment/{id}', AjaxController::class, 'toggleCommentStatus', 'POST', 'Activer/Désactiver un Commentaire'],
+            'ajax_admin_toggle_post' => ['/ajax/admin-toggle-post/{id}', AjaxController::class, 'togglePostStatus', 'POST', 'Activer/Désactiver un Article'],
         ];
     }
 }

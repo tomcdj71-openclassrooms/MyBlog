@@ -19,8 +19,8 @@ class PostModel
     private $featuredImage;
     private ?CategoryModel $category = null;
     private $slug;
-    private array $tags;
     private array $comments;
+    private array $tags;
 
     public function __construct(PostModelParameters $postModelParams)
     {
@@ -35,8 +35,8 @@ class PostModel
         $this->featuredImage = $postModelParams->featuredImage;
         $this->category = $postModelParams->category;
         $this->slug = $postModelParams->slug;
-        $this->tags = $postModelParams->tags;
         $this->comments = $postModelParams->comments;
+        $this->tags = $postModelParams->tags;
     }
 
     public function getId(): int
@@ -162,7 +162,7 @@ class PostModel
         return $this;
     }
 
-    public function setCategory(array $category): self
+    public function setCategory(CategoryModel $category): self
     {
         $this->category = $category;
 
@@ -176,18 +176,9 @@ class PostModel
         return $this;
     }
 
-    public function addTags(array $tags): self
+    public function addTags(array $tags): void
     {
         $this->tags = $tags;
-
-        return $this;
-    }
-
-    public function removeTags(array $tags): self
-    {
-        $this->tags = $tags;
-
-        return $this;
     }
 
     public function getComments(): array

@@ -1,0 +1,117 @@
+{% extends "pages/admin/base.html.twig" %}
+{% block body %}
+	<div class="d-flex justify-content-between align-items-center">
+		<h2>Modifier un Article</h2>
+	</div>
+	<div class="row my-4">
+		<div class="col-12 col-xl-12 mb-4 mb-lg-0">
+			<div class="d-flex align-items-center">
+				<div class="card w-100">
+					<div class="card-body">
+						<form method="POST" action="{{ path('admin_post_edit', {'id': post.id} ) }}" data-np-autofill-type="identity" data-np-checked="1" enctype="multipart/form-data">
+							<div class="row">
+								<div class="col form-group">
+									<label for="title">Titre</label>
+									<input type="text" id="title" name="title" class="form-control">
+									<div class="alert alert-info">
+										<span>
+											Titre actuel :
+										</span>
+										{{ post.title }}
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col form-group">
+									<label for="chapo">Chapo</label>
+									<input type="text" id="chapo" name="chapo" class="form-control">
+									<div class="alert alert-info">
+										<span>
+											Chapo actuel :
+										</span>
+										{{ post.chapo }}
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col form-group">
+									<label for="content">Contenu</label>
+									<textarea id="content" name="content" class="form-control" rows="5"></textarea>
+									<div class="alert alert-info">
+										<span>
+											Contenu de l'article actuel :
+										</span>
+										<p>
+											{{ post.content|default('')|e('html_attr') }}
+										</p>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col form-group">
+									<label for="featuredImage">Image de l'article</label>
+									<input type="file" id="featuredImage" name="featuredImage" class="form-control-file">
+									<div class="alert alert-info">
+										<span>
+											Image de l'article actuelle :
+										</span>
+										<p class="col-2">
+											<img src="{{ (post.featuredImage starts with 'http://' or post.featuredImage starts with 'https://') ? post.featuredImage : (asset('../uploads/featured/' ~ post.featuredImage ~ '.jpg')) }}" alt="image épinglée de {{ post.title }}" class="w-75">
+										</p>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col form-group">
+									<label for="category">Categorie</label>
+									<select id="category" name="category" class="form-control">
+										{% for category in categories %}
+											<option value="{{ category.id }}" {% if category.id == post.category.id %} selected {% endif %}>{{ category.name }}</option>
+										{% endfor %}
+									</select>
+									<div class="alert alert-info">
+										<span>
+											Catégories actuelles :
+										</span>
+										{{ post.category.name }}
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col form-group">
+									<label for="tags">Tags</label>
+									<select class="form-select" name="tags[]" id="tags-selector" data-placeholder="Choose anything" multiple>
+										{% for tag in tags|sort((a, b) => a.name <=> b.name) %}
+											<option value="{{ tag.id }}" {% if tag.id in post.tags|map((t) => t.id) %} selected {% endif %}>{{ tag.name }}</option>
+										{% endfor %}
+									</select>
+									<div class="alert alert-info">
+										<span>
+											Tags actuels :
+										</span>
+										{% for tag in post.tags %}
+											{{ tag.name }}
+											{% if not loop.last %},
+											{% endif %}
+										{% endfor %}
+									</div>
+								</div>
+							</div>
+							<input type="hidden" name="csrfToken" value="{{ csrfToken }}">
+							<button type="submit" class="btn btn-indigo">Envoyer</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+		$('#tags-selector').select2({
+theme: "bootstrap-5",
+width: $(this).data('width') ? $(this).data('width') : $(this).hasClass('w-100') ? '100%' : 'style',
+placeholder: $(this).data('placeholder'),
+closeOnSelect: false,
+allowClear: true
+});
+	</script>
+{% endblock %}

@@ -7,11 +7,14 @@ namespace App\Service;
 use App\Helper\ImageHelper;
 use App\Helper\SecurityHelper;
 use App\Helper\StringHelper;
+use App\Manager\CategoryManager;
 use App\Manager\PostManager;
+use App\Manager\TagManager;
 use App\Manager\UserManager;
 use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Validator\PostFormValidator;
+use Tracy\Debugger;
 
 class PostService extends AbstractService
 {
@@ -23,6 +26,8 @@ class PostService extends AbstractService
     protected UserManager $userManager;
     protected StringHelper $stringHelper;
     protected ImageHelper $imageHelper;
+    protected CategoryManager $categoryManager;
+    protected TagManager $tagManager;
 
     public function __construct(
         ServerRequest $serverRequest,
@@ -32,6 +37,8 @@ class PostService extends AbstractService
         CsrfTokenService $csrfTokenService,
         UserManager $userManager,
         StringHelper $stringHelper,
+        CategoryManager $categoryManager,
+        TagManager $tagManager
     ) {
         $this->postManager = $postManager;
         $this->session = $session;
@@ -40,6 +47,8 @@ class PostService extends AbstractService
         $this->securityHelper = $securityHelper;
         $this->userManager = $userManager;
         $this->stringHelper = $stringHelper;
+        $this->categoryManager = $categoryManager;
+        $this->tagManager = $tagManager;
         $this->imageHelper = new ImageHelper('uploads/featured/', 1200, 900);
     }
 
@@ -128,19 +137,78 @@ class PostService extends AbstractService
         return [$errors, $message];
     }
 
-public function getPostData()
-{
-    $fields = ['title', 'chapo', 'content', 'category', 'tags'];
-    $postData = array_map(function ($field) {
-        return $this->serverRequest->getPost($field, '');
-    }, array_combine($fields, $fields));
-    // Convert tags array to string
-    $postData['tags'] = implode(',', $postData['tags']);
-    $postData['featuredImage'] = $_FILES['featuredImage'] ?? null;
-    $postData['csrfToken'] = $this->serverRequest->getPost('csrfToken');
+    public function getPostData()
+    {
+        $fields = ['title', 'chapo', 'content', 'category', 'tags'];
+        $postData = array_map(function ($field) {
+            return $this->serverRequest->getPost($field, '');
+        }, array_combine($fields, $fields));
+        $postData['tags'] = implode(',', $postData['tags']);
+        $postData['featuredImage'] = $_FILES['featuredImage'] ?? null;
+        $postData['csrfToken'] = $this->serverRequest->getPost('csrfToken');
 
-    return $postData;
-}
+        return $postData;
+    }
+
+    public function handleEditPostRequest($post)
+    {
+        $errors = [];
+        $postData = $this->getPostData();
+        $csrfToCheck = $this->serverRequest->getPost('csrfToken');
+        if (!$this->csrfTokenService->checkCsrfToken('editPost', $csrfToCheck)) {
+            $errors[] = 'Jeton CSRF invalide.';
+        }
+        foreach ($postData as $key => $value) {
+            if ('csrfToken' === $key) {
+                continue;
+            }
+            if ('' === $value) {
+                $postGetter = 'get'.ucfirst($key);
+                if (is_object($post) && method_exists($post, $postGetter)) {
+                    $postData[$key] = $post->{$postGetter}();
+                }
+            }
+            if (is_array($value)) {
+                if ('featuredImage' === $key && empty($value['name'])) {
+                    $postData[$key] = $post->getFeaturedImage();
+                } else {
+                    unset($postData[$key]);
+                }
+            }
+        }
+        $postData['slug'] = isset($postData['title']) ? $this->stringHelper->slugify($postData['title']) : $post->getSlug();
+        $updatedAt = new \DateTime();
+        $postData['updatedAt'] = $updatedAt->format('Y-m-d H:i:s');
+        $postData['isEnabled'] = false;
+        foreach ($postData as $key => $value) {
+            if ('category' === $key) {
+                if ((int) $value !== $post->getCategory()->getId()) {
+                    $message[] = 'Category has changed.';
+                }
+            } elseif ('tags' === $key) {
+                $tags = implode(',', array_map(function ($tag) {
+                    return $tag->getId();
+                }, $post->getTags()));
+                if ($tags !== $value) {
+                    $message[] = 'Tags have changed.';
+                }
+            } else {
+                $postGetter = 'get'.ucfirst($key);
+
+                if (is_object($post) && method_exists($post, $postGetter) && $post->{$postGetter}() !== $value) {
+                    $message[] = ucfirst($key).' has changed.';
+                }
+            }
+        }
+        if (empty($errors)) {
+            $postFormValidator = new PostFormValidator($this->userManager, $this->session, $this->csrfTokenService);
+            $response = $postFormValidator->validate($postData);
+            $message = $response['valid'] ? $this->editPost($post, $postData) : null;
+            $errors = $response['valid'] ? null : $response['errors'];
+        }
+
+        return [$errors, $message];
+    }
 
     public function createPost(array $data)
     {
@@ -171,5 +239,33 @@ public function getPostData()
         $this->postManager->create($postData);
 
         return 'Votre article a été ajouté avec succès!';
+    }
+
+    public function editPost($post, $data)
+    {
+        $fields = ['title', 'chapo', 'content', 'category', 'tags', 'featuredImage', 'slug', 'updated_at', 'is_enabled'];
+        foreach ($fields as $field) {
+            $setter = 'set'.$field;
+            $dataKey = lcfirst($field);
+            if (isset($data[$dataKey])) {
+                if ('category' == $field) {
+                    $category = $this->categoryManager->find((int) $data[$dataKey]);
+                    $post->setCategory($category);
+                } elseif ('tags' == $field) {
+                    $tags = $this->tagManager->findByIds(explode(',', $data[$dataKey]));
+                    $post->addTags($tags);
+                } else {
+                    $post->{$setter}($data[$dataKey]);
+                }
+            }
+        }
+        $postUpdated = $this->postManager->updatePost($post, $data);
+        $tagsUpdated = $this->postManager->updatePostTags($post, $post->getTags());
+        Debugger::barDump(['postUpdated' => $postUpdated, 'tagsUpdated' => $tagsUpdated]);
+        if ($postUpdated && $tagsUpdated) {
+            return 'Article '.$post->getTitle().' mis à jour avec succès!';
+        }
+
+        return null;
     }
 }

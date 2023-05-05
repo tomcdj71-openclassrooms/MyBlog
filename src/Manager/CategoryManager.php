@@ -21,6 +21,27 @@ class CategoryManager
         return $this->database;
     }
 
+    public function find(int $id): ?CategoryModel
+    {
+        try {
+            $sql = 'SELECT * FROM category WHERE id = :id';
+            $statement = $this->database->prepare($sql);
+            $statement->execute(['id' => $id]);
+            $data = $statement->fetch(\PDO::FETCH_ASSOC);
+            if (!$data) {
+                return null;
+            }
+
+            return new CategoryModel(
+                (int) $data['id'],
+                $data['name'],
+                $data['slug']
+            );
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
+        }
+    }
+
     public function findAll(): array
     {
         try {

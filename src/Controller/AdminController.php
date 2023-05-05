@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Helper\SecurityHelper;
 use App\Helper\TwigHelper;
 use App\Manager\CategoryManager;
+use App\Manager\PostManager;
 use App\Manager\TagManager;
 use App\Manager\UserManager;
 use App\Router\Request;
@@ -14,6 +15,7 @@ use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Service\CsrfTokenService;
 use App\Service\PostService;
+use Tracy\Debugger;
 
 class AdminController extends AbstractController
 {
@@ -21,6 +23,7 @@ class AdminController extends AbstractController
     private CategoryManager $categoryManager;
     private PostService $postService;
     private CsrfTokenService $csrfTokenService;
+    private PostManager $postManager;
 
     public function __construct(
         TwigHelper $twig,
@@ -32,13 +35,15 @@ class AdminController extends AbstractController
         CategoryManager $categoryManager,
         TagManager $tagManager,
         PostService $postService,
-        CsrfTokenService $csrfTokenService
+        CsrfTokenService $csrfTokenService,
+        PostManager $postManager
     ) {
         parent::__construct($twig, $session, $serverRequest, $securityHelper, $userManager, $request);
         $this->tagManager = $tagManager;
         $this->categoryManager = $categoryManager;
         $this->postService = $postService;
         $this->csrfTokenService = $csrfTokenService;
+        $this->postManager = $postManager;
     }
 
     public function index()
@@ -96,6 +101,29 @@ class AdminController extends AbstractController
             'categories' => $this->categoryManager->findAll(),
             'tags' => $this->tagManager->findAll(),
             'csrfToken' => $csrfToken,
+        ]);
+    }
+
+    public function editPost(int $postId)
+    {
+        $post = $this->postManager->find($postId);
+        if (!$post) {
+            // Handle the case when the post is not found (e.g., redirect to an error page or show a message)
+        }
+
+        if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
+            list($errors, $message) = $this->postService->handleEditPostRequest($post);
+        }
+
+        $csrfToken = $this->csrfTokenService->generateToken('editPost');
+        Debugger::barDump($post);
+
+        return $this->twig->render('pages/admin/pages/edit_post.html.twig', [
+            'user' => $this->securityHelper->getUser(),
+            'categories' => $this->categoryManager->findAll(),
+            'tags' => $this->tagManager->findAll(),
+            'csrfToken' => $csrfToken,
+            'post' => $post,
         ]);
     }
 }

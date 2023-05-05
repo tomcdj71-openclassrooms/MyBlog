@@ -25,7 +25,7 @@ class CsrfTokenService
         return $token;
     }
 
-    public function checkCsrfToken(string $key, string $token, string $errorMsg = ''): string
+    public function checkCsrfToken(string $key, string $token, string $errorMsg = ''): bool
     {
         $csrfTokens = $this->session->get('csrfTokens');
         $expected = $csrfTokens[$key] ?? null;
@@ -33,6 +33,6 @@ class CsrfTokenService
             throw new \InvalidArgumentException('Pas de jeton CSRF trouvé pour cette clé.');
         }
 
-        return hash_equals($expected, $token) ? '' : $errorMsg;
+        return hash_equals($expected, $token);
     }
 }

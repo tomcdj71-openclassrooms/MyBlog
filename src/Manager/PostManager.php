@@ -33,15 +33,29 @@ class PostManager
     public function find(int $id): ?PostModel
     {
         try {
-            $sql = 'SELECT * FROM post WHERE id = :id';
+            $sql = 'SELECT p.id as post_id, p.title, p.author_id, p.content, p.chapo, p.created_at, p.updated_at, p.is_enabled, p.featured_image, p.category_id, p.slug,
+                    u.id as user_id, u.*,
+                    c.id as category_id, c.name as category_name, c.slug as category_slug,
+                    GROUP_CONCAT(DISTINCT t.name) as tag_names,
+                    GROUP_CONCAT(DISTINCT t.id) as tag_ids,
+                    GROUP_CONCAT(DISTINCT t.slug) as tag_slugs,
+                    (SELECT COUNT(*) FROM comment cm WHERE cm.post_id = p.id AND cm.is_enabled = 1) as number_of_comments
+                    FROM post p
+                    LEFT JOIN user u ON p.author_id = u.id
+                    LEFT JOIN category c ON p.category_id = c.id
+                    LEFT JOIN post_tag pt ON p.id = pt.post_id
+                    LEFT JOIN tag t ON pt.tag_id = t.id
+                    WHERE p.id = :id
+                    GROUP BY p.id';
             $statement = $this->database->prepare($sql);
             $statement->execute(['id' => $id]);
             $data = $statement->fetch(\PDO::FETCH_ASSOC);
             if (!$data) {
                 return null;
             }
+            $preparedData = $this->preparePostData($data);
 
-            return $this->createPostModelFromArray($data);
+            return $this->createPostModelFromArray($preparedData);
         } catch (\PDOException $error) {
             throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
@@ -50,7 +64,9 @@ class PostManager
     public function findBy(string $field, $value): array
     {
         try {
-            $sql = "SELECT p.*, u.*, c.name as category_name, c.slug as category_slug,
+            $sql = "SELECT p.id as post_id, p.title, p.author_id, p.content, p.chapo, p.created_at, p.updated_at, p.is_enabled, p.featured_image, p.category_id, p.slug,
+                        u.id as user_id, u.*,
+                        c.id as category_id, c.name as category_name, c.slug as category_slug,
                     GROUP_CONCAT(DISTINCT t.name) as tag_names,
                     GROUP_CONCAT(DISTINCT t.id) as tag_ids,
                     GROUP_CONCAT(DISTINCT t.slug) as tag_slugs,
@@ -78,18 +94,20 @@ class PostManager
     public function findOneBy(string $field, $value): ?PostModel
     {
         try {
-            $sql = "SELECT p.id as post_id, p.*, u.id as user_id, u.*, c.id as category_id, c.name as category_name, c.slug as category_slug,
-            GROUP_CONCAT(DISTINCT t.name) as tag_names,
-            GROUP_CONCAT(DISTINCT t.id) as tag_ids,
-            GROUP_CONCAT(DISTINCT t.slug) as tag_slugs,
-            (SELECT COUNT(*) FROM comment cm WHERE cm.post_id = p.id AND cm.is_enabled = 1) as number_of_comments
-            FROM post p
-            LEFT JOIN user u ON p.author_id = u.id
-            LEFT JOIN category c ON p.category_id = c.id
-            LEFT JOIN tag t ON instr(',' || p.tags || ',', ',' || t.id || ',') > 0
-            WHERE p.{$field} = :value
-            GROUP BY p.id
-            LIMIT 1";
+            $sql = "SELECT p.id as post_id, p.title, p.author_id, p.content, p.chapo, p.created_at, p.updated_at, p.is_enabled, p.featured_image, p.category_id, p.slug,
+                        u.id as user_id, u.*,
+                        c.id as category_id, c.name as category_name, c.slug as category_slug,
+                    GROUP_CONCAT(DISTINCT t.name) as tag_names,
+                    GROUP_CONCAT(DISTINCT t.id) as tag_ids,
+                    GROUP_CONCAT(DISTINCT t.slug) as tag_slugs,
+                    (SELECT COUNT(*) FROM comment cm WHERE cm.post_id = p.id AND cm.is_enabled = 1) as number_of_comments
+                    FROM post p
+                    LEFT JOIN user u ON p.author_id = u.id
+                    LEFT JOIN category c ON p.category_id = c.id
+                    LEFT JOIN tag t ON instr(',' || p.tags || ',', ',' || t.id || ',') > 0
+                    WHERE p.{$field} = :value
+                    GROUP BY p.id
+                    LIMIT 1";
             $statement = $this->database->prepare($sql);
             $statement->execute(['value' => $value]);
             $data = $statement->fetch(\PDO::FETCH_ASSOC);
@@ -107,18 +125,20 @@ class PostManager
     public function findAll(int $page, int $limit): array
     {
         try {
-            $sql = 'SELECT p.*, u.*, c.name as category_name, c.slug as category_slug,
-            GROUP_CONCAT(DISTINCT t.name) as tag_names,
-            GROUP_CONCAT(DISTINCT t.id) as tag_ids,
-            GROUP_CONCAT(DISTINCT t.slug) as tag_slugs,
-            (SELECT COUNT(*) FROM comment cm WHERE cm.post_id = p.id AND cm.is_enabled = 1) as number_of_comments
-            FROM post p
-            LEFT JOIN user u ON p.author_id = u.id
-            LEFT JOIN category c ON p.category_id = c.id
-            LEFT JOIN tag t ON instr("," || p.tags || ",", "," || t.id || ",") > 0
-            GROUP BY p.id
-            ORDER BY p.created_at DESC
-            LIMIT :limit OFFSET :offset';
+            $sql = 'SELECT p.id as post_id, p.title, p.author_id, p.content, p.chapo, p.created_at, p.updated_at, p.is_enabled, p.featured_image, p.category_id, p.slug,
+                        u.id as user_id, u.*,
+                        c.id as category_id, c.name as category_name, c.slug as category_slug,
+                    GROUP_CONCAT(DISTINCT t.name) as tag_names,
+                    GROUP_CONCAT(DISTINCT t.id) as tag_ids,
+                    GROUP_CONCAT(DISTINCT t.slug) as tag_slugs,
+                    (SELECT COUNT(*) FROM comment cm WHERE cm.post_id = p.id AND cm.is_enabled = 1) as number_of_comments
+                    FROM post p
+                    LEFT JOIN user u ON p.author_id = u.id
+                    LEFT JOIN category c ON p.category_id = c.id
+                    LEFT JOIN tag t ON instr("," || p.tags || ",", "," || t.id || ",") > 0
+                    GROUP BY p.id
+                    ORDER BY p.created_at DESC
+                    LIMIT :limit OFFSET :offset';
             $offset = ($page - 1) * $limit;
             $statement = $this->database->prepare($sql);
             $statement->bindValue('limit', $limit, \PDO::PARAM_INT);
@@ -156,10 +176,12 @@ class PostManager
     public function findPostsBetweenDates(\DateTime $startDate, \DateTime $endDate): array
     {
         try {
-            $sql = "SELECT p.*, u.*, c.name as category_name, c.slug as category_slug,
-                        GROUP_CONCAT(DISTINCT t.name) as tag_names,
-                        GROUP_CONCAT(DISTINCT t.id) as tag_ids,
-                        GROUP_CONCAT(DISTINCT t.slug) as tag_slugs,
+            $sql = "SELECT p.id as post_id, p.title, p.author_id, p.content, p.chapo, p.created_at, p.updated_at, p.is_enabled, p.featured_image, p.category_id, p.slug,
+                        u.id as user_id, u.*,
+                        c.id as category_id, c.name as category_name, c.slug as category_slug,
+                    GROUP_CONCAT(DISTINCT t.name) as tag_names,
+                    GROUP_CONCAT(DISTINCT t.id) as tag_ids,
+                    GROUP_CONCAT(DISTINCT t.slug) as tag_slugs,
                     (SELECT COUNT(*) FROM comment cm WHERE cm.post_id = p.id AND cm.is_enabled = 1) as number_of_comments
                     FROM post p
                     LEFT JOIN user u ON p.author_id = u.id
@@ -188,10 +210,12 @@ class PostManager
     public function findPostsWithTag(string $tag): array
     {
         try {
-            $sql = "SELECT p.*, u.*, c.name as category_name, c.slug as category_slug,
-                GROUP_CONCAT(DISTINCT t.name) as tag_names,
-                GROUP_CONCAT(DISTINCT t.id) as tag_ids,
-                GROUP_CONCAT(DISTINCT t.slug) as tag_slugs,
+            $sql = "SELECT p.id as post_id, p.title, p.author_id, p.content, p.chapo, p.created_at, p.updated_at, p.is_enabled, p.featured_image, p.category_id, p.slug,
+                        u.id as user_id, u.*,
+                        c.id as category_id, c.name as category_name, c.slug as category_slug,
+                    GROUP_CONCAT(DISTINCT t.name) as tag_names,
+                    GROUP_CONCAT(DISTINCT t.id) as tag_ids,
+                    GROUP_CONCAT(DISTINCT t.slug) as tag_slugs,
                 (SELECT COUNT(*) FROM comment cm WHERE cm.post_id = p.id AND cm.is_enabled = 1) as number_of_comments
                 FROM post p
                 LEFT JOIN user u ON p.author_id = u.id
@@ -217,10 +241,12 @@ class PostManager
     public function findUserPosts(int $userId, int $page, int $limit): array
     {
         try {
-            $sql = "SELECT p.*, u.*, c.name as category_name, c.slug as category_slug,
-                GROUP_CONCAT(DISTINCT t.name) as tag_names,
-                GROUP_CONCAT(DISTINCT t.id) as tag_ids,
-                GROUP_CONCAT(DISTINCT t.slug) as tag_slugs,
+            $sql = "SELECT p.id as post_id, p.title, p.author_id, p.content, p.chapo, p.created_at, p.updated_at, p.is_enabled, p.featured_image, p.category_id, p.slug,
+                        u.id as user_id, u.*,
+                        c.id as category_id, c.name as category_name, c.slug as category_slug,
+                    GROUP_CONCAT(DISTINCT t.name) as tag_names,
+                    GROUP_CONCAT(DISTINCT t.id) as tag_ids,
+                    GROUP_CONCAT(DISTINCT t.slug) as tag_slugs,
                 (SELECT COUNT(*) FROM comment cm WHERE cm.post_id = p.id AND cm.is_enabled = 1) as number_of_comments
                 FROM post p
                 LEFT JOIN user u ON p.author_id = u.id
@@ -311,12 +337,9 @@ class PostManager
                 'slug' => $postData['slug'],
                 'tags' => $postData['tags'],
             ];
-            Debugger::barDump($params);
             $statement->execute($params);
             $lastInsertId = $this->database->lastInsertId();
-            Debugger::barDump($lastInsertId);
             $post = $this->find((int) $lastInsertId);
-            Debugger::barDump($post);
             if (null !== $post) {
                 return $post;
             }
@@ -325,10 +348,57 @@ class PostManager
         }
     }
 
+    public function updatePost(PostModel $post, array $data): bool
+    {
+        $sql = 'UPDATE post SET title = :title, content = :content, chapo = :chapo, updated_at = :updated_at, is_enabled = :is_enabled, featured_image = :featured_image, category_id = :category_id, slug = :slug';
+        $params = [
+            'title' => $data['title'],
+            'content' => $data['content'],
+            'chapo' => $data['chapo'],
+            'updated_at' => $data['updatedAt'],
+            'is_enabled' => $data['isEnabled'],
+            'featured_image' => $data['featuredImage'],
+            'category_id' => $data['category'],
+            'slug' => $data['slug'],
+        ];
+        $sql .= ' WHERE id = :id';
+        $statement = $this->database->prepare($sql);
+        $statement->bindValue('id', $post->getId(), \PDO::PARAM_INT);
+
+        return $statement->execute($params);
+    }
+
+    public function updatePostTags(PostModel $post, array $tags): bool
+    {
+        $deleteSql = 'DELETE FROM post_tag WHERE post_id = :post_id';
+        $deleteStatement = $this->database->prepare($deleteSql);
+        $deleteStatement->bindValue('post_id', $post->getId(), \PDO::PARAM_INT);
+        $deleteResult = $deleteStatement->execute();
+
+        Debugger::barDump(['deleteResult' => $deleteResult]);
+
+        $insertSql = 'INSERT INTO post_tag (post_id, tag_id) VALUES (:post_id, :tag_id)';
+        $insertStatement = $this->database->prepare($insertSql);
+
+        foreach ($tags as $tag) {
+            $insertStatement->bindValue('post_id', $post->getId(), \PDO::PARAM_INT);
+            $insertStatement->bindValue('tag_id', $tag->getId(), \PDO::PARAM_INT);
+            $insertResult = $insertStatement->execute();
+
+            Debugger::barDump(['insertResult' => $insertResult, 'tag' => $tag]);
+
+            if (!$insertResult) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     protected function createPostModelFromArray(array $data): PostModel
     {
-        if (!isset($data['tags_array'])) {
-            $data['tags_array'] = [];
+        if (!isset($data['tags'])) {
+            $data['tags'] = [];
         }
         if (!isset($data['comments'])) {
             $data['comments'] = [];
@@ -404,7 +474,7 @@ class PostManager
     {
         $data['author'] = $this->prepareAuthor($data);
         $data['category'] = $this->prepareCategory($data);
-        $data['tags_array'] = $this->prepareTags($data);
+        $data['tags'] = $this->prepareTags($data);
         $data['comments'] = $this->prepareComments($data);
 
         return $data;

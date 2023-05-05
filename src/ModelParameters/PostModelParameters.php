@@ -20,8 +20,8 @@ class PostModelParameters
     public $featuredImage;
     public ?CategoryModel $category = null;
     public $slug;
-    public array $tags;
     public array $comments;
+    public array $tags;
 
     public static function createFromData(array $data): self
     {
@@ -40,7 +40,7 @@ class PostModelParameters
         $postModelParams->category = $data['category'];
         $postModelParams->slug = $data['slug'];
         $postModelParams->comments = $data['comments'];
-        $postModelParams->tags = $data['tags_array'];
+        $postModelParams->tags = $data['tags'];
 
         return $postModelParams;
     }

@@ -24,6 +24,24 @@ class TagManager
         return $this->database;
     }
 
+    public function findByIds(array $ids): array
+    {
+        try {
+            $tagsIdsArray = implode(',', array_fill(0, count($ids), '?'));
+            $sql = 'SELECT * FROM tag WHERE id IN ('.$tagsIdsArray.')';
+            $statement = $this->database->prepare($sql);
+            $statement->execute($ids);
+            $tags = [];
+            while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
+                $tags[] = $this->createTagModelFromArray($data);
+            }
+
+            return $tags;
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
+        }
+    }
+
     public function findAll(): array
     {
         try {
