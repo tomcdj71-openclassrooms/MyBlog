@@ -15,7 +15,6 @@ use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Service\MailerService;
 use App\Service\PostService;
-use Tracy\Debugger;
 
 class AjaxController extends AbstractController
 {
@@ -219,7 +218,6 @@ class AjaxController extends AbstractController
             'rows' => $usersArray,
             'total' => count($usersArray),
         ];
-        Debugger::barDump($response);
         header('Content-Type: application/json');
         echo json_encode($response);
     }

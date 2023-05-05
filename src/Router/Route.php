@@ -40,7 +40,7 @@ class Route
             'admin_posts' => ['/admin/posts', AdminController::class, 'posts', 'GET|POST', 'Gestion des Articles'],
             'admin_post_delete' => ['/admin/post/{id}/delete', AdminController::class, 'post', 'POST', 'Supprimer un Article'],
             'admin_post_edit' => ['/admin/post/{id}/edit', AdminController::class, 'editPost', 'GET|POST', 'Modifier un Article'],
-            'admin_past_add' => ['/admin/post/add', AdminController::class, 'addPost', 'GET|POST', 'Ajouter un Article'],
+            'admin_post_add' => ['/admin/post/add', AdminController::class, 'addPost', 'GET|POST', 'Ajouter un Article'],
             'admin_users' => ['/admin/users', AdminController::class, 'users', 'GET|POST', 'Gestion des Utilisateurs'],
             'admin_comments' => ['/admin/comments', AdminController::class, 'comments', 'GET|POST', 'Gestion des Commentaires'],
             'admin_comment_delete' => ['/admin/comment/{id}/delete', AdminController::class, 'comment', 'POST', 'Supprimer un Commentaire'],

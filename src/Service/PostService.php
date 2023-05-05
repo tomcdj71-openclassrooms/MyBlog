@@ -14,7 +14,6 @@ use App\Manager\UserManager;
 use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Validator\PostFormValidator;
-use Tracy\Debugger;
 
 class PostService extends AbstractService
 {
@@ -261,7 +260,6 @@ class PostService extends AbstractService
         }
         $postUpdated = $this->postManager->updatePost($post, $data);
         $tagsUpdated = $this->postManager->updatePostTags($post, $post->getTags());
-        Debugger::barDump(['postUpdated' => $postUpdated, 'tagsUpdated' => $tagsUpdated]);
         if ($postUpdated && $tagsUpdated) {
             return 'Article '.$post->getTitle().' mis à jour avec succès!';
         }

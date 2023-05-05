@@ -33,7 +33,6 @@ class EditProfileFormValidator extends BaseValidator
                 }
             }
         }
-
         $validationRules = [
             'email' => [
                 'constraints' => [

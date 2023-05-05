@@ -44,13 +44,19 @@ class UserController extends AbstractController
     // Display the profile page.
     public function profile()
     {
-        // Redirect the user to the login page if he is not authenticated.
         $user = $this->securityHelper->getUser();
-        $errors = [];
-        if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
-            $errors = $this->profileService->handleProfilePostRequest($user);
+        if (!$user) {
+            $response = $this->authenticateWithRememberMeOption('ROLE_USER', true);
+            if ($response instanceof RedirectResponse) {
+                return $response;
+            }
         }
         $csrfToken = $this->csrfTokenService->generateToken('editProfile');
+        $errors = [];
+        $csrfToken = $this->csrfTokenService->generateToken('editPost');
+        if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
+            list($errors, $message) = $this->profileService->handleProfilePostRequest($user);
+        }
         $userPostsData = $this->postService->getUserPostsData();
         $hasPost = ($userPostsData['total'] > 0) ? true : false;
 
@@ -111,6 +117,7 @@ class UserController extends AbstractController
         if ($response instanceof RedirectResponse) {
             return $response;
         }
+
         $errors = [];
         $csrfToken = $this->csrfTokenService->generateToken('register');
         if ('POST' === $this->serverRequest->getRequestMethod()) {

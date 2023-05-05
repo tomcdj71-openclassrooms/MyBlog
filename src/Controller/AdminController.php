@@ -15,7 +15,6 @@ use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Service\CsrfTokenService;
 use App\Service\PostService;
-use Tracy\Debugger;
 
 class AdminController extends AbstractController
 {
@@ -108,7 +107,6 @@ class AdminController extends AbstractController
     {
         $post = $this->postManager->find($postId);
         if (!$post) {
-            // Handle the case when the post is not found (e.g., redirect to an error page or show a message)
         }
 
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
@@ -116,7 +114,6 @@ class AdminController extends AbstractController
         }
 
         $csrfToken = $this->csrfTokenService->generateToken('editPost');
-        Debugger::barDump($post);
 
         return $this->twig->render('pages/admin/pages/edit_post.html.twig', [
             'user' => $this->securityHelper->getUser(),

@@ -34,7 +34,7 @@ class ServiceInjectable
         'comment' => [CommentManager::class, Session::class, CsrfTokenService::class, ServerRequest::class, SecurityHelper::class, UserManager::class],
         'csrfToken' => [Session::class],
         'post' => [ServerRequest::class, SecurityHelper::class, PostManager::class, Session::class, CsrfTokenService::class, UserManager::class, StringHelper::class, CategoryManager::class, TagManager::class],
-        'profile' => [UserManager::class, CsrfTokenService::class, Session::class, SecurityHelper::class],
+        'profile' => [UserManager::class, CsrfTokenService::class, Session::class, SecurityHelper::class, ServerRequest::class],
     ];
 
     public static function register(Container $container): void

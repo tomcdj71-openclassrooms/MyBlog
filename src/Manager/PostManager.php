@@ -13,7 +13,6 @@ use App\Model\UserModel;
 use App\ModelParameters\PostModelParameters;
 use App\ModelParameters\TagModelParameters;
 use App\ModelParameters\UserModelParameters;
-use Tracy\Debugger;
 
 class PostManager
 {
@@ -374,9 +373,6 @@ class PostManager
         $deleteStatement = $this->database->prepare($deleteSql);
         $deleteStatement->bindValue('post_id', $post->getId(), \PDO::PARAM_INT);
         $deleteResult = $deleteStatement->execute();
-
-        Debugger::barDump(['deleteResult' => $deleteResult]);
-
         $insertSql = 'INSERT INTO post_tag (post_id, tag_id) VALUES (:post_id, :tag_id)';
         $insertStatement = $this->database->prepare($insertSql);
 
@@ -384,9 +380,6 @@ class PostManager
             $insertStatement->bindValue('post_id', $post->getId(), \PDO::PARAM_INT);
             $insertStatement->bindValue('tag_id', $tag->getId(), \PDO::PARAM_INT);
             $insertResult = $insertStatement->execute();
-
-            Debugger::barDump(['insertResult' => $insertResult, 'tag' => $tag]);
-
             if (!$insertResult) {
                 return false;
             }

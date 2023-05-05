@@ -7,6 +7,7 @@ namespace App\Service;
 use App\Helper\ImageHelper;
 use App\Helper\SecurityHelper;
 use App\Manager\UserManager;
+use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Validator\EditProfileFormValidator;
 
@@ -16,15 +17,17 @@ class ProfileService extends AbstractService
     protected CsrfTokenService $csrfTokenService;
     protected Session $session;
     protected SecurityHelper $securityHelper;
+    protected ServerRequest $serverRequest;
     private $imageHelper;
 
-    public function __construct(UserManager $userManager, CsrfTokenService $csrfTokenService, Session $session, SecurityHelper $securityHelper)
+    public function __construct(UserManager $userManager, CsrfTokenService $csrfTokenService, Session $session, SecurityHelper $securityHelper, ServerRequest $serverRequest)
     {
         $this->imageHelper = new ImageHelper('uploads/avatars/', 200, 200);
         $this->userManager = $userManager;
         $this->csrfTokenService = $csrfTokenService;
         $this->session = $session;
         $this->securityHelper = $securityHelper;
+        $this->serverRequest = $serverRequest;
     }
 
     public function handleProfilePostRequest($user)
