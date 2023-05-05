@@ -10,10 +10,10 @@
 		{% for comment in comments %}
 			{% if comment.parentId == parentId %}
 				{% set isAuthor = user is not null and user.username == comment.author.username %}
-				{% if comment.isEnabled == true or isAuthor == true %}
+				{% if comment.isEnabled == true or isAuthor == true or (user is not null and user.role == 'ROLE_ADMIN') %}
 					{% set hasReplies = comments|filter(c => c.parentId == comment.id)|length > 0 %}
 					<div id="comment-{{ comment.id }}" class="comment{% if not comment.isEnabled %} comment-not-validated{% endif %}
-																																																																																																															{{ hasReplies ? (isParent ? ' comment-reply-parent' : ' comment-reply') : '' }}">
+																																																																																																																																																																														{{ hasReplies ? (isParent ? ' comment-reply-parent' : ' comment-reply') : '' }}">
 						<div class="d-flex text-break text-wrap">
 							<div class="comment-img">
 								{% if comment.author.avatar starts with 'http://' or comment.author.avatar starts with 'https://' %}
@@ -35,9 +35,9 @@
 									</div>
 									{% if user is not null and user.role == 'ROLE_ADMIN' %}
 										<div class="d-flex action-box">
-											{% if comment.isEnabled and comment.author.role is same as ('ROLE_ADMIN') %}
+											{% if comment.isEnabled %}
 												<div class="decline px-3">
-													<a href="#" class="toggle-status" data-comment-url="{{ path('ajax_admin_toggle_comment', {'id': comment.id })}}" title="Approuver">
+													<a href="#" class="toggle-status" data-comment-url="{{ path('ajax_admin_toggle_comment', {'id': comment.id })}}" title="Refuser">
 														<i class="bi bi-x-square h4"></i>
 													</a>
 												</div>
@@ -57,7 +57,7 @@
 									{% endif %}
 								</h5>
 								<time datetime="{{ comment.createdAt }}">{{ comment.createdAt|date("d/m/Y") }}</time>
-								{% if not comment.isEnabled and isAuthor %}
+								{% if not comment.isEnabled %}
 									<div class="alert alert-warning fade show" role="alert">
 										<strong>Commentaire en attente de validation</strong>
 									</div>
