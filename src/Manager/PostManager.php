@@ -398,7 +398,7 @@ class PostManager
     public function updateIsEnabled(PostModel $post): bool
     {
         try {
-            $sql = 'UPDATE comment SET is_enabled = :isEnabled WHERE id = :id';
+            $sql = 'UPDATE post SET is_enabled = :isEnabled WHERE id = :id';
             $statement = $this->database->prepare($sql);
             $statement->bindValue(':isEnabled', $post->getIsEnabled(), \PDO::PARAM_BOOL);
             $statement->bindValue(':id', $post->getId(), \PDO::PARAM_INT);

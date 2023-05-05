@@ -3,6 +3,8 @@ function getObjectType(row) {
         return 'post';
     } else if (row.hasOwnProperty('content')) {
         return 'comment';
+    } else if (row.hasOwnProperty('email')) {
+        return 'user';
     } else {
         return 'unknown';
     }
@@ -87,7 +89,7 @@ function userFormatter(value, row, index) {
 function actionFormatter(value, row, index) {
     var actions = row.actions;
     var entityType = getObjectType(row);
-    var commentId = row.id;
+    var entityId = row.id;
     var actionButtons = '';
     if (actions.voir) {
         actionButtons += '<a href="' + actions.voir + '" class="btn btn-sm btn-primary"><i class="bi bi-eye"></i> Voir</a> ';
@@ -96,13 +98,22 @@ function actionFormatter(value, row, index) {
         actionButtons += '<a href="' + actions.editer + '" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i> Editer</a> ';
     }
     if (entityType === 'comment') {
-        var isChecked = row.is_enabled ? 'checked' : '';
-        actionButtons += `<label class="custom-control teleport-switch">
-            <span class="teleport-switch-control-description">Off</span>
-            <input type="checkbox" class="teleport-switch-control-input" id="approveComment-${commentId}" data-approve-url="${actions.approuver}" data-refuse-url="${actions.refuser}" ${isChecked} onchange="toggleCommentApproval(this)">
-            <span class="teleport-switch-control-indicator"></span>
-            <span class="teleport-switch-control-description">On</span>
-        </label>`;
+        var isApproved = row.is_enabled;
+        var buttonClass = isApproved ? 'btn-danger' : 'btn-success';
+        var buttonText = isApproved ? 'Refuser' : 'Approuver';
+        actionButtons += '<button class="btn btn-sm ' + buttonClass + '" onclick="toggleCommentApproval(this)" data-approve-url="' + actions.approuver + '" data-refuse-url="' + actions.refuser + '">' + buttonText + '</button>';
+    }
+    if (entityType === 'post') {
+        var isPublished = row.is_enabled;
+        var buttonClass = isPublished ? 'btn-danger' : 'btn-success';
+        var buttonText = isPublished ? 'Dépublier' : 'Publier';
+        actionButtons += '<button class="btn btn-sm ' + buttonClass + '" onclick="togglePostApproval(this)" data-approve-url="' + actions.publish + '" data-refuse-url="' + actions.unpublish + '">' + buttonText + '</button>';
+    }
+    if (entityType === 'user') {
+        var isRoleAdmin = row.roles === 'ROLE_ADMIN';
+        var buttonClass = isRoleAdmin ? 'btn-danger' : 'btn-success';
+        var buttonText = isRoleAdmin ? 'Rétrogader' : 'Promouvoir';
+        actionButtons += '<button class="btn btn-sm ' + buttonClass + '" onclick="togglePromote(this)" data-approve-url="' + actions.promote + '" data-refuse-url="' + actions.demote + '">' + buttonText + '</button>';
     }
     return actionButtons;
 }
@@ -120,17 +131,59 @@ function roleFormatter(value, row, index) {
     return roleBadge;
 }
 
-function toggleCommentApproval(element) {
-    var approveUrl = element.dataset.approveUrl;
-    var refuseUrl = element.dataset.refuseUrl;
-    var isChecked = element.checked;
-    var url = isChecked ? approveUrl : refuseUrl;
+function toggleCommentApproval(buttonElement) {
+    var approveUrl = buttonElement.dataset.approveUrl;
+    var refuseUrl = buttonElement.dataset.refuseUrl;
+    var isApproved = buttonElement.textContent.trim() === 'Refuser';
+    var url = isApproved ? refuseUrl : approveUrl;
     $.ajax({
         url,
         method: 'POST',
         success: function (response) {
             if (response.success) {
                 $('#table-all-comments').bootstrapTable('refresh');
+            }
+        },
+        error: function (error) {
+            console.error(error);
+        }
+    });
+}
+
+function togglePostApproval(buttonElement) {
+    var approveUrl = buttonElement.dataset.approveUrl;
+    var refuseUrl = buttonElement.dataset.refuseUrl;
+    var isPublished = buttonElement.textContent.trim() === 'Dépublier';
+    var url = isPublished ? refuseUrl : approveUrl;
+    $.ajax({
+        url,
+        method: 'POST',
+        success: function (response) {
+            if (response.success) {
+                $('#table-all-posts').bootstrapTable('refresh');
+            }
+        },
+        error: function (error) {
+            console.error(error);
+        }
+    });
+}
+
+function togglePromote(buttonElement) {
+    var approveUrl = buttonElement.dataset.approveUrl;
+    var refuseUrl = buttonElement.dataset.refuseUrl;
+    var isRoleAdmin = buttonElement.textContent.trim() === 'Rétrogader';
+    var url = isRoleAdmin ? refuseUrl : approveUrl;
+    var roleData = {
+        role: isRoleAdmin ? 'ROLE_USER' : 'ROLE_ADMIN'
+    };
+    $.ajax({
+        url,
+        method: 'POST',
+        data: roleData,
+        success: function (response) {
+            if (response.success) {
+                $('#table-all-users').bootstrapTable('refresh');
             }
         },
         error: function (error) {
@@ -306,7 +359,6 @@ $(document).ready(function () {
             { field: 'email', title: 'Email', width: '15', widthUnit: '%' },
             { field: 'role', title: 'Rôle', formatter: roleFormatter, width: '10', widthUnit: '%' },
             { field: 'created_at', title: 'Créé le', formatter: dateFormatter, width: '10', widthUnit: '%' },
-            { field: 'is_enabled', title: 'Statut', formatter: isEnabledFormatter, width: '10', widthUnit: '%' },
             { field: 'actions', title: 'Actions', formatter: actionFormatter, width: '15', widthUnit: '%' }
         ], function () {
             var table = $('#table-all-users');

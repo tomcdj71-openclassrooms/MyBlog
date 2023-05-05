@@ -15,6 +15,7 @@ use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Service\MailerService;
 use App\Service\PostService;
+use Tracy\Debugger;
 
 class AjaxController extends AbstractController
 {
@@ -209,6 +210,8 @@ class AjaxController extends AbstractController
                 'type' => 'allUsers',
                 'actions' => [
                     'voir' => '/admin/user/'.$user->getId().'/edit',
+                    'promote' => '/ajax/admin-promote-user/'.$user->getId(),
+                    'demote' => '/ajax/admin-promote-user/'.$user->getId(),
                 ],
             ];
         }
@@ -216,6 +219,7 @@ class AjaxController extends AbstractController
             'rows' => $usersArray,
             'total' => count($usersArray),
         ];
+        Debugger::barDump($response);
         header('Content-Type: application/json');
         echo json_encode($response);
     }
@@ -249,8 +253,8 @@ class AjaxController extends AbstractController
                 'actions' => [
                     'voir' => '/blog/post/'.$post->getSlug(),
                     'editer' => '/admin/post/'.$post->getId().'/edit',
-                    'approuver' => '/ajax/admin-toggle-post/'.$post->getId(),
-                    'refuser' => '/ajax/admin-toggle-post/'.$post->getId(),
+                    'publish' => '/ajax/admin-toggle-post/'.$post->getId(),
+                    'unpublish' => '/ajax/admin-toggle-post/'.$post->getId(),
                 ],
             ];
         }
@@ -307,7 +311,10 @@ class AjaxController extends AbstractController
 
             return;
         }
-        $user->setRole(!$user->getRole());
+
+        $currentRole = $user->getRole();
+        $newRole = 'ROLE_ADMIN' === $currentRole ? 'ROLE_USER' : 'ROLE_ADMIN';
+        $user->setRole($newRole);
         $success = $this->userManager->updateRole($user);
 
         $this->sendJsonResponse(['success' => $success]);

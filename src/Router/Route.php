@@ -54,6 +54,7 @@ class Route
             'ajax_admin_all_categories' => ['/ajax/admin-all-categories', AjaxController::class, 'allCategories', 'GET', 'Gestion des Catégories'],
             'ajax_admin_toggle_comment' => ['/ajax/admin-toggle-comment/{id}', AjaxController::class, 'toggleCommentStatus', 'POST', 'Activer/Désactiver un Commentaire'],
             'ajax_admin_toggle_post' => ['/ajax/admin-toggle-post/{id}', AjaxController::class, 'togglePostStatus', 'POST', 'Activer/Désactiver un Article'],
+            'ajax_admin_promote_user' => ['/ajax/admin-promote-user/{id}', AjaxController::class, 'promoteUser', 'POST', 'Promouvoir un Utilisateur'],
         ];
     }
 }

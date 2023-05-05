@@ -189,7 +189,7 @@ class UserManager
         try {
             $sql = 'UPDATE user SET role = :role WHERE id = :id';
             $statement = $this->database->prepare($sql);
-            $statement->bindValue(':role', $user->getRole(), \PDO::PARAM_BOOL);
+            $statement->bindValue(':role', $user->getRole(), \PDO::PARAM_STR);
             $statement->bindValue(':id', $user->getId(), \PDO::PARAM_INT);
             $statement->execute();
 
