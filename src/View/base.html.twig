@@ -6,8 +6,8 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<meta name="description" content="">
 		<meta name="author" content="">
-		{% set route = '' %}
-		<title>{{ (title is defined and title != '' ? title : route_name()) }}</title>
+		{% set pageTitle = route_name(post is defined ? post : null) %}
+		<title>{{ pageTitle }}</title>
 		{% block stylesheets %}
 			<link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
 			<link href="{{ asset('font/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">

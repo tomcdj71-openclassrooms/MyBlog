@@ -178,19 +178,4 @@ class BlogController extends AbstractController
             'search' => 'Postés entre le '.$startDate->format('d-m-Y').' et le '.$endDate->format('d-m-Y').'.',
         ], $this->sidebar));
     }
-
-    /**
-     * Return the sidebar data.
-     *
-     * @return array
-     */
-    private function getSidebar()
-    {
-        return [
-            'tags' => $this->tagManager->findAll(),
-            'categories' => $this->categoryManager->findByPopularity(),
-            'recentPosts' => $this->postManager->findRecentPosts(),
-            'session' => $this->session->getUserFromSession(),
-        ];
-    }
 }

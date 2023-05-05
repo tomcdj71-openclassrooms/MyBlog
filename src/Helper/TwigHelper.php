@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Helper;
 
+use App\Model\PostModel;
+use App\Model\UserModel;
 use App\Router\HttpException;
 use App\Router\Route;
 use App\Router\ServerRequest;
@@ -105,15 +107,21 @@ class TwigHelper
         return $currentRoute === $targetRoute;
     }
 
-    public function routeName(): string
+    public function routeName(?PostModel $postModel = null, ?UserModel $userModel = null): string
     {
         $currentUri = $this->serverRequest->getUri();
         $routes = $this->route->getRoutes(); // use the injected instance
+        $prefix = 'MyBlog - ';
 
         foreach ($routes as $route) {
             $pattern = '@^'.preg_replace('@\\\{[^/]+@', '([^/]+)', preg_quote($route[0], '@')).'$@D';
             if (preg_match($pattern, $currentUri, $matches)) {
-                return $route[4];
+                $routeName = $route[4];
+                if ('Article' === $routeName && null !== $postModel) {
+                    return $prefix.$routeName.' - '.$postModel->getTitle();
+                }
+
+                return $prefix.$routeName;
             }
         }
 

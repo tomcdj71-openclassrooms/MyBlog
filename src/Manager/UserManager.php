@@ -183,4 +183,19 @@ class UserManager
 
         return new UserModel($userModelParams);
     }
+
+    public function updateRole(UserModel $user): bool
+    {
+        try {
+            $sql = 'UPDATE user SET role = :role WHERE id = :id';
+            $statement = $this->database->prepare($sql);
+            $statement->bindValue(':role', $user->getRole(), \PDO::PARAM_BOOL);
+            $statement->bindValue(':id', $user->getId(), \PDO::PARAM_INT);
+            $statement->execute();
+
+            return true;
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
+        }
+    }
 }

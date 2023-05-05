@@ -285,6 +285,34 @@ class AjaxController extends AbstractController
         $this->sendJsonResponse(['success' => $success]);
     }
 
+    public function togglePostStatus(int $postId)
+    {
+        $post = $this->postManager->find($postId);
+        if (null === $post) {
+            $this->sendJsonResponse(['error' => 'Article non trouvé.'], 404);
+
+            return;
+        }
+        $post->setIsEnabled(!$post->getIsEnabled());
+        $success = $this->postManager->updateIsEnabled($post);
+
+        $this->sendJsonResponse(['success' => $success]);
+    }
+
+    public function promoteUser(int $userId)
+    {
+        $user = $this->userManager->find($userId);
+        if (null === $user) {
+            $this->sendJsonResponse(['error' => 'Utilisateur non trouvé.'], 404);
+
+            return;
+        }
+        $user->setRole(!$user->getRole());
+        $success = $this->userManager->updateRole($user);
+
+        $this->sendJsonResponse(['success' => $success]);
+    }
+
     private function sendJsonResponse(array $data, int $statusCode = 200)
     {
         http_response_code($statusCode);

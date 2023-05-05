@@ -395,6 +395,21 @@ class PostManager
         return true;
     }
 
+    public function updateIsEnabled(PostModel $post): bool
+    {
+        try {
+            $sql = 'UPDATE comment SET is_enabled = :isEnabled WHERE id = :id';
+            $statement = $this->database->prepare($sql);
+            $statement->bindValue(':isEnabled', $post->getIsEnabled(), \PDO::PARAM_BOOL);
+            $statement->bindValue(':id', $post->getId(), \PDO::PARAM_INT);
+            $statement->execute();
+
+            return true;
+        } catch (\PDOException $error) {
+            throw new \PDOException($error->getMessage(), (int) $error->getCode());
+        }
+    }
+
     protected function createPostModelFromArray(array $data): PostModel
     {
         if (!isset($data['tags'])) {
