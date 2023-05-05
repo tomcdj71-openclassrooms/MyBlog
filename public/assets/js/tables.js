@@ -311,11 +311,11 @@ $(document).ready(function () {
     if ($('#table-all-comments').length) {
         initBootstrapTable('#table-all-comments', generateTableConfig('/ajax/admin-all-comments', [
             { field: 'post_title', title: 'Post', formatter: titleFormatter, width: '15', widthUnit: '%' },
-            { field: 'content', title: 'Contenu', formatter: contentPreviewFormatter, width: '55', widthUnit: '%' },
+            { field: 'content', title: 'Contenu', formatter: contentPreviewFormatter, width: '35', widthUnit: '%' },
             { field: 'created_at', title: 'Créé le', formatter: dateFormatter, width: '10', widthUnit: '%' },
             { field: 'is_enabled', title: 'Statut', formatter: isEnabledFormatter, width: '10', widthUnit: '%' },
             { field: 'user', title: 'Utilisateur', formatter: userFormatter, width: '10', widthUnit: '%' },
-            { field: 'actions', title: 'Actions', formatter: actionFormatter, width: '10', widthUnit: '%' }
+            { field: 'actions', title: 'Actions', formatter: actionFormatter, width: '20', widthUnit: '%' }
         ], function () {
             var table = $('#table-all-comments');
             var page = table.bootstrapTable('getOptions').pageNumber;
@@ -374,10 +374,10 @@ $(document).ready(function () {
             { field: 'title', title: 'Titre', formatter: titleFormatter, width: '15', widthUnit: '%' },
             { field: 'created_at', title: 'Créé le', formatter: dateFormatter, width: '10', widthUnit: '%' },
             { field: 'updated_at', title: 'Modifié le', formatter: dateFormatter, width: '10', widthUnit: '%' },
-            { field: 'category', title: 'Catégorie', width: '10', widthUnit: '%' },
+            { field: 'category', title: 'Catégorie', width: '5', widthUnit: '%' },
             { field: 'tags', title: 'Tags', formatter: tagsFormatter, width: '10', widthUnit: '%' },
-            { field: 'is_enabled', title: 'Statut', formatter: isEnabledFormatter, width: '10', widthUnit: '%' },
-            { field: 'actions', title: 'Actions', formatter: actionFormatter, width: '10', widthUnit: '%' }
+            { field: 'is_enabled', title: 'Statut', formatter: isEnabledFormatter, width: '5', widthUnit: '%' },
+            { field: 'actions', title: 'Actions', formatter: actionFormatter, width: '20', widthUnit: '%' }
         ], function () {
             var table = $('#table-all-posts');
             var page = table.bootstrapTable('getOptions').pageNumber;
