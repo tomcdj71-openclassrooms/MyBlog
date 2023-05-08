@@ -15,7 +15,6 @@ use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Service\CsrfTokenService;
 use App\Service\PostService;
-use Tracy\Debugger;
 
 class AdminController extends AbstractController
 {
@@ -95,7 +94,6 @@ class AdminController extends AbstractController
         }
 
         $csrfToken = $this->csrfTokenService->generateToken('addPost');
-        Debugger::barDump($message ?? '');
 
         return $this->twig->render('pages/admin/pages/add_post.html.twig', [
             'user' => $this->securityHelper->getUser(),
@@ -120,7 +118,6 @@ class AdminController extends AbstractController
         }
 
         $csrfToken = $this->csrfTokenService->generateToken('editPost');
-        Debugger::barDump($message ?? '');
 
         return $this->twig->render('pages/admin/pages/edit_post.html.twig', [
             'user' => $this->securityHelper->getUser(),

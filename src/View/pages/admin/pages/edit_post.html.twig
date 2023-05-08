@@ -95,17 +95,14 @@ allowClear: true
 	</script>
 	<script>
 		function adjustTextareaHeight(textarea) {
-textarea.style.height = 'auto'; // Reset the height
-textarea.style.height = textarea.scrollHeight + 'px'; // Set the new height based on the scrollHeight
+textarea.style.height = 'auto';
+textarea.style.height = textarea.scrollHeight + 'px';
 }
 
 const contentTextarea = document.getElementById('content');
-adjustTextareaHeight(contentTextarea); // Adjust the height on page load
-
+adjustTextareaHeight(contentTextarea);
 contentTextarea.addEventListener('input', () => {
-adjustTextareaHeight(contentTextarea); // Adjust the height when the content changes
+adjustTextareaHeight(contentTextarea);
 });
 	</script>
-
-
 {% endblock %}

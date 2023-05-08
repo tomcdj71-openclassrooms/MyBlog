@@ -16,6 +16,7 @@ use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Service\CommentService;
 use App\Service\CsrfTokenService;
+use Tracy\Debugger;
 
 class BlogController extends AbstractController
 {
@@ -90,8 +91,9 @@ class BlogController extends AbstractController
         if (null === $user) {
             $user = null;
         }
-
-        if ('POST' === $this->serverRequest->getRequestMethod() && $this->serverRequest->getPost('content') && $this->serverRequest->getPost('csrfToken')) {
+        $errors = [];
+        $message = '';
+        if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
             $postData = [
                 'content' => $this->serverRequest->getPost('content'),
                 'post_id' => $post,
@@ -99,19 +101,8 @@ class BlogController extends AbstractController
                 'parent_id' => $this->serverRequest->getPost('parentId'),
                 'csrfToken' => $this->serverRequest->getPost('csrfToken'),
             ];
-            $errors = $this->commentService->handleCommentPostRequest($post, $postData);
-            if (empty($errors)) {
-                $csrfToken = $this->csrfTokenService->generateToken('comment');
-
-                return $this->twig->render('pages/blog/post.html.twig', array_merge([
-                    'message' => 'Commentaire posté avec succès !',
-                    'csrfToken' => $csrfToken,
-                    'post' => $post,
-                    'errors' => $errors ?? '',
-                    'comments' => $this->commentManager->findAllByPost($post->getId()),
-                ], $this->sidebar));
-            }
-            $errors = array_map('strval', $errors);
+            list($errors, $message, $postData, $comment) = $this->commentService->handleCommentPostRequest($post, $postData);
+            Debugger::barDump($errors);
         }
         $csrfToken = $this->csrfTokenService->generateToken('comment');
 
@@ -119,7 +110,10 @@ class BlogController extends AbstractController
             'user' => $user,
             'csrfToken' => $csrfToken,
             'post' => $post,
-            'errors' => $errors ?? '',
+            'errors' => $errors ?? [],
+            'message' => $message ?? '',
+            'postData' => $postData ?? [],
+            'comment' => $comment ?? null,
             'comments' => $this->commentManager->findAllByPost($post->getId()),
         ], $this->sidebar));
     }

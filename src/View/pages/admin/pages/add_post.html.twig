@@ -90,4 +90,16 @@ placeholder: $(this).data('placeholder'),
 closeOnSelect: false
 });
 	</script>
+	<script>
+		function adjustTextareaHeight(textarea) {
+textarea.style.height = 'auto';
+textarea.style.height = textarea.scrollHeight + 'px';
+}
+
+const contentTextarea = document.getElementById('content');
+adjustTextareaHeight(contentTextarea);
+contentTextarea.addEventListener('input', () => {
+adjustTextareaHeight(contentTextarea);
+});
+	</script>
 {% endblock %}

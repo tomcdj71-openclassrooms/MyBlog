@@ -13,7 +13,7 @@
 				{% if comment.isEnabled == true or isAuthor == true or (user is not null and user.role == 'ROLE_ADMIN') %}
 					{% set hasReplies = comments|filter(c => c.parentId == comment.id)|length > 0 %}
 					<div id="comment-{{ comment.id }}" class="comment{% if not comment.isEnabled %} comment-not-validated{% endif %}
-																																																																																																																																																																														{{ hasReplies ? (isParent ? ' comment-reply-parent' : ' comment-reply') : '' }}">
+																																																																																																																																																																																					{{ hasReplies ? (isParent ? ' comment-reply-parent' : ' comment-reply') : '' }}">
 						<div class="d-flex text-break text-wrap">
 							<div class="comment-img">
 								{% if comment.author.avatar starts with 'http://' or comment.author.avatar starts with 'https://' %}
@@ -120,4 +120,4 @@ xhr.send();
 });
 });
 	</script>
-	{% include "_partials/comment_form.html.twig" with {'user': user} %}</div>
+	{% include "_partials/comment_form.html.twig" with {'user': user, 'errors': errors} %}</div>

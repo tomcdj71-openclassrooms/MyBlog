@@ -1,32 +1,33 @@
 {% import _self as macros %}
-{{ macros.renderCommentsForm(post, csrfToken, user) }}
-
-{% macro renderCommentsForm(post, csrfToken, user) %}
-	<div class="reply-form">
-		<h4>Laisser un commentaire</h4>
-		{% if user is null %}
-			<div class="alert alert-info" role="alert">
-				<p>Vous devez être connecté pour pouvoir poster un commentaire.</p>
-				<p>
-					<a href="{{ path ('login') }}">Se connecter</a>
-					ou
-					<a href="{{ path ('register') }}">Créer un compte</a>
-				</p>
-			</div>
-		{% else %}
-			<form method="POST" action="{{ path('blog_post', {'slug': post.slug}) }}" data-np-autofill-type="identity" data-np-checked="1">
-				<input type="hidden" name="parentId" value="">
-				<div class="row">
-					<div class="col form-group">
-						<textarea name="content" class="form-control" placeholder="Votre commentaire*"></textarea>
-					</div>
+<div class="reply-form">
+	<h4>Laisser un commentaire</h4>
+	{% if user is null %}
+		<div class="alert alert-info" role="alert">
+			<p>Vous devez être connecté pour pouvoir poster un commentaire.</p>
+			<p>
+				<a href="{{ path ('login') }}">Se connecter</a>
+				ou
+				<a href="{{ path ('register') }}">Créer un compte</a>
+			</p>
+		</div>
+	{% else %}
+		<form method="POST" action="{{ path('blog_post', {'slug': post.slug}) }}" data-np-autofill-type="identity" data-np-checked="1">
+			<input type="hidden" name="parentId" value="">
+			<div class="col row">
+				<div class="form-group form-floating mb-3{% if errors.content is defined %} has-error{% endif %}">
+					<textarea id="content" name="content" class="form-control {% if errors.content is defined %} is-invalid{% endif %}" placeholder="Contenu du commentaire">{{ postData.content|default('')|e('html_attr') }}</textarea>
+					{% if errors is defined %}
+						<div class="invalid-feedback">
+							{{ errors.content }}
+						</div>
+					{% endif %}
 				</div>
-				<input type="hidden" name="csrfToken" value="{{ csrfToken }}">
-				<button type="submit" class="btn btn-indigo">Envoyer</button>
-			</form>
-		{% endif %}
-	</div>
-{% endmacro %}
+			</div>
+			<input type="hidden" name="csrfToken" value="{{ csrfToken }}">
+			<button type="submit" class="btn btn-indigo">Envoyer</button>
+		</form>
+	{% endif %}
+</div>
 <script>
 	const replyButtons = document.querySelectorAll('.reply');
 
@@ -83,5 +84,17 @@ alert.innerHTML = `
 return alert;
 }
 });
+});
+</script>
+<script>
+	function adjustTextareaHeight(textarea) {
+textarea.style.height = 'auto';
+textarea.style.height = textarea.scrollHeight + 'px';
+}
+
+const contentTextarea = document.getElementById('content');
+adjustTextareaHeight(contentTextarea);
+contentTextarea.addEventListener('input', () => {
+adjustTextareaHeight(contentTextarea);
 });
 </script>
