@@ -1,4 +1,5 @@
 {% extends 'base.html.twig' %}
+
 {% block body %}
 	<section id="blog" class="blog mt-4">
 		<div class="container pt-4" data-aos="fade-up">
@@ -68,7 +69,5 @@
 			</div>
 		</div>
 	</section>
-	{% block javascripts %}
-		<script src="{{ asset('js/script.js') }}"></script>
-	{% endblock %}
+	<script src="{{ asset('js/script.js') }}"></script>
 {% endblock %}

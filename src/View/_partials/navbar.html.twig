@@ -1,11 +1,53 @@
+{% import _self as macros %}
+
+{% macro userMenu(user) %}
+	<div class="navbar-nav ml-auto ml-auto-mobile">
+		{% if user.username is defined %}
+			<div class="dropdown d-none d-md-block">
+				<button class="btn btn-info dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+					<img src="{{ asset('../uploads/avatars/' ~ user.avatar ~ '.jpg') }}" class="img-rounded" alt="{{ user.username }}" width="30" height="30">
+					<span>
+						{{ user.username }}</span>
+				</button>
+				<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+					<li>
+						<a class="dropdown-item" href="{{ path('my_profile') }}">Mon profil</a>
+					</li>
+					{% if user.role == 'ROLE_ADMIN' %}
+						<li>
+							<a class="dropdown-item" href="{{ path('admin_index') }}">Tableau de bord</a>
+						</li>
+					{% endif %}
+					<li>
+						<a class="dropdown-item" href="{{ path('logout') }}">Déconnexion</a>
+					</li>
+				</ul>
+			</div>
+			<div class="d-md-none">
+				<a class="nav-link centered-pill-button {{ current_route('my_profile') ? 'active' : '' }}" href="{{ path('my_profile') }}">Mon profil</a>
+				{% if user.role == 'ROLE_ADMIN' %}
+					<a class="nav-link centered-pill-button {{ current_route('admin_index') ? 'active' : '' }}" href="{{ path('admin_index') }}">Tableau de bord</a>
+				{% endif %}
+				<a class="nav-link centered-pill-button" href="{{ path('logout') }}">Déconnexion</a>
+			</div>
+		{% else %}
+			<a class="nav-item nav-link d-none d-md-inline-block" href="{{ path('login') }}">
+				<i class="bi bi-box-arrow-in-left"></i>
+			</a>
+			<a class="nav-item mx-auto nav-link d-md-none mobile-login-link {{ current_route('login') ? 'active' : '' }}" href="{{ path('login') }}">Connexion</a>
+		{% endif %}
+	</div>
+{% endmacro %}
 <header id="header" class="fixed-top">
 	<nav class="navbar navbar-expand-lg navbar-dark bg-dark" id="header">
-		<a class="navbar-brand" href="{{ path('home') }}"><img src=""></a>
-		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-			<span class="navbar-toggler-icon"></span>
-		</button>
+		<div class="d-flex">
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<a class="navbar-brand logo-mobile" href="{{ path('home') }}"><img src=""></a>
+		</div>
 		<div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-			<ul class="navbar-nav">
+			<ul class="navbar-nav flex-column flex-md-row">
 				<div class="centered-pill">
 					<li class="nav-item">
 						<a class="nav-link centered-pill-button {{ current_route('home') ? 'active' : '' }}" href="{{ path('home') }}">
@@ -14,15 +56,14 @@
 					<li class="nav-item">
 						<a class="nav-link centered-pill-button {{ current_route('blog') ? 'active' : '' }}" href="{{ path('blog') }}">Blog</a>
 					</li>
+					<li class="nav-item d-md-none">
+						{{ macros.userMenu(user) }}
+					</li>
 				</div>
 			</ul>
 		</div>
-		<div class="navbar-nav ml-auto">
-			{% if user.username is defined %}
-				<a class="nav-item nav-link" href="{{ path('logout') }}">Déconnexion</a>
-			{% else %}
-				<a class="nav-item nav-link" href="{{ path('login') }}">Connexion</a>
-			{% endif %}
+		<div class="navbar-nav ml-auto d-none d-md-inline-block">
+			{{ macros.userMenu(user) }}
 		</div>
 	</nav>
 </header>

@@ -20,7 +20,7 @@
 		{% block javascripts %}
 			<script src="{{ asset('node_modules/jquery/dist/jquery.min.js') }}"></script>
 			<script src="{{ asset('node_modules/@popperjs/core/dist/umd/popper.min.js') }}"></script>
-			<script src="{{ asset('node_modules/bootstrap/dist/js/bootstrap.min.js') }}"></script>
+			<script src="{{ asset('node_modules/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
 			<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 			<script src="{{ asset('node_modules/bootstrap-table/dist/bootstrap-table.min.js') }}"></script>
 			<script src="{{ asset('node_modules/bootstrap-table/dist/locale/bootstrap-table-fr-FR.min.js') }}"></script>
@@ -29,11 +29,14 @@
 		{% endblock %}
 	</head>
 
-	<body>{% include "_partials/admin_navbar.html.twig" %}<div class="container-fluid"></head>
-		<div class="row">
-			{% include "_partials/admin_sidebar.html.twig" %}
-			<main class="col-md-9 ml-sm-auto col-lg-10 px-md-4 py-4"> {% block body %}{% endblock %}
-				</main>
+	<body>
+		{% include "_partials/admin_navbar.html.twig" %}
+		<div class="container-fluid">
+			<div class="row">
+				{% include "_partials/admin_sidebar.html.twig" %}
+				<main class="col-md-9 ml-sm-auto col-lg-10 px-md-4 py-4"> {% block body %}{% endblock %}
+					</main>
+				</div>
 			</div>
 		</body>
 	</html>

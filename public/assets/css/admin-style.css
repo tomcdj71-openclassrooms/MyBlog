@@ -77,3 +77,21 @@
     right: -14px;
     background: #ccc;
 }
+
+.mobile-menu-links {
+    order: 1;
+}
+
+.mobile-menu-dropdown {
+    order: 2;
+}
+
+@media (min-width: 768px) {
+    .mobile-menu-links {
+        order: 0;
+    }
+
+    .mobile-menu-dropdown {
+        order: 0;
+    }
+}

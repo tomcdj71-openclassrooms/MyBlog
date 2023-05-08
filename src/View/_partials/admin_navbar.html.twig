@@ -3,14 +3,16 @@
 		<a class="navbar-brand" href="{{ path('home') }}">
 			MyBlog Dashboard
 		</a>
-		<button class="navbar-toggler d-md-none collapsed mb-3" type="button" data-toggle="collapse" data-target="#sidebar" aria-controls="sidebar" aria-expanded="false" aria-label="Toggle navigation">
+		<button class="navbar-toggler d-md-none collapsed mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar" aria-controls="sidebar" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 		</button>
 	</div>
-	<div class="col-12 col-md-5 col-lg-8 d-flex align-items-center justify-content-md-end mt-3 mt-md-0">
-		<div class="dropdown">
-			<button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-expanded="false">
+	<div class="col-12 col-md-5 col-lg-8 d-flex align-items-center justify-content-md-end mt-3 mt-md-0 mobile-menu-links">
+		<div class="dropdown d-none d-md-block">
+			<button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
 				<img src="{{ asset('../uploads/avatars/' ~ user.avatar ~ '.jpg') }}" class="img-rounded" alt="{{ user.username }}" width="30" height="30">
+				<span>
+					{{ user.username }}</span>
 			</button>
 			<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
 				<li>

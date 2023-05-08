@@ -73,6 +73,29 @@ a {
     box-shadow: 10 10 15px 0 rgba(52, 58, 64, 0.6);
 }
 
+@media (max-width: 767.98px) {
+    .centered-pill {
+        display: block;
+        margin-top: 1rem;
+    }
+
+    .navbar-nav.ml-auto {
+        display: none;
+    }
+
+    .navbar-nav.ml-auto-mobile {
+        display: block;
+    }
+    .mobile-login-link {
+        color: var(--bs-navbar-active-color);
+        text-align: center;
+    }
+
+    .centered-pill {
+        border-radius: 0;
+    }
+}
+
 body {
     background-color: var(--bs-gray-100);
 }
