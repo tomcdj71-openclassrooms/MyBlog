@@ -27,7 +27,7 @@ class PostFormValidator extends BaseValidator
                     'required' => true, 'errorMsg' => 'Le titre est obligatoire.',
                     'length' => [
                         'min' => 3, 'minErrorMsg' => 'Le titre doit contenir plus de 3 caractères.',
-                        'max' => 60, 'maxErrorMsg' => 'Le titre ne doit pas dépasser 60 caractères.',
+                        'max' => 150, 'maxErrorMsg' => 'Le titre ne doit pas dépasser 150 caractères.',
                     ],
                 ],
             ],

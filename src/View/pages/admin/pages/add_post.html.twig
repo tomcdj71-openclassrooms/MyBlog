@@ -9,56 +9,75 @@
 				<div class="card w-100">
 					<div class="card-body">
 						<form method="POST" action="{{ path('admin_post_add') }}" data-np-autofill-type="identity" data-np-checked="1" enctype="multipart/form-data">
-							<div class="row">
-								<div class="col form-group">
-									<label for="title">Title</label>
-									<input type="text" id="title" name="title" class="form-control">
-								</div>
-							</div>
-							<div class="row">
-								<div class="col form-group">
-									<label for="chapo">Chapo</label>
-									<input type="text" id="chapo" name="chapo" class="form-control">
-								</div>
-							</div>
-							<div class="row">
-								<div class="col form-group">
-									<label for="content">Content</label>
-									<textarea id="content" name="content" class="form-control" rows="5"></textarea>
-								</div>
-							</div>
-							<div class="row">
-								<div class="col form-group">
-									<label for="featuredImage">Featured Image</label>
-									<input type="file" id="featuredImage" name="featuredImage" class="form-control-file">
+							<div class="col row">
+								<div class="form-group form-floating my-3{% if errors.title is defined %} has-error{% endif %}">
+									<input type="text" id="title" name="title" class="form-control{% if errors.title is defined %} is-invalid{% else %} is-valid{% endif %}" placeholder="Super Article" value="{{ postData.title|default('') }}">
+									<label for="title">Titre</label>
+									{% if errors.title is defined %}
+										<div class="invalid-feedback">
+											{{ errors.title }}
+										</div>
+									{% endif %}
 								</div>
 							</div>
 							<div class="col row">
-								<div class="form-group">
-									<label for="category">Category</label>
-									<select
-										id="category" name="category" class="form-control">
-										{# Iterate over categories and create options #}
-										{% for category in categories %}
-											<option value="{{ category.id }}">{{ category.name }}</option>
-										{% endfor %}
-									</select>
+								<div class="form-group form-floating mb-3{% if errors.chapo is defined %} has-error{% endif %}">
+									<input type="text" id="chapo" name="chapo" class="form-control {% if errors.chapo is defined %} is-invalid{% endif %}" placeholder="Punchline" value="{{ postData.chapo|default('') }}">
+									<label for="chapo">Chapo</label>
+									{% if errors.chapo is defined %}
+										<div class="invalid-feedback">
+											{{ errors.chapo }}
+										</div>
+									{% endif %}
 								</div>
 							</div>
-							<div class="row">
-								<div class="col form-group">
-									<label for="tags">Tags</label>
-									<select class="form-select" name="tags[]" id="tags-selector" data-placeholder="Choose anything" multiple>
-										{% for tag in tags %}
-											<option value="{{ tag.id }}">{{ tag.name }}</option>
+							<div class="col row">
+								<div class="form-group form-floating mb-3{% if errors.content is defined %} has-error{% endif %}">
+									<textarea id="content" name="content" class="form-control {% if errors.content is defined %} is-invalid{% endif %}" rows="5" placeholder="Leave a comment here" value="{{ postData.content|default('') }}"></textarea>
+									<label for="content">Contenu</label>
+									{% if errors.content is defined %}
+										<div class="invalid-feedback">
+											{{ errors.content }}
+										</div>
+									{% endif %}
+								</div>
+							</div>
+							<div class="mb-3">
+								<label for="featuredImage" class="form-label">Image de l'article</label>
+								<input class="form-control" type="file" name="featuredImage" id="featuredImage">
+							</div>
+							<div class="col row">
+								<div class="form-group form-floating mb-3">
+									<select id="category" name="category" class="form-control">
+										{% for category in categories %}
+											<option value="{{ category.id }}" {% if category.id == postData.category|default(null) %} selected {% endif %}>{{ category.name }}</option>
 										{% endfor %}
 									</select>
+									<label for="category">Catégorie</label>
+								</div>
+							</div>
+							<div class="col row">
+								<div class="form-floating mb-3">
+									<select class="form-select" name="tags[]" id="tags-selector" data-placeholder="Selectionnez un ou plusieurs tags" multiple>
+										{% for tag in tags %}
+											<option value="{{ tag.id }}" {% if tag.id in postData.tags|default([]) %} selected {% endif %}>{{ tag.name }}</option>
+										{% endfor %}
+									</select>
+									<label for="tags">Tags</label>
 								</div>
 							</div>
 							<input type="hidden" name="csrfToken" value="{{ csrfToken }}">
 							<button type="submit" class="btn btn-indigo">Envoyer</button>
 						</form>
 					</div>
+					{% if message is not empty %}
+						<div class="card-footer">
+							<div class="alert alert-success" role="alert">
+								{{ message }}
+								<a href="{{ path('blog_post', {'slug': postSlug}) }}">Cliquez ici pour le voir</a>
+							</div>
+						</div>
+					{% endif %}
 				</div>
 			</div>
 		</div>

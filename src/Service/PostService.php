@@ -130,10 +130,11 @@ class PostService extends AbstractService
         $postData = $this->getPostData();
         $postFormValidator = new PostFormValidator($this->userManager, $this->session, $this->csrfTokenService);
         $response = $postFormValidator->validate($postData);
-        $message = $response['valid'] ? $this->createPost($postData) : null;
+        $postSlug = $response['valid'] ? $this->createPost($postData) : null;
+        $message = $postSlug ? 'Votre article a été ajouté avec succès!' : null;
         $errors = $response['valid'] ? null : $response['errors'];
 
-        return [$errors, $message];
+        return [$errors, $message, $postData, $postSlug];
     }
 
     public function getPostData()
@@ -152,6 +153,8 @@ class PostService extends AbstractService
     public function handleEditPostRequest($post)
     {
         $errors = [];
+        $message = [];
+        $postSlug = null;
         $postData = $this->getPostData();
         $csrfToCheck = $this->serverRequest->getPost('csrfToken');
         if (!$this->csrfTokenService->checkCsrfToken('editPost', $csrfToCheck)) {
@@ -181,32 +184,33 @@ class PostService extends AbstractService
         $postData['isEnabled'] = false;
         foreach ($postData as $key => $value) {
             if ('category' === $key) {
-                if ((int) $value !== $post->getCategory()->getId()) {
-                    $message[] = 'Category has changed.';
+                if ((int) $value !== (int) $post->getCategory()->getId()) {
+                    $message[] = 'La catégorie a été modifiée.';
                 }
             } elseif ('tags' === $key) {
                 $tags = implode(',', array_map(function ($tag) {
                     return $tag->getId();
                 }, $post->getTags()));
                 if ($tags !== $value) {
-                    $message[] = 'Tags have changed.';
+                    $message[] = 'Les tags ont été modifiés.';
                 }
             } else {
                 $postGetter = 'get'.ucfirst($key);
 
                 if (is_object($post) && method_exists($post, $postGetter) && $post->{$postGetter}() !== $value) {
-                    $message[] = ucfirst($key).' has changed.';
+                    $message[] = ucfirst($key).' a été modifié.';
                 }
             }
         }
         if (empty($errors)) {
             $postFormValidator = new PostFormValidator($this->userManager, $this->session, $this->csrfTokenService);
             $response = $postFormValidator->validate($postData);
-            $message = $response['valid'] ? $this->editPost($post, $postData) : null;
+            $postSlug = $response['valid'] ? $this->editPost($post, $postData) : null;
+            $message = $postSlug ? 'Votre article a été ajouté avec succès!' : null;
             $errors = $response['valid'] ? null : $response['errors'];
         }
 
-        return [$errors, $message];
+        return [$errors, $message, $post, $postSlug];
     }
 
     public function createPost(array $data)
@@ -235,9 +239,9 @@ class PostService extends AbstractService
             'tags' => $data['tags'],
             'csrfToken' => $data['csrfToken'],
         ];
-        $this->postManager->create($postData);
+        $createdPost = $this->postManager->create($postData);
 
-        return 'Votre article a été ajouté avec succès!';
+        return $createdPost ? $createdPost->getSlug() : null;
     }
 
     public function editPost($post, $data)
@@ -261,7 +265,7 @@ class PostService extends AbstractService
         $postUpdated = $this->postManager->updatePost($post, $data);
         $tagsUpdated = $this->postManager->updatePostTags($post, $post->getTags());
         if ($postUpdated && $tagsUpdated) {
-            return 'Article '.$post->getTitle().' mis à jour avec succès!';
+            return [$postUpdated ? $post->getSlug() : null, $tagsUpdated ? $post->getSlug() : null];
         }
 
         return null;

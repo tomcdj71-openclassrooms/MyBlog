@@ -31,6 +31,13 @@
 									<a href="#comment-section" class="comments-count">{{ post.comments.number_of_comments }}
 										Commentaire{{ post.comments.number_of_comments > 1 ? 's' : '' }}</a>
 								</li>
+								{% if user.role is defined and user.role == 'ROLE_ADMIN' %}
+									<li class="d-flex align-items-center">
+										<i class="bi bi-pen"></i>
+										<a href="{{ path('admin_post_edit', {'id': post.id }) }}">
+											Editer</a>
+									</li>
+								{% endif %}
 							</ul>
 						</div>
 						<div class="entry-content">

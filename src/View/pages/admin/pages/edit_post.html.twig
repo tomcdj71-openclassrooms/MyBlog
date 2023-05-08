@@ -10,47 +10,42 @@
 					<div class="card-body">
 						<form method="POST" action="{{ path('admin_post_edit', {'id': post.id} ) }}" data-np-autofill-type="identity" data-np-checked="1" enctype="multipart/form-data">
 							<div class="row">
-								<div class="col form-group">
+								<div class="form-group form-floating my-3{% if errors.title is defined %} has-error{% endif %}">
+									<input type="text" id="title" name="title" class="form-control{% if errors.title is defined %} is-invalid{% endif %}" placeholder="Super Article" value="{{ post.title|default('') }}">
 									<label for="title">Titre</label>
-									<input type="text" id="title" name="title" class="form-control">
-									<div class="alert alert-info">
-										<span>
-											Titre actuel :
-										</span>
-										{{ post.title }}
-									</div>
+									{% if errors.title is defined %}
+										<div class="invalid-feedback">
+											{{ errors.title }}
+										</div>
+									{% endif %}
 								</div>
 							</div>
 							<div class="row">
-								<div class="col form-group">
+								<div class="form-group form-floating mb-3{% if errors.chapo is defined %} has-error{% endif %}">
+									<input type="text" id="chapo" name="chapo" class="form-control {% if errors.chapo is defined %} is-invalid{% endif %}" placeholder="Punchline" value="{{ post.chapo|default('') }}">
 									<label for="chapo">Chapo</label>
-									<input type="text" id="chapo" name="chapo" class="form-control">
-									<div class="alert alert-info">
-										<span>
-											Chapo actuel :
-										</span>
-										{{ post.chapo }}
-									</div>
+									{% if errors.chapo is defined %}
+										<div class="invalid-feedback">
+											{{ errors.chapo }}
+										</div>
+									{% endif %}
 								</div>
 							</div>
 							<div class="row">
-								<div class="col form-group">
+								<div class="form-group form-floating mb-3{% if errors.content is defined %} has-error{% endif %}">
+									<textarea id="content" name="content" class="form-control {% if errors.content is defined %} is-invalid{% endif %}" rows="5" placeholder="Contenu de l'article">{{ post.content|default('')|e('html_attr') }}</textarea>
 									<label for="content">Contenu</label>
-									<textarea id="content" name="content" class="form-control" rows="5"></textarea>
-									<div class="alert alert-info">
-										<span>
-											Contenu de l'article actuel :
-										</span>
-										<p>
-											{{ post.content|default('')|e('html_attr') }}
-										</p>
-									</div>
+									{% if errors.content is defined %}
+										<div class="invalid-feedback">
+											{{ errors.content }}
+										</div>
+									{% endif %}
 								</div>
 							</div>
 							<div class="row">
-								<div class="col form-group">
-									<label for="featuredImage">Image de l'article</label>
-									<input type="file" id="featuredImage" name="featuredImage" class="form-control-file">
+								<div class="mb-3">
+									<label for="featuredImage" class="form-label">Image de l'article</label>
+									<input class="form-control" type="file" name="featuredImage" id="featuredImage">
 									<div class="alert alert-info">
 										<span>
 											Image de l'article actuelle :
@@ -62,39 +57,23 @@
 								</div>
 							</div>
 							<div class="row">
-								<div class="col form-group">
-									<label for="category">Categorie</label>
+								<div class="form-group form-floating mb-3">
 									<select id="category" name="category" class="form-control">
 										{% for category in categories %}
-											<option value="{{ category.id }}" {% if category.id == post.category.id %} selected {% endif %}>{{ category.name }}</option>
+											<option value="{{ category.id }}" {% if category.id == post.category.id|default(null) %} selected {% endif %}>{{ category.name }}</option>
 										{% endfor %}
 									</select>
-									<div class="alert alert-info">
-										<span>
-											Catégories actuelles :
-										</span>
-										{{ post.category.name }}
-									</div>
+									<label for="category">Catégorie</label>
 								</div>
 							</div>
 							<div class="row">
-								<div class="col form-group">
-									<label for="tags">Tags</label>
-									<select class="form-select" name="tags[]" id="tags-selector" data-placeholder="Choose anything" multiple>
+								<div class="form-floating mb-3">
+									<select class="form-select" name="tags[]" id="tags-selector" data-placeholder="Selectionnez un ou plusieurs tags" multiple>
 										{% for tag in tags|sort((a, b) => a.name <=> b.name) %}
 											<option value="{{ tag.id }}" {% if tag.id in post.tags|map((t) => t.id) %} selected {% endif %}>{{ tag.name }}</option>
 										{% endfor %}
 									</select>
-									<div class="alert alert-info">
-										<span>
-											Tags actuels :
-										</span>
-										{% for tag in post.tags %}
-											{{ tag.name }}
-											{% if not loop.last %},
-											{% endif %}
-										{% endfor %}
-									</div>
+									<label for="tags">Tags</label>
 								</div>
 							</div>
 							<input type="hidden" name="csrfToken" value="{{ csrfToken }}">
@@ -114,4 +93,19 @@ closeOnSelect: false,
 allowClear: true
 });
 	</script>
+	<script>
+		function adjustTextareaHeight(textarea) {
+textarea.style.height = 'auto'; // Reset the height
+textarea.style.height = textarea.scrollHeight + 'px'; // Set the new height based on the scrollHeight
+}
+
+const contentTextarea = document.getElementById('content');
+adjustTextareaHeight(contentTextarea); // Adjust the height on page load
+
+contentTextarea.addEventListener('input', () => {
+adjustTextareaHeight(contentTextarea); // Adjust the height when the content changes
+});
+	</script>
+
+
 {% endblock %}

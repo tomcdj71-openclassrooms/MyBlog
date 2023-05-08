@@ -440,9 +440,9 @@ class PostManager
 
     private function prepareTags(array $data): array
     {
-        $tagIds = explode(',', $data['tag_ids']);
-        $tagNames = explode(',', $data['tag_names']);
-        $tagSlugs = explode(',', $data['tag_slugs']);
+        $tagIds = explode(',', $data['tag_ids'] ?? '');
+        $tagNames = explode(',', $data['tag_names'] ?? '');
+        $tagSlugs = explode(',', $data['tag_slugs'] ?? '');
         $tagsArray = [];
         for ($i = 0; $i < count($tagIds); ++$i) {
             $tagsData = [

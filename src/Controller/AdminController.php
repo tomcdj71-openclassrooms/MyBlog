@@ -15,6 +15,7 @@ use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Service\CsrfTokenService;
 use App\Service\PostService;
+use Tracy\Debugger;
 
 class AdminController extends AbstractController
 {
@@ -90,16 +91,21 @@ class AdminController extends AbstractController
     public function addPost()
     {
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
-            list($errors, $message) = $this->postService->handleAddPostRequest();
+            list($errors, $message, $postData, $postSlug) = $this->postService->handleAddPostRequest();
         }
 
         $csrfToken = $this->csrfTokenService->generateToken('addPost');
+        Debugger::barDump($message ?? '');
 
         return $this->twig->render('pages/admin/pages/add_post.html.twig', [
             'user' => $this->securityHelper->getUser(),
             'categories' => $this->categoryManager->findAll(),
             'tags' => $this->tagManager->findAll(),
             'csrfToken' => $csrfToken,
+            'errors' => $errors ?? [],
+            'message' => $message ?? '',
+            'postData' => $postData ?? [],
+            'postSlug' => $postSlug ?? '',
         ]);
     }
 
@@ -110,10 +116,11 @@ class AdminController extends AbstractController
         }
 
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
-            list($errors, $message) = $this->postService->handleEditPostRequest($post);
+            list($errors, $message, $postData, $postSlug) = $this->postService->handleEditPostRequest($post);
         }
 
         $csrfToken = $this->csrfTokenService->generateToken('editPost');
+        Debugger::barDump($message ?? '');
 
         return $this->twig->render('pages/admin/pages/edit_post.html.twig', [
             'user' => $this->securityHelper->getUser(),
@@ -121,6 +128,10 @@ class AdminController extends AbstractController
             'tags' => $this->tagManager->findAll(),
             'csrfToken' => $csrfToken,
             'post' => $post,
+            'errors' => $errors ?? [],
+            'message' => $message ?? '',
+            'postData' => $postData ?? [],
+            'postSlug' => $postSlug ?? '',
         ]);
     }
 }
