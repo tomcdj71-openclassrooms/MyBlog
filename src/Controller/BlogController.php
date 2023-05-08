@@ -16,7 +16,6 @@ use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Service\CommentService;
 use App\Service\CsrfTokenService;
-use Tracy\Debugger;
 
 class BlogController extends AbstractController
 {
@@ -102,7 +101,6 @@ class BlogController extends AbstractController
                 'csrfToken' => $this->serverRequest->getPost('csrfToken'),
             ];
             list($errors, $message, $postData, $comment) = $this->commentService->handleCommentPostRequest($post, $postData);
-            Debugger::barDump($errors);
         }
         $csrfToken = $this->csrfTokenService->generateToken('comment');
 

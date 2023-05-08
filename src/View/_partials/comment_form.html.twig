@@ -16,13 +16,18 @@
 			<div class="col row">
 				<div class="form-group form-floating mb-3{% if errors.content is defined %} has-error{% endif %}">
 					<textarea id="content" name="content" class="form-control {% if errors.content is defined %} is-invalid{% endif %}" placeholder="Contenu du commentaire">{{ postData.content|default('')|e('html_attr') }}</textarea>
-					{% if errors is defined %}
+					{% if errors.content is defined %}
 						<div class="invalid-feedback">
 							{{ errors.content }}
 						</div>
 					{% endif %}
 				</div>
 			</div>
+			{% if message is not empty %}
+				<div class="alert alert-success my-3" role="alert">
+					{{ message }}
+				</div>
+			{% endif %}
 			<input type="hidden" name="csrfToken" value="{{ csrfToken }}">
 			<button type="submit" class="btn btn-indigo">Envoyer</button>
 		</form>

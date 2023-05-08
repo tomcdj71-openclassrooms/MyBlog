@@ -40,7 +40,6 @@ class CommentService extends AbstractService
         $postData = $this->getPostData($postObject);
         $commentFV = new CommentFormValidator($this->userManager, $this->session, $this->csrfTokenService);
         $response = $commentFV->validate($postData);
-
         $comment = $response['valid'] ? $this->createComment($postData) : null;
         $message = $response['valid'] ? 'Votre commentaire a été ajouté avec succès!' : null;
         $errors = !$response['valid'] ? $response['errors'] : $errors;

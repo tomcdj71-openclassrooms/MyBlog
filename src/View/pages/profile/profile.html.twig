@@ -95,7 +95,7 @@
 									class="tab-pane fade profile-edit pt-3" id="profile-edit" role="tabpanel">
 									<!-- Profile Edit Form -->
 									{% if csrfToken is defined %}
-										{% include "_partials/profile_form.html.twig" with {'csrfToken': csrfToken} %}
+										{% include "_partials/profile_form.html.twig" with {'csrfToken': csrfToken, 'errors': errors} %}
 									{% endif %}
 									<!-- End Profile Edit Form -->
 								</div>

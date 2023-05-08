@@ -52,7 +52,7 @@ class EditProfileFormValidator extends BaseValidator
             ],
             'lastName' => [
                 'constraints' => [
-                    'required' => false,
+                    'required' => true,
                     'length' => [
                         'min' => 2, 'minErrorMsg' => 'Le nom de famille doit contenir plus de 2 caractères.',
                         'max' => 60, 'maxErrorMsg' => 'Le nom de famille ne doit pas dépasser 60 caractères.',

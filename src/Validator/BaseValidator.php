@@ -54,9 +54,8 @@ abstract class BaseValidator
                 break;
 
             case 'csrf':
-                $error = $this->csrfTokenService->checkCsrfToken($rules['constraints']['csrfKey'], $data[$field], $rules['constraints']['errorMsg'] ?? '');
-                if ($error) {
-                    $errors[$field] = $error;
+                if (!$this->csrfTokenService->checkCsrfToken($rules['constraints']['csrfKey'], $data[$field])) {
+                    $errors[$field] = $rules['constraints']['errorMsg'] ?? '';
                 }
 
                 break;

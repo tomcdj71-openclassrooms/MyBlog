@@ -18,6 +18,7 @@ use App\Service\ProfileService;
 use App\Validator\LoginFormValidator;
 use App\Validator\RegistrationFormValidator;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Tracy\Debugger;
 
 class UserController extends AbstractController
 {
@@ -51,14 +52,18 @@ class UserController extends AbstractController
                 return $response;
             }
         }
-        $csrfToken = $this->csrfTokenService->generateToken('editProfile');
         $errors = [];
         $csrfToken = $this->csrfTokenService->generateToken('editPost');
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
-            list($errors, $message) = $this->profileService->handleProfilePostRequest($user);
+            list($errors, $message, $postData, $update) = $this->profileService->handleProfilePostRequest($user);
         }
         $userPostsData = $this->postService->getUserPostsData();
         $hasPost = ($userPostsData['total'] > 0) ? true : false;
+        // Debug $errors, $message, $postData, $update
+        Debugger::barDump($errors, 'errors');
+        Debugger::barDump($message, 'message');
+        Debugger::barDump($postData, 'postData');
+        $csrfToken = $this->csrfTokenService->generateToken('editProfile');
 
         return $this->twig->render('pages/profile/profile.html.twig', [
             'errors' => $errors ?? null,
@@ -66,6 +71,9 @@ class UserController extends AbstractController
             'hasPost' => $hasPost,
             'impersonate' => false,
             'user' => $user,
+            'errors' => $errors ?? [],
+            'message' => $message ?? '',
+            'postData' => $postData ?? [],
             'session' => $this->session,
         ]);
     }
