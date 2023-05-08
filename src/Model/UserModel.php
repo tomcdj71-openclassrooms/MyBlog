@@ -16,8 +16,6 @@ class UserModel
     private $role;
     private $avatar;
     private $bio;
-    private $rememberMeToken;
-    private $rememberMeExpiresAt;
     private $firstName;
     private $lastName;
     private $twitter;
@@ -35,8 +33,6 @@ class UserModel
         $this->role = $userModelParams->role;
         $this->avatar = $userModelParams->avatar;
         $this->bio = $userModelParams->bio;
-        $this->rememberMeToken = $userModelParams->rememberMeToken;
-        $this->rememberMeExpiresAt = $userModelParams->rememberMeExpiresAt;
         $this->firstName = $userModelParams->firstName;
         $this->lastName = $userModelParams->lastName;
         $this->twitter = $userModelParams->twitter;
@@ -123,26 +119,6 @@ class UserModel
     public function setBio(string $bio): void
     {
         $this->bio = $bio;
-    }
-
-    public function getRememberMeToken(): ?string
-    {
-        return $this->rememberMeToken;
-    }
-
-    public function setRememberMeToken(string $rememberMeToken): void
-    {
-        $this->rememberMeToken = $rememberMeToken;
-    }
-
-    public function getRememberMeExpires(): ?string
-    {
-        return $this->rememberMeExpiresAt;
-    }
-
-    public function setRememberMeExpires(string $rememberMeExpiresAt): void
-    {
-        $this->rememberMeExpiresAt = $rememberMeExpiresAt;
     }
 
     public function getFirstName(): ?string

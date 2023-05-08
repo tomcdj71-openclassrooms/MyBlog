@@ -134,17 +134,6 @@ class UserManager
         }
     }
 
-    public function setRememberMeToken(int $userId, string $token, int $expiresAt): void
-    {
-        $sql = 'UPDATE user SET remember_me_token = :token, remember_me_expires_at = :expires_at WHERE id = :id';
-        $statement = $this->database->prepare($sql);
-        $statement->execute([
-            'id' => $userId,
-            'token' => $token,
-            'expires_at' => date('Y-m-d H:i:s', $expiresAt),
-        ]);
-    }
-
     public function updateProfile(UserModel $user, array $data): bool
     {
         $sql = '

@@ -52,6 +52,7 @@ class BlogController extends AbstractController
             'categories' => $this->categoryManager->findAll(),
             'tags' => $this->tagManager->findAll(),
             'recentPosts' => $this->postManager->findRecentPosts(),
+            'user' => $this->securityHelper->getUser(),
         ];
     }
 
@@ -68,7 +69,6 @@ class BlogController extends AbstractController
 
         return $this->twig->render('pages/blog/index.html.twig', array_merge([
             'title' => 'MyBlog - Blog',
-            'user' => $this->securityHelper->getUser(),
             'posts' => $posts['posts'],
             'currentPage' => $page,
             'totalPages' => $totalPages,

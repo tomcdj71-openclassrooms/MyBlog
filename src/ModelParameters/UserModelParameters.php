@@ -16,8 +16,6 @@ class UserModelParameters
     public $isEnabled;
     public $avatar;
     public $bio;
-    public $rememberMeToken;
-    public $rememberMeExpiresAt;
     public $firstName;
     public $lastName;
     public $twitter;
@@ -36,8 +34,6 @@ class UserModelParameters
         $userModelParams->role = $data['role'];
         $userModelParams->avatar = $data['avatar'] ?? null;
         $userModelParams->bio = $data['bio'];
-        $userModelParams->rememberMeToken = $data['remember_me_token'];
-        $userModelParams->rememberMeExpiresAt = $data['remember_me_expires_at'];
         $userModelParams->firstName = $data['firstName'];
         $userModelParams->lastName = $data['lastName'];
         $userModelParams->twitter = $data['twitter'];

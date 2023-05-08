@@ -20,7 +20,7 @@
 		{% endblock %}
 	</head>
 	<body>
-		{% include '_partials/navbar.html.twig' %}
+		{% include '_partials/navbar.html.twig' with {'user': user} %}
 		{% block body %}{% endblock %}
 	</body>
 </html>

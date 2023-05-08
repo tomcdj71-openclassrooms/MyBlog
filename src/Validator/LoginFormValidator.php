@@ -33,11 +33,6 @@ class LoginFormValidator extends BaseValidator
                     'required' => true, 'errorMsg' => 'Ce mot de passe est invalide.',
                 ],
             ],
-            'remember' => [
-                'constraints' => [
-                    'required' => false,
-                ],
-            ],
             'csrfToken' => [
                 'constraints' => [
                     'required' => true,
@@ -48,10 +43,5 @@ class LoginFormValidator extends BaseValidator
         ];
 
         return $this->validateData($data, $validationRules);
-    }
-
-    public function shouldRemember(array $data): bool
-    {
-        return isset($data['remember']) && 'true' === $data['remember'];
     }
 }

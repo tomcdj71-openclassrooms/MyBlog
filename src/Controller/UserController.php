@@ -17,7 +17,6 @@ use App\Service\PostService;
 use App\Service\ProfileService;
 use App\Validator\LoginFormValidator;
 use App\Validator\RegistrationFormValidator;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Tracy\Debugger;
 
 class UserController extends AbstractController
@@ -46,12 +45,6 @@ class UserController extends AbstractController
     public function profile()
     {
         $user = $this->securityHelper->getUser();
-        if (!$user) {
-            $response = $this->authenticateWithRememberMeOption('ROLE_USER', true);
-            if ($response instanceof RedirectResponse) {
-                return $response;
-            }
-        }
         $errors = [];
         $csrfToken = $this->csrfTokenService->generateToken('editPost');
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
@@ -84,22 +77,17 @@ class UserController extends AbstractController
     public function login()
     {
         $this->denyAccessIfAuthenticated();
-        $response = $this->authenticateWithRememberMeOption('ROLE_USER', true);
-        if ($response instanceof RedirectResponse) {
-            return $response;
-        }
         $errors = [];
         if ('POST' === $this->serverRequest->getRequestMethod()) {
             $postData = [
                 'email' => filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL),
                 'password' => filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS),
-                'remember' => filter_input(INPUT_POST, 'remember', FILTER_SANITIZE_SPECIAL_CHARS),
                 'csrfToken' => filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS),
             ];
             $validationResult = $this->loginFV->validate($postData);
             $errors = $validationResult['errors'];
             if ($validationResult['valid']) {
-                $login = $this->securityHelper->authenticateUser($postData, $this->loginFV->shouldRemember($postData));
+                $login = $this->securityHelper->authenticateUser($postData);
                 if ($login) {
                     return $this->request->redirectToRoute('blog');
                 }
@@ -121,11 +109,6 @@ class UserController extends AbstractController
     {
         // Redirect the user to the blog page if he is already authenticated.
         $this->denyAccessIfAuthenticated();
-        $response = $this->authenticateWithRememberMeOption();
-        if ($response instanceof RedirectResponse) {
-            return $response;
-        }
-
         $errors = [];
         $csrfToken = $this->csrfTokenService->generateToken('register');
         if ('POST' === $this->serverRequest->getRequestMethod()) {

@@ -40,12 +40,6 @@
 								{% if errors.password is defined %}
 									<div class="text-danger small">{{ errors.password }}</div>
 								{% endif %}
-								<div class="col-12">
-									<div class="form-check">
-										<input class="form-check-input" type="checkbox" name="remember" value="true" id="remember" data-np-checked="1" value="true">
-										<label class="form-check-label" for="remember">Se souvenir de moi</label>
-									</div>
-								</div>
 								<input type="hidden" name="csrfToken" value="{{ csrfToken }}">
 								<div class="col-12">
 									<button class="btn btn-indigo w-100" type="submit">Connexion</button>
