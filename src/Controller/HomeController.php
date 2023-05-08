@@ -41,10 +41,10 @@ class HomeController extends AbstractController
             );
             $message = 'Votre message a été envoyé avec succès.';
         }
-        $data = [
-            'message' => $message ?? null,
-        ];
 
-        return $this->twig->render('pages/portfolio/index.html.twig', $data);
+        return $this->twig->render('pages/portfolio/index.html.twig', [
+            'message' => $message ?? null,
+            'user' => $this->securityHelper->getUser(),
+        ]);
     }
 }
