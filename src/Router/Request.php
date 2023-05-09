@@ -18,12 +18,13 @@ class Request
     /**
      * This method redirects to a route based on an index.
      *
-     * @param string $index The index of the route
-     * @param mixed  $param Parameters to pass to the method
+     * @param string $index  The index of the route
+     * @param mixed  $param  Parameters to pass to the method
+     * @param mixed  $params
      *
      * @return mixed The result of the method call
      */
-    public function redirectToRoute($index, $param = null)
+    public function redirectToRoute($index, $params = [])
     {
         $route = new Route();
         $routes = $route->getRoutes();
@@ -37,10 +38,36 @@ class Request
                 // First, create an instance of the class using the container
                 $instance = $this->container->get($class);
 
-                // Then, call the method on the instance
-                return call_user_func([$instance, $method], $param);
+                // Then, call the method on the instance with the passed parameters
+                return call_user_func_array([$instance, $method], $params);
             }
         }
+    }
+
+    public function generateUrl(string $routeName, array $params = []): string
+    {
+        $route = new Route();
+        $routes = $route->getRoutes();
+        if (!isset($routes[$routeName])) {
+            throw new \InvalidArgumentException(sprintf('The route "%s" does not exist.', $routeName));
+        }
+        $url = $routes[$routeName][0];
+        foreach ($params as $key => $value) {
+            if (is_array($value)) {
+                $value = json_encode($value);
+            }
+            $url = str_replace('{'.$key.'}', (string) $value, $url);
+        }
+
+        return $url;
+    }
+
+    /**
+     * This method redirects to a specific URL.
+     */
+    public function redirect(string $url, int $statusCode = 302)
+    {
+        header('Location: '.$url, true, $statusCode);
     }
 
     /**

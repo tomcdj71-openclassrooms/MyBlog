@@ -135,6 +135,7 @@ class PostManager
                     LEFT JOIN user u ON p.author_id = u.id
                     LEFT JOIN category c ON p.category_id = c.id
                     LEFT JOIN tag t ON instr("," || p.tags || ",", "," || t.id || ",") > 0
+                    WHERE p.is_enabled = 1 
                     GROUP BY p.id
                     ORDER BY p.created_at DESC
                     LIMIT :limit OFFSET :offset';
@@ -186,7 +187,7 @@ class PostManager
                     LEFT JOIN user u ON p.author_id = u.id
                     LEFT JOIN category c ON p.category_id = c.id
                     LEFT JOIN tag t ON instr(',' || p.tags || ',', ',' || t.id || ',') > 0
-                    WHERE p.created_at BETWEEN :start_date AND :end_date
+                    WHERE p.created_at BETWEEN :start_date AND :end_date AND p.is_enabled = 1
                     GROUP BY p.id
                     ORDER BY p.created_at DESC";
             $statement = $this->database->prepare($sql);
@@ -220,7 +221,7 @@ class PostManager
                 LEFT JOIN user u ON p.author_id = u.id
                 LEFT JOIN category c ON p.category_id = c.id
                 LEFT JOIN tag t ON instr(',' || p.tags || ',', ',' || t.id || ',') > 0
-                WHERE instr(',' || p.tags || ',', ',' || (SELECT id FROM tag WHERE slug = :tag_slug) || ',') > 0
+                WHERE instr(',' || p.tags || ',', ',' || (SELECT id FROM tag WHERE slug = :tag_slug) || ',') > 0 AND p.is_enabled = 1
                 GROUP BY p.id
                 ORDER BY p.created_at DESC";
             $statement = $this->database->prepare($sql);
@@ -251,7 +252,7 @@ class PostManager
                 LEFT JOIN user u ON p.author_id = u.id
                 LEFT JOIN category c ON p.category_id = c.id
                 LEFT JOIN tag t ON instr(',' || p.tags || ',', ',' || t.id || ',') > 0
-                WHERE p.author_id = :user_id
+                WHERE p.author_id = :user_id AND p.is_enabled = 1
                 GROUP BY p.id
                 ORDER BY p.created_at DESC
                 LIMIT :limit
@@ -286,6 +287,7 @@ class PostManager
         try {
             $sql = 'SELECT *
             FROM post
+            WHERE is_enabled = 1
             GROUP BY id
             ORDER BY created_at DESC
             LIMIT :limit';

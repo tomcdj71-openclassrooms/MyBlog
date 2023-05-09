@@ -6,7 +6,6 @@ namespace App\Router;
 
 use App\Controller\BlogController;
 use App\DependencyInjection\Container;
-use Tracy\Debugger;
 
 class Router
 {
@@ -27,8 +26,6 @@ class Router
         $parsedUrl = $this->parseUrl($this->url);
         $path = rtrim($parsedUrl['path'], '/');
         $matchedRoute = $this->matchRoute($path);
-        Debugger::barDump($path);
-        Debugger::barDump($matchedRoute);
         if (!$matchedRoute) {
             throw new HttpException(404, 'Pas de route trouvée pour cette URL.');
         }

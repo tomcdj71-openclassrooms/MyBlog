@@ -209,7 +209,7 @@ class PostService extends AbstractService
             $postFormValidator = new PostFormValidator($this->userManager, $this->session, $this->csrfTokenService);
             $response = $postFormValidator->validate($postData);
             $postSlug = $response['valid'] ? $this->editPost($post, $postData) : null;
-            $message = $postSlug ? 'Votre article a été ajouté avec succès!' : null;
+            $message = $postSlug ? 'Votre article a été modifié avec succès!' : null;
             $errors = $response['valid'] ? null : $response['errors'];
         }
 
@@ -235,7 +235,7 @@ class PostService extends AbstractService
             'chapo' => $data['chapo'],
             'createdAt' => $createdAt,
             'updatedAt' => $createdAt,
-            'isEnabled' => false,
+            'isEnabled' => 1,
             'featuredImage' => $filename,
             'category' => $data['category'],
             'slug' => $this->stringHelper->slugify($data['title']),

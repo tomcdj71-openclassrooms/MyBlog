@@ -15,6 +15,7 @@ use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Service\CsrfTokenService;
 use App\Service\PostService;
+use Tracy\Debugger;
 
 class AdminController extends AbstractController
 {
@@ -68,8 +69,17 @@ class AdminController extends AbstractController
 
     public function posts()
     {
+        $data = [
+            'message' => $this->session->get('message', ''),
+            'postSlug' => $this->session->get('postSlug', ''),
+            'postData' => $this->session->get('postData', []),
+        ];
+        Debugger::barDump($this->session);
+        $this->session->removeKeys(['message', 'postSlug', 'postData']);
+
         return $this->twig->render('pages/admin/pages/post_admin.html.twig', [
             'user' => $this->securityHelper->getUser(),
+            'data' => $data,
         ]);
     }
 
@@ -91,8 +101,15 @@ class AdminController extends AbstractController
     {
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
             list($errors, $message, $postData, $postSlug) = $this->postService->handleAddPostRequest();
-        }
+            if (!empty($postSlug)) {
+                $this->session->set('message', $message);
+                $this->session->set('postSlug', $postSlug);
+                $this->session->set('postData', $postData);
 
+                $url = $this->request->generateUrl('admin_posts');
+                $this->request->redirect($url);
+            }
+        }
         $csrfToken = $this->csrfTokenService->generateToken('addPost');
 
         return $this->twig->render('pages/admin/pages/add_post.html.twig', [
@@ -102,8 +119,6 @@ class AdminController extends AbstractController
             'csrfToken' => $csrfToken,
             'errors' => $errors ?? [],
             'message' => $message ?? '',
-            'postData' => $postData ?? [],
-            'postSlug' => $postSlug ?? '',
         ]);
     }
 
@@ -115,6 +130,14 @@ class AdminController extends AbstractController
 
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
             list($errors, $message, $postData, $postSlug) = $this->postService->handleEditPostRequest($post);
+            if (!empty($postSlug)) {
+                $this->session->set('message', $message);
+                $this->session->set('postSlug', $postSlug);
+                $this->session->set('postData', $postData);
+
+                $url = $this->request->generateUrl('admin_posts');
+                $this->request->redirect($url);
+            }
         }
 
         $csrfToken = $this->csrfTokenService->generateToken('editPost');

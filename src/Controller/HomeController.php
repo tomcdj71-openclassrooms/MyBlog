@@ -8,7 +8,6 @@ use App\Config\Configuration;
 use App\Service\ContactService;
 use App\Service\CsrfTokenService;
 use App\Service\MailerService;
-use Tracy\Debugger;
 
 class HomeController extends AbstractController
 {
@@ -39,7 +38,6 @@ class HomeController extends AbstractController
                 'csrfToken' => $this->serverRequest->getPost('csrfToken'),
             ];
             list($errors, $message, $postData) = $this->contactService->handleContactPostRequest($postData);
-            Debugger::barDump($postData, 'postData');
             if ($errors) {
                 $message = 'Une erreur est survenue lors de l\'envoi de votre message.';
             } else {

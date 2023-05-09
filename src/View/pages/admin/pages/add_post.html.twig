@@ -58,7 +58,7 @@
 							</div>
 							<div class="col row">
 								<div class="form-floating mb-3">
-									<select class="form-select" name="tags[]" id="tags-selector" data-placeholder="Selectionnez un ou plusieurs tags" multiple>
+									<select class="form-select" name="tags[]" id="tags-selector" data-placeholder="Selectionnez un ou plusieurs tags" multiple required="true">
 										{% for tag in tags %}
 											<option value="{{ tag.id }}" {% if tag.id in postData.tags|default([]) %} selected {% endif %}>{{ tag.name }}</option>
 										{% endfor %}
@@ -70,14 +70,6 @@
 							<button type="submit" class="btn btn-indigo">Envoyer</button>
 						</form>
 					</div>
-					{% if message is not empty %}
-						<div class="card-footer">
-							<div class="alert alert-success" role="alert">
-								{{ message }}
-								<a href="{{ path('blog_post', {'slug': postSlug}) }}">Cliquez ici pour le voir</a>
-							</div>
-						</div>
-					{% endif %}
 				</div>
 			</div>
 		</div>

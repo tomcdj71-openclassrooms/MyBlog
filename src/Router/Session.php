@@ -36,6 +36,17 @@ class Session
         return isset($this->sessionData[$key]);
     }
 
+    public function removeKeys($keys): void
+    {
+        if (is_array($keys)) {
+            foreach ($keys as $key) {
+                $this->remove($key);
+            }
+        } else {
+            $this->remove($keys);
+        }
+    }
+
     public function remove(string $key): void
     {
         if ($this->has($key)) {
