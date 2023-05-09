@@ -5,17 +5,24 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Config\Configuration;
+use App\Service\ContactService;
+use App\Service\CsrfTokenService;
 use App\Service\MailerService;
+use Tracy\Debugger;
 
 class HomeController extends AbstractController
 {
     private Configuration $configuration;
     private MailerService $mailerService;
+    private ContactService $contactService;
+    private CsrfTokenService $csrfTokenService;
 
-    public function __construct(MailerService $mailerService, Configuration $configuration)
+    public function __construct(MailerService $mailerService, Configuration $configuration, ContactService $contactService, CsrfTokenService $csrfTokenService)
     {
         $this->mailerService = $mailerService;
         $this->configuration = $configuration;
+        $this->contactService = $contactService;
+        $this->csrfTokenService = $csrfTokenService;
     }
 
     /**
@@ -23,28 +30,39 @@ class HomeController extends AbstractController
      */
     public function index()
     {
-        if ('POST' == $this->serverRequest->getRequestMethod()) {
+        if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
             $postData = [
-                'name' => filter_input(INPUT_POST, 'name', FILTER_SANITIZE_SPECIAL_CHARS),
-                'email' => filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL),
-                'subject' => filter_input(INPUT_POST, 'subject', FILTER_SANITIZE_SPECIAL_CHARS),
-                'message' => filter_input(INPUT_POST, 'message', FILTER_SANITIZE_SPECIAL_CHARS),
+                'name' => $this->serverRequest->getPost('name'),
+                'email' => $this->serverRequest->getPost('email'),
+                'subject' => $this->serverRequest->getPost('subject'),
+                'message' => $this->serverRequest->getPost('message'),
+                'csrfToken' => $this->serverRequest->getPost('csrfToken'),
             ];
-            $mailerConfig = $this->configuration->get('mailer');
-            $this->mailerService->sendEmail(
-                $postData['email'],
-                $mailerConfig['from_email'],
-                'Demande de contact - MyBlog',
-                $this->twig->render('emails/contact.html.twig', [
-                    'form' => $postData,
-                ])
-            );
-            $message = 'Votre message a été envoyé avec succès.';
+            list($errors, $message, $postData) = $this->contactService->handleContactPostRequest($postData);
+            Debugger::barDump($postData, 'postData');
+            if ($errors) {
+                $message = 'Une erreur est survenue lors de l\'envoi de votre message.';
+            } else {
+                $mailerConfig = $this->configuration->get('mailer');
+                $this->mailerService->sendEmail(
+                    $postData['data']['email'],
+                    $mailerConfig['from_email'],
+                    'Demande de contact - MyBlog',
+                    $this->twig->render('emails/contact.html.twig', [
+                        'data' => $postData['data'],
+                    ])
+                );
+                $message = 'Votre message a été envoyé avec succès.';
+            }
         }
+        $csrfToken = $this->csrfTokenService->generateToken('contact');
 
         return $this->twig->render('pages/portfolio/index.html.twig', [
-            'message' => $message ?? null,
             'user' => $this->securityHelper->getUser(),
+            'message' => $message ?? null,
+            'errors' => $errors ?? null,
+            'response' => $response ?? null,
+            'csrfToken' => $csrfToken,
         ]);
     }
 }

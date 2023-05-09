@@ -36,27 +36,57 @@
 								</div>
 								<div>
 									<form action="" method="post" role="form" class="contact-form" data-np-autofill-type="identity" data-np-checked="1">
+										{% if message is not empty %}
+											<div class="alert alert-info">
+												{{ message }}
+											</div>
+										{% endif %}
 										<div class="row">
 											<div class="col-md-12 mb-3">
-												<div class="form-group">
-													<input type="text" name="name" class="form-control" id="name" placeholder="Votre nom" required="" data-np-autofill-type="name_first" data-np-uid="9f2d1296-20d7-4be0-899d-3e2159e95f6c" autocomplete="off" data-np-checked="1">
+												<div class="form-group form-floating mb-3{% if errors.name is defined %} has-error{% endif %}">
+													<input type="text" id="name" name="name" class="form-control {% if errors.name is defined %} is-invalid{% endif %}" placeholder="Punchline" value="{{ post.name|default('') }}">
+													<label for="name">Votre nom</label>
+													{% if errors.name is defined %}
+														<div class="invalid-feedback">
+															{{ errors.name }}
+														</div>
+													{% endif %}
 												</div>
 											</div>
 											<div class="col-md-12 mb-3">
-												<div class="form-group">
-													<input type="email" class="form-control" name="email" id="email" placeholder="Votre email" required="" data-np-autofill-type="identity_email" data-np-uid="acdae334-cb11-4287-a59f-89465e775e3b" autocomplete="off" data-np-checked="1">
+												<div class="form-group form-floating mb-3{% if errors.email is defined %} has-error{% endif %}">
+													<input type="text" id="email" name="email" class="form-control {% if errors.email is defined %} is-invalid{% endif %}" placeholder="Punchline" value="{{ post.email|default('') }}">
+													<label for="email">Votre email</label>
+													{% if errors.email is defined %}
+														<div class="invalid-feedback">
+															{{ errors.email }}
+														</div>
+													{% endif %}
 												</div>
 											</div>
 											<div class="col-md-12 mb-3">
-												<div class="form-group">
-													<input type="text" class="form-control" name="subject" id="subject" placeholder="Sujet" required="" data-np-checked="1">
+												<div class="form-group form-floating mb-3{% if errors.subject is defined %} has-error{% endif %}">
+													<input type="text" id="subject" name="subject" class="form-control {% if errors.subject is defined %} is-invalid{% endif %}" placeholder="Punchline" value="{{ post.subject|default('') }}">
+													<label for="subject">Sujet de votre message</label>
+													{% if errors.subject is defined %}
+														<div class="invalid-feedback">
+															{{ errors.subject }}
+														</div>
+													{% endif %}
 												</div>
 											</div>
 											<div class="col-md-12">
-												<div class="form-group">
-													<textarea class="form-control" name="message" rows="5" placeholder="Message" required=""></textarea>
+												<div class="form-group form-floating mb-3{% if errors.message is defined %} has-error{% endif %}">
+													<textarea id="message" name="message" class="form-control {% if errors.message is defined %} is-invalid{% endif %}" rows="5" placeholder="Contenu de l'article">{{ post.message|default('')|e('html_attr') }}</textarea>
+													<label for="message">Contenu du message</label>
+													{% if errors.message is defined %}
+														<div class="invalid-feedback">
+															{{ errors.message }}
+														</div>
+													{% endif %}
 												</div>
 											</div>
+											<input type="hidden" name="csrfToken" value="{{ csrfToken }}">
 											<div class="col-md-12 text-center">
 												<button type="submit" class="button button-a button-big button-rounded">Envoyer Message</button>
 											</div>
@@ -106,4 +136,16 @@
 			</div>
 		</div>
 	</section>
+	<script>
+		function adjustTextareaHeight(textarea) {
+textarea.style.height = 'auto';
+textarea.style.height = textarea.scrollHeight + 'px';
+}
+
+const contentTextarea = document.getElementById('message');
+adjustTextareaHeight(contentTextarea);
+contentTextarea.addEventListener('input', () => {
+adjustTextareaHeight(contentTextarea);
+});
+	</script>
 {% endblock %}
