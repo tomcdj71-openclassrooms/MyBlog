@@ -58,18 +58,18 @@
 					<li class="nav-item">
 						<a class="nav-link centered-pill-button {{ current_route('blog') ? 'active' : '' }}" href="{{ path('blog') }}">Blog</a>
 					</li>
-					<li class="nav-item d-md-none">
-						{% if user is defined and user is not null %}
+					{% if user is defined %}
+						<li class="nav-item d-md-none">
 							{{ macros.userMenu(user) }}
-						{% endif %}
-					</li>
+						</li>
+					{% endif %}
 				</div>
 			</ul>
 		</div>
-		<div class="navbar-nav ml-auto d-none d-md-inline-block">
-			{% if user is defined and user is not null %}
+		{% if user is defined %}
+			<div class="navbar-nav ml-auto d-none d-md-inline-block">
 				{{ macros.userMenu(user) }}
-			{% endif %}
-		</div>
+			</div>
+		{% endif %}
 	</nav>
 </header>

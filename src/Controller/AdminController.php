@@ -47,6 +47,8 @@ class AdminController extends AbstractController
 
     public function index()
     {
+        $this->securityHelper->denyAccessUnlessAdmin();
+
         return $this->twig->render('pages/admin/pages/index.html.twig', [
             'user' => $this->securityHelper->getUser(),
         ]);
@@ -54,6 +56,8 @@ class AdminController extends AbstractController
 
     public function categories()
     {
+        $this->securityHelper->denyAccessUnlessAdmin();
+
         return $this->twig->render('pages/admin/pages/category_admin.html.twig', [
             'user' => $this->securityHelper->getUser(),
         ]);
@@ -61,6 +65,8 @@ class AdminController extends AbstractController
 
     public function comments()
     {
+        $this->securityHelper->denyAccessUnlessAdmin();
+
         return $this->twig->render('pages/admin/pages/comment_admin.html.twig', [
             'user' => $this->securityHelper->getUser(),
         ]);
@@ -68,6 +74,8 @@ class AdminController extends AbstractController
 
     public function posts()
     {
+        $this->securityHelper->denyAccessUnlessAdmin();
+
         $data = [
             'message' => $this->session->get('message', ''),
             'postSlug' => $this->session->get('postSlug', ''),
@@ -83,6 +91,8 @@ class AdminController extends AbstractController
 
     public function tags()
     {
+        $this->securityHelper->denyAccessUnlessAdmin();
+
         return $this->twig->render('pages/admin/pages/tag_admin.html.twig', [
             'user' => $this->securityHelper->getUser(),
         ]);
@@ -90,6 +100,8 @@ class AdminController extends AbstractController
 
     public function users()
     {
+        $this->securityHelper->denyAccessUnlessAdmin();
+
         return $this->twig->render('pages/admin/pages/user_admin.html.twig', [
             'user' => $this->securityHelper->getUser(),
         ]);
@@ -97,6 +109,8 @@ class AdminController extends AbstractController
 
     public function addPost()
     {
+        $this->securityHelper->denyAccessUnlessAdmin();
+
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
             list($errors, $message, $postData, $postSlug) = $this->postService->handleAddPostRequest();
             if (!empty($postSlug)) {
@@ -122,6 +136,8 @@ class AdminController extends AbstractController
 
     public function editPost(int $postId)
     {
+        $this->securityHelper->denyAccessUnlessAdmin();
+
         $post = $this->postManager->find($postId);
         if (!$post) {
         }
@@ -137,7 +153,6 @@ class AdminController extends AbstractController
                 $this->request->redirect($url);
             }
         }
-
         $csrfToken = $this->csrfTokenService->generateToken('editPost');
 
         return $this->twig->render('pages/admin/pages/edit_post.html.twig', [

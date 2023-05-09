@@ -74,7 +74,6 @@ class AjaxController extends AbstractController
                 ],
             ];
         }
-
         $response = [
             'rows' => $userCommentsArray,
             'total' => $totalComments,
@@ -105,6 +104,8 @@ class AjaxController extends AbstractController
 
     public function manageAllComments()
     {
+        $this->securityHelper->denyAccessUnlessAdmin();
+
         $offset = $this->serverRequest->getQuery('offset', 1);
         $limit = $this->serverRequest->getQuery('limit', 10);
         $page = intval($offset / $limit) + 1;
@@ -147,6 +148,8 @@ class AjaxController extends AbstractController
 
     public function allTags()
     {
+        $this->securityHelper->denyAccessUnlessAdmin();
+
         $tags = $this->tagManager->findAll();
         $tagsArray = [];
         foreach ($tags as $tag) {
@@ -172,6 +175,8 @@ class AjaxController extends AbstractController
 
     public function allCategories()
     {
+        $this->securityHelper->denyAccessUnlessAdmin();
+
         $categories = $this->categoryManager->findAll();
         $categoriesArray = [];
         foreach ($categories as $category) {
@@ -197,6 +202,8 @@ class AjaxController extends AbstractController
 
     public function allUsers()
     {
+        $this->securityHelper->denyAccessUnlessAdmin();
+
         $users = $this->userManager->findAll();
         $usersArray = [];
         foreach ($users as $user) {
@@ -224,6 +231,8 @@ class AjaxController extends AbstractController
 
     public function allPosts()
     {
+        $this->securityHelper->denyAccessUnlessAdmin();
+
         $offset = $this->serverRequest->getQuery('offset', 1);
         $limit = $this->serverRequest->getQuery('limit', 10);
         $page = intval($offset / $limit) + 1;
@@ -266,6 +275,8 @@ class AjaxController extends AbstractController
 
     public function toggleCommentStatus(int $commentId)
     {
+        $this->securityHelper->denyAccessUnlessAdmin();
+
         $comment = $this->commentManager->find($commentId);
         if (null === $comment) {
             $this->sendJsonResponse(['error' => 'Commentaire non trouvé.'], 404);
@@ -289,6 +300,8 @@ class AjaxController extends AbstractController
 
     public function togglePostStatus(int $postId)
     {
+        $this->securityHelper->denyAccessUnlessAdmin();
+
         $post = $this->postManager->find($postId);
         if (null === $post) {
             $this->sendJsonResponse(['error' => 'Article non trouvé.'], 404);
@@ -303,6 +316,8 @@ class AjaxController extends AbstractController
 
     public function promoteUser(int $userId)
     {
+        $this->securityHelper->denyAccessUnlessAdmin();
+
         $user = $this->userManager->find($userId);
         if (null === $user) {
             $this->sendJsonResponse(['error' => 'Utilisateur non trouvé.'], 404);
