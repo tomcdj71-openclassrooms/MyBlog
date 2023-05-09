@@ -40,7 +40,7 @@ class ProfileService extends AbstractService
         $postData = $this->getPostData();
         $editProfileFV = new EditProfileFormValidator($this->userManager, $this->session, $this->csrfTokenService, $this->securityHelper);
         $response = $editProfileFV->validate($postData);
-        $update = $response['valid'] ? $this->updateUserProfile($user, $postData) : null;
+        $update = $response['valid'] ? $this->updateUserProfile($user, $response['data']) : null;
         $message = $response['valid'] ? 'Mise à jour du profil effectué avec succès!' : null;
         $errors = !$response['valid'] ? $response['errors'] : $errors;
 
@@ -49,7 +49,7 @@ class ProfileService extends AbstractService
 
     public function getPostData()
     {
-        $fields = ['firstName', 'lastName', 'email', 'username', 'bio', 'twitter', 'facebook', 'github', 'linkedin'];
+        $fields = ['firstName', 'lastName', 'bio', 'twitter', 'facebook', 'github', 'linkedin'];
         $postData = array_map(function ($field) {
             return $this->serverRequest->getPost($field, '');
         }, array_combine($fields, $fields));

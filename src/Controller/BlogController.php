@@ -86,10 +86,6 @@ class BlogController extends AbstractController
         if (null === $post) {
             header('Location: /404');
         }
-        $user = $this->securityHelper->getUser();
-        if (null === $user) {
-            $user = null;
-        }
         $errors = [];
         $message = '';
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
@@ -100,12 +96,11 @@ class BlogController extends AbstractController
                 'parent_id' => $this->serverRequest->getPost('parentId'),
                 'csrfToken' => $this->serverRequest->getPost('csrfToken'),
             ];
-            list($errors, $message, $postData, $comment) = $this->commentService->handleCommentPostRequest($post, $postData);
+            list($errors, $message, $postData, $comment) = $this->commentService->handleCommentPostRequest($postData);
         }
         $csrfToken = $this->csrfTokenService->generateToken('comment');
 
         return $this->twig->render('pages/blog/post.html.twig', array_merge([
-            'user' => $user,
             'csrfToken' => $csrfToken,
             'post' => $post,
             'errors' => $errors ?? [],

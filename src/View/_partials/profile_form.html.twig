@@ -17,9 +17,6 @@
 			</div>
 		</div>
 	</div>
-	<pre>
-		{{ dump(errors) }}
-	</pre>
 	<div class="row mb-3">
 		<label for="firstName" class="col-md-4 col-lg-3 col-form-label">Prénom</label>
 		<div class="col-md-8 col-lg-9 form-group mb-3{% if errors.firstName is defined and errors.firstName is not empty %} has-error{% endif %}">
@@ -33,7 +30,7 @@
 	</div>
 
 	<div class="row mb-3">
-		<label for="fullName" class="col-md-4 col-lg-3 col-form-label">Nom</label>
+		<label for="lastName" class="col-md-4 col-lg-3 col-form-label">Nom</label>
 		<div class="col-md-8 col-lg-9 form-group mb-3{% if errors.lastName is defined and errors.lastName is not empty %} has-error{% endif %}">
 			<input name="lastName" type="text" class="form-control {% if errors.lastName is defined  and errors.lastName is not empty %} is-invalid{% endif %}" id="lastName" value="{{ user.lastName ? user.lastName : ''}}" autocomplete="on">
 			{% if errors.lastName is defined %}
@@ -47,7 +44,7 @@
 	<div class="row mb-3">
 		<label for="bio" class="col-md-4 col-lg-3 col-form-label">Biographie</label>
 		<div class="col-md-8 col-lg-9 form-group mb-3{% if errors.bio is defined and errors.bio is not empty %} has-error{% endif %}">
-			<textarea id="content" name="content" class="form-control {% if errors.bio is defined and errors.bio is not empty %} is-invalid{% endif %}" placeholder="Biographie">{{ user.bio|default('')|e('html_attr') }}</textarea>
+			<textarea id="bio" name="bio" class="form-control {% if errors.bio is defined and errors.bio is not empty %} is-invalid{% endif %}" placeholder="Biographie">{{ user.bio|default('')|e('html_attr') }}</textarea>
 			{% if errors.bio is defined %}
 				<div class="invalid-feedback">
 					{{ errors.bio }}
@@ -107,7 +104,7 @@
 	<div class="row mb-3">
 		<label for="linkedin" class="col-md-4 col-lg-3 col-form-label">Profil LinkedIn</label>
 		<div class="col-md-8 col-lg-9 form-group mb-3{% if errors.linkedin is defined and errors.linkedin is not empty %} has-error{% endif %}">
-			<input name="linkedin" type="text" class="form-control {% if errors.linkedin is defined  and errors.linkedin is not empty %} is-invalid{% endif %}" id="laslinkedintName" placeholder="{{ user.linkedin ? user.linkedin : 'https://linkedin.com/in/username' }}" value="{{ user.linkedin ? user.linkedin : 'https://linkedin.com/in/username' }}">
+			<input name="linkedin" type="text" class="form-control {% if errors.linkedin is defined  and errors.linkedin is not empty %} is-invalid{% endif %}" id="linkedin" placeholder="{{ user.linkedin ? user.linkedin : 'https://linkedin.com/in/username' }}" value="{{ user.linkedin ? user.linkedin : 'https://linkedin.com/in/username' }}">
 			{% if errors.linkedin is defined %}
 				<div class="invalid-feedback">
 					{{ errors.linkedin }}

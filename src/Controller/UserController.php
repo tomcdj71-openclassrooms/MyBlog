@@ -17,7 +17,6 @@ use App\Service\PostService;
 use App\Service\ProfileService;
 use App\Validator\LoginFormValidator;
 use App\Validator\RegistrationFormValidator;
-use Tracy\Debugger;
 
 class UserController extends AbstractController
 {
@@ -44,18 +43,14 @@ class UserController extends AbstractController
     // Display the profile page.
     public function profile()
     {
+        $this->securityHelper->denyAccessUnlessAuthenticated();
         $user = $this->securityHelper->getUser();
         $errors = [];
-        $csrfToken = $this->csrfTokenService->generateToken('editPost');
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
             list($errors, $message, $postData, $update) = $this->profileService->handleProfilePostRequest($user);
         }
         $userPostsData = $this->postService->getUserPostsData();
         $hasPost = ($userPostsData['total'] > 0) ? true : false;
-        // Debug $errors, $message, $postData, $update
-        Debugger::barDump($errors, 'errors');
-        Debugger::barDump($message, 'message');
-        Debugger::barDump($postData, 'postData');
         $csrfToken = $this->csrfTokenService->generateToken('editProfile');
 
         return $this->twig->render('pages/profile/profile.html.twig', [
@@ -76,7 +71,7 @@ class UserController extends AbstractController
      */
     public function login()
     {
-        $this->denyAccessIfAuthenticated();
+        $this->securityHelper->denyAccessIfAuthenticated();
         $errors = [];
         if ('POST' === $this->serverRequest->getRequestMethod()) {
             $postData = [
@@ -107,8 +102,7 @@ class UserController extends AbstractController
      */
     public function register()
     {
-        // Redirect the user to the blog page if he is already authenticated.
-        $this->denyAccessIfAuthenticated();
+        $this->securityHelper->denyAccessIfAuthenticated();
         $errors = [];
         $csrfToken = $this->csrfTokenService->generateToken('register');
         if ('POST' === $this->serverRequest->getRequestMethod()) {

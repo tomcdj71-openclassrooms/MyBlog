@@ -31,13 +31,16 @@ abstract class BaseValidator
                 continue;
             }
             if (isset($data[$field])) {
-                $errors = array_merge($errors, $this->validateField($field, $data, $rules));
+                list($fieldErrors, $updatedData) = $this->validateField($field, $data, $rules);
+                $errors = array_merge($errors, $fieldErrors);
+                $data = $updatedData;
             }
         }
 
         return [
             'errors' => $errors,
             'valid' => empty($errors),
+            'data' => $data,
         ];
     }
 
@@ -80,6 +83,16 @@ abstract class BaseValidator
                 }
 
                 break;
+
+            case 'username':
+                $sanitizedUsername = $this->sanitizeExternalUsername($data[$field]);
+                if (empty($sanitizedUsername)) {
+                    $errors[$field] = $rules['constraints']['errorMsg'] ?? '';
+                } else {
+                    $data[$field] = $sanitizedUsername;
+                }
+
+                break;
         }
         if (isset($rules['constraints']['length'])) {
             $errors = array_merge($errors, $this->validateLength($field, $data, $rules));
@@ -91,7 +104,7 @@ abstract class BaseValidator
             }
         }
 
-        return $errors;
+        return [$errors, $data];
     }
 
     protected function validateLength(string $field, array $data, array $rules): array
@@ -112,5 +125,19 @@ abstract class BaseValidator
         }
 
         return $errors;
+    }
+
+    /**
+     * This function is used to sanitize external usernames
+     * It removes all characters except letters, numbers and underscores
+     * User can gives an url (ex: https://github.com/username or other urls) or a username (ex: username)
+     * This function will return username only.
+     */
+    protected function sanitizeExternalUsername(string $username): string
+    {
+        $username = explode('/', $username);
+        $username = end($username);
+
+        return preg_replace('/[^a-zA-Z0-9_]/', '', $username);
     }
 }

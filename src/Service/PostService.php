@@ -54,6 +54,9 @@ class PostService extends AbstractService
     public function getUserPostsData()
     {
         $user = $this->securityHelper->getUser();
+        if (!$user) {
+            header('Location: /login');
+        }
         $offset = $this->serverRequest->getQuery('offset') ? intval($this->serverRequest->getQuery('offset')) : 1;
         $limit = $this->serverRequest->getQuery('limit') ? intval($this->serverRequest->getQuery('limit')) : 10;
         $page = intval($offset / $limit) + 1;

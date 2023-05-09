@@ -43,6 +43,15 @@ class Session
         }
     }
 
+    public function removeCsrfToken(string $key): void
+    {
+        $csrfTokens = $this->get('csrfTokens');
+        if (isset($csrfTokens[$key])) {
+            unset($csrfTokens[$key]);
+            $this->set('csrfTokens', $csrfTokens);
+        }
+    }
+
     public function destroy(): void
     {
         if (PHP_SESSION_NONE !== session_status()) {

@@ -6,20 +6,18 @@ namespace App\Helper;
 
 use App\Manager\UserManager;
 use App\Model\UserModel;
+use App\Router\HttpException;
 use App\Router\Session;
-use App\Service\CsrfTokenService;
 
 class SecurityHelper
 {
     private UserManager $userManager;
     private Session $session;
-    private CsrfTokenService $csrfTokenService;
 
     public function __construct(UserManager $userManager, Session $session)
     {
         $this->userManager = $userManager;
         $this->session = $session;
-        $this->csrfTokenService = new CsrfTokenService($session);
     }
 
     public function registerUser(array $postData): bool
@@ -68,5 +66,51 @@ class SecurityHelper
         $user = $this->getUser();
 
         return $user && $user->getRole() === $role;
+    }
+
+    public function denyAccessUnlessAuthenticated(): void
+    {
+        $this->denyAccessUnless(
+            fn () => $this->hasRole('ROLE_USER') || $this->hasRole('ROLE_ADMIN'),
+            "Accès refusé. Vous n'avez pas la permission d'accéder à cette page."
+        );
+    }
+
+    public function denyAccessUnlessAdmin(): void
+    {
+        $this->denyAccessUnless(
+            fn () => $this->hasRole('ROLE_ADMIN'),
+            "Accès refusé. Vous n'avez pas la permission d'accéder à cette page."
+        );
+    }
+
+    public function denyAccessIfAuthenticated(): void
+    {
+        $this->denyAccessUnless(
+            fn () => $this->isUserUnauthenticated(),
+            'Accès refusé. Vous êtes déjà connecté.'
+        );
+    }
+
+    protected function getUserWithRole(string $role = 'ROLE_USER'): ?UserModel
+    {
+        $user = $this->getUser();
+        if (!$this->hasRole($role)) {
+            return null;
+        }
+
+        return $user;
+    }
+
+    private function isUserUnauthenticated(): bool
+    {
+        return null === $this->getUser();
+    }
+
+    private function denyAccessUnless(callable $condition, string $message): void
+    {
+        if (!call_user_func($condition)) {
+            throw new HttpException(403, $message);
+        }
     }
 }

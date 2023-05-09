@@ -27,6 +27,7 @@
 							<h2>{{ user.firstName ? user.firstName : '' }}
 								{{ user.lastName ? user.lastName : ''}}</h2>
 							<h3>{{ user.role == 'ROLE_USER' ? 'Utilisateur' : 'Administrateur' }}</h3>
+							<p>{{ '@' ~ user.username }}</p>
 							{% set socialLinks = [
 								{'name': 'twitter', 'website': 'https://twitter.com/', 'username': user.twitter, 'icon': 'bi bi-twitter'},
 								{'name': 'facebook', 'website': 'https://facebook.com/','username': user.facebook, 'icon': 'bi bi-facebook'},

@@ -17,8 +17,11 @@ class CsrfTokenService
 
     public function generateToken(string $key): string
     {
-        $token = bin2hex(random_bytes(32));
         $csrfTokens = $this->session->get('csrfTokens');
+        if (isset($csrfTokens[$key])) {
+            return $csrfTokens[$key];
+        }
+        $token = bin2hex(random_bytes(32));
         $csrfTokens[$key] = $token;
         $this->session->set('csrfTokens', $csrfTokens);
 

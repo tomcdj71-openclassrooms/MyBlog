@@ -30,14 +30,14 @@ class CommentService extends AbstractService
         $this->userManager = $userManager;
     }
 
-    public function handleCommentPostRequest($postObject, array $postData)
+    public function handleCommentPostRequest(array $postData)
     {
         $errors = [];
         $csrfToCheck = $this->serverRequest->getPost('csrfToken');
         if (!$this->csrfTokenService->checkCsrfToken('comment', $csrfToCheck)) {
             $errors[] = 'Jeton CSRF invalide.';
         }
-        $postData = $this->getPostData($postObject);
+        $postData = $this->getPostData($postData);
         $commentFV = new CommentFormValidator($this->userManager, $this->session, $this->csrfTokenService);
         $response = $commentFV->validate($postData);
         $comment = $response['valid'] ? $this->createComment($postData) : null;
@@ -54,8 +54,7 @@ class CommentService extends AbstractService
             return $this->serverRequest->getPost($field, '');
         }, array_combine($fields, $fields));
 
-        $postData['csrfToken'] = $this->serverRequest->getPost('csrfToken');
-        $postData['post_id'] = $postObject;
+        $postData['post_id'] = $postObject['post_id'] ?? null;
         $postData['author_id'] = $this->securityHelper->getUser();
         $postData['parent_id'] = $this->serverRequest->getPost('parentId') ?? null;
 
