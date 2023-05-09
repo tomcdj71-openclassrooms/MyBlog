@@ -49,7 +49,7 @@ class Request
         $route = new Route();
         $routes = $route->getRoutes();
         if (!isset($routes[$routeName])) {
-            throw new \InvalidArgumentException(sprintf('The route "%s" does not exist.', $routeName));
+            throw new \InvalidArgumentException(sprintf('La route "%s" n\'existe pas.', $routeName));
         }
         $url = $routes[$routeName][0];
         foreach ($params as $key => $value) {

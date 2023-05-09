@@ -26,6 +26,7 @@ class BlogController extends AbstractController
     private PostManager $postManager;
     private $sidebar;
     private CsrfTokenService $csrfTokenService;
+    private $navbar;
 
     public function __construct(
         TwigHelper $twig,
@@ -52,7 +53,9 @@ class BlogController extends AbstractController
             'categories' => $this->categoryManager->findByPopularity(),
             'tags' => $this->tagManager->findAll(),
             'recentPosts' => $this->postManager->findRecentPosts(),
-            'user' => $this->securityHelper->getUser(),
+        ];
+        $this->navbar = [
+            'profile' => $this->securityHelper->getUser(),
         ];
     }
 
@@ -72,7 +75,7 @@ class BlogController extends AbstractController
             'posts' => $posts['posts'],
             'currentPage' => $page,
             'totalPages' => $totalPages,
-        ], $this->sidebar));
+        ], $this->sidebar, $this->navbar));
     }
 
     /**
@@ -108,7 +111,7 @@ class BlogController extends AbstractController
             'postData' => $postData ?? [],
             'comment' => $comment ?? null,
             'comments' => $this->commentManager->findAllByPost($post->getId()),
-        ], $this->sidebar));
+        ], $this->sidebar, $this->navbar));
     }
 
     /**
@@ -123,7 +126,7 @@ class BlogController extends AbstractController
             'posts' => $this->postManager->findBy('category_slug', $this->path),
             'searchType' => 'Catégorie',
             'search' => $slug,
-        ], $this->sidebar));
+        ], $this->sidebar, $this->navbar));
     }
 
     public function blogTag($slug)
@@ -133,7 +136,7 @@ class BlogController extends AbstractController
             'posts' => $this->postManager->findPostsWithTag($this->path),
             'searchType' => 'Tag',
             'search' => $slug,
-        ], $this->sidebar));
+        ], $this->sidebar, $this->navbar));
     }
 
     public function blogAuthor($author)
@@ -145,7 +148,7 @@ class BlogController extends AbstractController
             'posts' => $this->postManager->findBy('author_id', $author->getId()),
             'searchType' => 'Auteur',
             'search' => $author->getUsername(),
-        ], $this->sidebar));
+        ], $this->sidebar, $this->navbar));
     }
 
     /**
@@ -163,6 +166,6 @@ class BlogController extends AbstractController
             'posts' => $this->postManager->findPostsBetweenDates($startDate, $endDate),
             'searchType' => 'Date',
             'search' => 'Postés entre le '.$startDate->format('d-m-Y').' et le '.$endDate->format('d-m-Y').'.',
-        ], $this->sidebar));
+        ], $this->sidebar, $this->navbar));
     }
 }

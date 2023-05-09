@@ -28,6 +28,7 @@ class UserController extends AbstractController
     private Configuration $configuration;
     private RegistrationFormValidator $registrationFV;
     private CsrfTokenService $csrfTokenService;
+    private $navbar;
 
     public function __construct(
         TwigHelper $twig,
@@ -36,8 +37,12 @@ class UserController extends AbstractController
         SecurityHelper $securityHelper,
         UserManager $userManager,
         Request $request,
+        CsrfTokenService $csrfTokenService,
     ) {
-        parent::__construct($twig, $session, $serverRequest, $securityHelper, $userManager, $request);
+        parent::__construct($twig, $session, $serverRequest, $securityHelper, $userManager, $request, $csrfTokenService);
+        $this->navbar = [
+            'profile' => $this->securityHelper->getUser(),
+        ];
     }
 
     // Display the profile page.
@@ -53,7 +58,7 @@ class UserController extends AbstractController
         $hasPost = ($userPostsData['total'] > 0) ? true : false;
         $csrfToken = $this->csrfTokenService->generateToken('editProfile');
 
-        return $this->twig->render('pages/profile/profile.html.twig', [
+        return $this->twig->render('pages/profile/profile.html.twig', array_merge([
             'errors' => $errors ?? null,
             'csrfToken' => $csrfToken,
             'hasPost' => $hasPost,
@@ -63,7 +68,7 @@ class UserController extends AbstractController
             'message' => $message ?? '',
             'postData' => $postData ?? [],
             'session' => $this->session,
-        ]);
+        ], $this->navbar));
     }
 
     /**
@@ -151,13 +156,13 @@ class UserController extends AbstractController
         $userPostsData = $this->postService->getOtherUserPostsData($user->getId());
         $hasPost = ($userPostsData['total'] > 0) ? true : false;
 
-        return $this->twig->render('pages/profile/profile.html.twig', [
+        return $this->twig->render('pages/profile/profile.html.twig', array_merge([
             'userPostsData' => $userPostsData,
             'hasPost' => $hasPost,
             'impersonate' => true,
             'user' => $user,
             'session' => $this->session,
-        ]);
+        ], $this->navbar));
     }
 
     /**

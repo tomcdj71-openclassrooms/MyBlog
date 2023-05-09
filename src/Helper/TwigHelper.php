@@ -111,11 +111,13 @@ class TwigHelper
     {
         $currentUri = $this->serverRequest->getUri();
         $currentUri = rtrim($currentUri, '/');
+        $currentUri = '' === $currentUri ? '/' : $currentUri;
         $routes = $this->route->getRoutes();
         $prefix = 'MyBlog - ';
-
         foreach ($routes as $route) {
-            $pattern = '@^'.preg_replace('@\\\{[^/]+@', '([^/]+)', preg_quote($route[0], '@')).'$@D';
+            $routePattern = rtrim($route[0], '/');
+            $routePattern = '' === $routePattern ? '/' : $routePattern;
+            $pattern = '@^'.preg_replace('@\\\{[^/]+@', '([^/]+)', preg_quote($routePattern, '@')).'$@D';
             if (preg_match($pattern, $currentUri, $matches)) {
                 $routeName = $route[4];
                 if ('Article' === $routeName && null !== $postModel) {

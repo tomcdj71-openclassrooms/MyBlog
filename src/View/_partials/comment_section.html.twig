@@ -4,16 +4,17 @@
 	{% set enabledComments = comments|filter(c => c.isEnabled) %}
 	<h4 class="comments-count">{{ enabledComments|length }}
 		Commentaire{{ enabledComments|length > 1 ? 's' : '' }}</h4>
-	{{ macros.renderComments(comments, user , null, true) }}
+	{{ macros.renderComments(comments, profile , null, true) }}
 
-	{% macro renderComments(comments, user, parentId = null, isParent = false) %}
+	{% macro renderComments(comments, profile, parentId = null, isParent = false) %}
+
 		{% for comment in comments %}
 			{% if comment.parentId == parentId %}
-				{% set isAuthor = user is not null and user.username == comment.author.username %}
-				{% if comment.isEnabled == true or isAuthor == true or (user is not null and user.role == 'ROLE_ADMIN') %}
+				{% set isAuthor = profile is not null and profile.username == comment.author.username %}
+				{% if comment.isEnabled == true or isAuthor == true or (profile is not null and profile.role == 'ROLE_ADMIN') %}
 					{% set hasReplies = comments|filter(c => c.parentId == comment.id)|length > 0 %}
 					<div id="comment-{{ comment.id }}" class="comment{% if not comment.isEnabled %} comment-not-validated{% endif %}
-																																																																																																																																																																																																			{{ hasReplies ? (isParent ? ' comment-reply-parent' : ' comment-reply') : '' }}">
+							{{ hasReplies ? (isParent ? ' comment-reply-parent' : ' comment-reply') : '' }}">
 						<div class="d-flex text-break text-wrap">
 							<div class="comment-img">
 								{% if comment.author.avatar starts with 'http://' or comment.author.avatar starts with 'https://' %}
@@ -26,14 +27,14 @@
 								<h5 class="d-flex justify-content-between align-items-center">
 									<div>
 										<a href="{{ path('user_profile', {'slug': comment.author.username }) }}">{{ comment.author.username }}</a>
-										{% if user is not null %}
+										{% if profile is not null %}
 											<a href="#" class="reply" data-comment-id="{{ comment.id }}" data-author="{{ comment.author.username }}" data-content="{{ comment.content }}">
 												<i class="bi bi-reply-fill"></i>
 												<small>Répondre</small>
 											</a>
 										{% endif %}
 									</div>
-									{% if user is not null and user.role == 'ROLE_ADMIN' %}
+									{% if profile is not null and profile.role == 'ROLE_ADMIN' %}
 										<div class="d-flex action-box">
 											{% if comment.isEnabled %}
 												<div class="decline px-3">
@@ -85,7 +86,7 @@
 						</div>
 						{% if hasReplies %}
 							<div id="comment-reply-{{ comment.id }}" class="comment-reply">
-								{{ macros.renderComments(comments, user, comment.id) }}
+								{{ macros.renderComments(comments, profile, comment.id) }}
 							</div>
 						{% endif %}
 					</div>
@@ -120,4 +121,4 @@ xhr.send();
 });
 });
 	</script>
-	{% include "_partials/comment_form.html.twig" with {'user': user, 'errors': errors, 'csrfToken': csrfToken} %}</div>
+	{% include "_partials/comment_form.html.twig" with {'user': profile, 'errors': errors, 'csrfToken': csrfToken} %}</div>
