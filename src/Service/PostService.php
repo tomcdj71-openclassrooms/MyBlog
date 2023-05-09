@@ -208,12 +208,14 @@ class PostService extends AbstractService
         if (empty($errors)) {
             $postFormValidator = new PostFormValidator($this->userManager, $this->session, $this->csrfTokenService);
             $response = $postFormValidator->validate($postData);
-            $postSlug = $response['valid'] ? $this->editPost($post, $postData) : null;
+            $responseData = $response['valid'] ? $this->editPost($post, $postData) : null;
+            $postSlug = $responseData['postSlug'] ?? null;
+            $tagsUpdated = $responseData['tagsUpdated'] ?? null;
             $message = $postSlug ? 'Votre article a été modifié avec succès!' : null;
             $errors = $response['valid'] ? null : $response['errors'];
         }
 
-        return [$errors, $message, $post, $postSlug];
+        return [$errors, $message, $post, $postSlug, $postData, $tagsUpdated];
     }
 
     public function createPost(array $data)
@@ -267,9 +269,15 @@ class PostService extends AbstractService
         }
         $postUpdated = $this->postManager->updatePost($post, $data);
         $tagsUpdated = $this->postManager->updatePostTags($post, $post->getTags());
+
         if ($postUpdated && $tagsUpdated) {
-            return [$postUpdated ? $post->getSlug() : null, $tagsUpdated ? $post->getSlug() : null];
+            return [
+                'postSlug' => $post->getSlug() ?? null,
+                'tagsUpdated' => $tagsUpdated ?? null,
+            ];
         }
+
+        return null;
 
         return null;
     }

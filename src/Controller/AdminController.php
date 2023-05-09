@@ -75,7 +75,6 @@ class AdminController extends AbstractController
     public function posts()
     {
         $this->securityHelper->denyAccessUnlessAdmin();
-
         $data = [
             'message' => $this->session->get('message', ''),
             'postSlug' => $this->session->get('postSlug', ''),
@@ -117,7 +116,6 @@ class AdminController extends AbstractController
                 $this->session->set('message', $message);
                 $this->session->set('postSlug', $postSlug);
                 $this->session->set('postData', $postData);
-
                 $url = $this->request->generateUrl('admin_posts');
                 $this->request->redirect($url);
             }
@@ -143,12 +141,11 @@ class AdminController extends AbstractController
         }
 
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
-            list($errors, $message, $postData, $postSlug) = $this->postService->handleEditPostRequest($post);
+            list($errors, $message, $post, $postSlug, $postData) = $this->postService->handleEditPostRequest($post);
             if (!empty($postSlug)) {
                 $this->session->set('message', $message);
                 $this->session->set('postSlug', $postSlug);
                 $this->session->set('postData', $postData);
-
                 $url = $this->request->generateUrl('admin_posts');
                 $this->request->redirect($url);
             }
@@ -159,12 +156,10 @@ class AdminController extends AbstractController
             'user' => $this->securityHelper->getUser(),
             'categories' => $this->categoryManager->findAll(),
             'tags' => $this->tagManager->findAll(),
-            'csrfToken' => $csrfToken,
             'post' => $post,
+            'csrfToken' => $csrfToken,
             'errors' => $errors ?? [],
             'message' => $message ?? '',
-            'postData' => $postData ?? [],
-            'postSlug' => $postSlug ?? '',
         ]);
     }
 }

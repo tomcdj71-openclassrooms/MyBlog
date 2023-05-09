@@ -68,7 +68,7 @@
 							</div>
 							<div class="row">
 								<div class="form-floating mb-3">
-									<select class="form-select" name="tags[]" id="tags-selector" data-placeholder="Selectionnez un ou plusieurs tags" multiple>
+									<select class="form-select" name="tags[]" id="tags-selector" data-placeholder="Selectionnez un ou plusieurs tags" multiple required="true">
 										{% for tag in tags|sort((a, b) => a.name <=> b.name) %}
 											<option value="{{ tag.id }}" {% if tag.id in post.tags|map((t) => t.id) %} selected {% endif %}>{{ tag.name }}</option>
 										{% endfor %}

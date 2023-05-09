@@ -66,7 +66,6 @@ class TwigHelper
     public function path($name, $params = [])
     {
         $routes = $this->route->getRoutes();
-
         if (isset($routes[$name])) {
             $path = $routes[$name][0];
 
