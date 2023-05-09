@@ -49,7 +49,7 @@ class BlogController extends AbstractController
         $this->commentService = $commentService;
         $this->csrfTokenService = $csrfTokenService;
         $this->sidebar = [
-            'categories' => $this->categoryManager->findAll(),
+            'categories' => $this->categoryManager->findByPopularity(),
             'tags' => $this->tagManager->findAll(),
             'recentPosts' => $this->postManager->findRecentPosts(),
             'user' => $this->securityHelper->getUser(),

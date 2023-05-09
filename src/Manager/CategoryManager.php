@@ -74,7 +74,7 @@ class CategoryManager
         try {
             $sql = 'SELECT category.id, category.name, category.slug, COUNT(post.id) AS nb_posts
                 FROM category
-                LEFT JOIN post ON post.category_id = category.id AND post.enabled = 1
+                LEFT JOIN post ON post.category_id = category.id AND post.is_enabled = 1
                 GROUP BY category.id
                 ORDER BY nb_posts DESC';
             $statement = $this->database->prepare($sql);

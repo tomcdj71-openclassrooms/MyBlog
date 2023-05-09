@@ -15,7 +15,6 @@ use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Service\CsrfTokenService;
 use App\Service\PostService;
-use Tracy\Debugger;
 
 class AdminController extends AbstractController
 {
@@ -74,7 +73,6 @@ class AdminController extends AbstractController
             'postSlug' => $this->session->get('postSlug', ''),
             'postData' => $this->session->get('postData', []),
         ];
-        Debugger::barDump($this->session);
         $this->session->removeKeys(['message', 'postSlug', 'postData']);
 
         return $this->twig->render('pages/admin/pages/post_admin.html.twig', [
