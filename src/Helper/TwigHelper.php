@@ -110,7 +110,8 @@ class TwigHelper
     public function routeName(?PostModel $postModel = null, ?UserModel $userModel = null): string
     {
         $currentUri = $this->serverRequest->getUri();
-        $routes = $this->route->getRoutes(); // use the injected instance
+        $currentUri = rtrim($currentUri, '/');
+        $routes = $this->route->getRoutes();
         $prefix = 'MyBlog - ';
 
         foreach ($routes as $route) {

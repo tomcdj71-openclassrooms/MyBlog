@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Router;
 
-use App\Controller\AdminController;
 use App\Controller\BlogController;
 use App\DependencyInjection\Container;
+use Tracy\Debugger;
 
 class Router
 {
@@ -25,7 +25,10 @@ class Router
     public function run()
     {
         $parsedUrl = $this->parseUrl($this->url);
-        $matchedRoute = $this->matchRoute($parsedUrl['path']);
+        $path = rtrim($parsedUrl['path'], '/');
+        $matchedRoute = $this->matchRoute($path);
+        Debugger::barDump($path);
+        Debugger::barDump($matchedRoute);
         if (!$matchedRoute) {
             throw new HttpException(404, 'Pas de route trouvée pour cette URL.');
         }
@@ -35,10 +38,6 @@ class Router
         $this->container->injectProperties($controller);
         if ($controller instanceof BlogController) {
             $controller->updateRequestParams($matchedRoute['params']);
-        }
-
-        if ($controller instanceof AdminController) {
-            $controller->denyAccessUnlessAdmin();
         }
 
         echo call_user_func_array([$controller, $controllerMethod], $matchedRoute['params']);
@@ -67,7 +66,7 @@ class Router
     private function matchRoute(string $path): ?array
     {
         foreach ($this->routes as $route) {
-            $pattern = '@^'.preg_replace('@\\\{[^/]+@', '([^/]+)', preg_quote($route[0], '@')).'$@D';
+            $pattern = '@^'.preg_replace('@\\\{[^/]+@', '([^/]+)', preg_quote(rtrim($route[0], '/'), '@')).'/?$@D';
             if (preg_match($pattern, $path, $matches)) {
                 array_shift($matches);
                 $route['params'] = $matches;

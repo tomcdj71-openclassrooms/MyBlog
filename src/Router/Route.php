@@ -21,7 +21,7 @@ class Route
     public function getRoutes()
     {
         return [
-            'home' => ['/', HomeController::class, 'index', 'GET|POST', 'Portfolio'],
+            'home' => ['', HomeController::class, 'index', 'GET|POST', 'Portfolio'],
             'error_page' => ['error', ErrorController::class, 'notFound', 'GET', 'Erreur'],
             'user_profile' => ['/profile/{slug}', UserController::class, 'userProfile', 'GET', 'Utilisateur'],
             'blog' => ['/blog', BlogController::class, 'blogIndex', 'GET', 'Blog'],
