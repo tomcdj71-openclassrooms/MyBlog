@@ -1,4 +1,4 @@
-<form data-np-autofill-type="register" data-np-checked="1" method="POST" action="/profile" enctype="multipart/form-data">
+<form method="POST" action="{{ path('my_profile') }}" enctype="multipart/form-data">
 	{% if errors.updateError is defined %}
 		<div class="alert alert-danger">{{ errors.updateError }}</div>
 	{% endif %}

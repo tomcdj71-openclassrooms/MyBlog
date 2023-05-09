@@ -35,7 +35,7 @@
 									</h5>
 								</div>
 								<div>
-									<form action="" method="post" role="form" class="contact-form" data-np-autofill-type="identity" data-np-checked="1">
+									<form action="{{ path('home') }}" method="POST" role="form" class="contact-form">
 										{% if message is not empty %}
 											<div class="alert alert-info">
 												{{ message }}

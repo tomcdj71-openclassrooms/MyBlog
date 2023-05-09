@@ -5,7 +5,11 @@
 		{% if profile.username is defined %}
 			<div class="dropdown d-none d-md-block">
 				<button class="btn btn-info dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-					<img src="{{ asset('../uploads/avatars/' ~ profile.avatar ~ '.jpg') }}" class="img-rounded" alt="{{ profile.username }}" width="30" height="30">
+					{% if profile.avatar starts with 'http://' or profile.avatar starts with 'https://' %}
+						<img src="{{ profile.avatar }}" alt="avatar of user {{ profile.username }}" alt="avatar of user {{ profile.username }}" class="img-rounded" alt="{{ profile.username }}" width="30" height="30">
+					{% else %}
+						<img src="{{ asset('../uploads/avatars/' ~ profile.avatar ~ '.jpg') }}" alt="avatar of user {{ profile.username }}" class="img-rounded" alt="{{ profile.username }}" width="30" height="30">
+					{% endif %}
 					<span>
 						{{ profile.username }}</span>
 				</button>

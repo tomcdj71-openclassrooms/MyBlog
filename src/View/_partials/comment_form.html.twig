@@ -11,7 +11,7 @@
 			</p>
 		</div>
 	{% else %}
-		<form method="POST" action="{{ path('blog_post', {'slug': post.slug}) }}" data-np-autofill-type="identity" data-np-checked="1">
+		<form method="POST" action="{{ path('blog_post', {'slug': post.slug}) }}">
 			<input type="hidden" name="parentId" value="">
 			<div class="col row">
 				<div class="form-group form-floating mb-3{% if errors.content is defined %} has-error{% endif %}">
