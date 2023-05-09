@@ -1,0 +1,10 @@
+/vendor
+/.diagrams/.mermaid-diagrams
+/.diagrams/.lucidcharts
+/var/package*
+/var/node_modules
+/var/faker.js
+/var/pnpm*
+/public/uploads/
+/public/assets/node_modules
+/src/Config/.env.php

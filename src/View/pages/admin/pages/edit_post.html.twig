@@ -1,0 +1,108 @@
+{% extends "pages/admin/base.html.twig" %}
+{% block body %}
+	<div class="d-flex justify-content-between align-items-center">
+		<h2>Modifier un Article</h2>
+	</div>
+	<div class="row my-4">
+		<div class="col-12 col-xl-12 mb-4 mb-lg-0">
+			<div class="d-flex align-items-center">
+				<div class="card w-100">
+					<div class="card-body">
+						<form method="POST" action="{{ path('admin_post_edit', {'id': post.id} ) }}" data-np-autofill-type="identity" data-np-checked="1" enctype="multipart/form-data">
+							<div class="row">
+								<div class="form-group form-floating my-3{% if errors.title is defined %} has-error{% endif %}">
+									<input type="text" id="title" name="title" class="form-control{% if errors.title is defined %} is-invalid{% endif %}" placeholder="Super Article" value="{{ post.title|default('') }}">
+									<label for="title">Titre</label>
+									{% if errors.title is defined %}
+										<div class="invalid-feedback">
+											{{ errors.title }}
+										</div>
+									{% endif %}
+								</div>
+							</div>
+							<div class="row">
+								<div class="form-group form-floating mb-3{% if errors.chapo is defined %} has-error{% endif %}">
+									<input type="text" id="chapo" name="chapo" class="form-control {% if errors.chapo is defined %} is-invalid{% endif %}" placeholder="Punchline" value="{{ post.chapo|default('') }}">
+									<label for="chapo">Chapo</label>
+									{% if errors.chapo is defined %}
+										<div class="invalid-feedback">
+											{{ errors.chapo }}
+										</div>
+									{% endif %}
+								</div>
+							</div>
+							<div class="row">
+								<div class="form-group form-floating mb-3{% if errors.content is defined %} has-error{% endif %}">
+									<textarea id="content" name="content" class="form-control {% if errors.content is defined %} is-invalid{% endif %}" rows="5" placeholder="Contenu de l'article">{{ post.content|default('')|e('html_attr') }}</textarea>
+									<label for="content">Contenu</label>
+									{% if errors.content is defined %}
+										<div class="invalid-feedback">
+											{{ errors.content }}
+										</div>
+									{% endif %}
+								</div>
+							</div>
+							<div class="row">
+								<div class="mb-3">
+									<label for="featuredImage" class="form-label">Image de l'article</label>
+									<input class="form-control" type="file" name="featuredImage" id="featuredImage">
+									<div class="alert alert-info">
+										<span>
+											Image de l'article actuelle :
+										</span>
+										<p class="col-2">
+											<img src="{{ (post.featuredImage starts with 'http://' or post.featuredImage starts with 'https://') ? post.featuredImage : (asset('../uploads/featured/' ~ post.featuredImage ~ '.jpg')) }}" alt="image épinglée de {{ post.title }}" class="w-75">
+										</p>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="form-group form-floating mb-3">
+									<select id="category" name="category" class="form-control">
+										{% for category in categories %}
+											<option value="{{ category.id }}" {% if category.id == post.category.id|default(null) %} selected {% endif %}>{{ category.name }}</option>
+										{% endfor %}
+									</select>
+									<label for="category">Catégorie</label>
+								</div>
+							</div>
+							<div class="row">
+								<div class="form-floating mb-3">
+									<select class="form-select" name="tags[]" id="tags-selector" data-placeholder="Selectionnez un ou plusieurs tags" multiple required="true">
+										{% for tag in tags|sort((a, b) => a.name <=> b.name) %}
+											<option value="{{ tag.id }}" {% if tag.id in post.tags|map((t) => t.id) %} selected {% endif %}>{{ tag.name }}</option>
+										{% endfor %}
+									</select>
+									<label for="tags">Tags</label>
+								</div>
+							</div>
+							<input type="hidden" name="csrfToken" value="{{ csrfToken }}">
+							<button type="submit" class="btn btn-indigo">Envoyer</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+		$('#tags-selector').select2({
+theme: "bootstrap-5",
+width: $(this).data('width') ? $(this).data('width') : $(this).hasClass('w-100') ? '100%' : 'style',
+placeholder: $(this).data('placeholder'),
+closeOnSelect: false,
+allowClear: true
+});
+	</script>
+	<script>
+		function adjustTextareaHeight(textarea) {
+textarea.style.height = 'auto';
+textarea.style.height = textarea.scrollHeight + 'px';
+}
+
+const contentTextarea = document.getElementById('content');
+adjustTextareaHeight(contentTextarea);
+contentTextarea.addEventListener('input', () => {
+adjustTextareaHeight(contentTextarea);
+});
+	</script>
+{% endblock %}

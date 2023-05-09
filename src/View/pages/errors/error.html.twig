@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+	<div class="d-flex align-items-center justify-content-center vh-100">
+		<div class="text-center">
+			<h1 class="display-1 fw-bold">{{ title }}</h1>
+			<p class="fs-3">
+				<span class="text-danger">{{ message }}!</span>
+				{{ message_title }}</p>
+			<p class="lead">
+				{{ explanations }}
+			</p>
+			<a href="{{ path('home') }}" class="btn btn-danger">Retour à l'accueil</a>
+			{% if status_code == 401 or status_code == 403 %}
+				<a href="{{ path('login') }}" class="btn btn-indigo">Se connecter</a>
+			{% endif %}
+		</div>
+	</div>
+{% endblock %}

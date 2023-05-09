@@ -1,0 +1,105 @@
+{% import _self as macros %}
+<div class="reply-form">
+	<h4>Laisser un commentaire</h4>
+	{% if user is null %}
+		<div class="alert alert-info" role="alert">
+			<p>Vous devez être connecté pour pouvoir poster un commentaire.</p>
+			<p>
+				<a href="{{ path ('login') }}">Se connecter</a>
+				ou
+				<a href="{{ path ('register') }}">Créer un compte</a>
+			</p>
+		</div>
+	{% else %}
+		<form method="POST" action="{{ path('blog_post', {'slug': post.slug}) }}" data-np-autofill-type="identity" data-np-checked="1">
+			<input type="hidden" name="parentId" value="">
+			<div class="col row">
+				<div class="form-group form-floating mb-3{% if errors.content is defined %} has-error{% endif %}">
+					<textarea id="content" name="content" class="form-control {% if errors.content is defined %} is-invalid{% endif %}" placeholder="Contenu du commentaire">{{ postData.content|default('')|e('html_attr') }}</textarea>
+					{% if errors.content is defined %}
+						<div class="invalid-feedback">
+							{{ errors.content }}
+						</div>
+					{% endif %}
+				</div>
+			</div>
+			{% if message is not empty %}
+				<div class="alert alert-success my-3" role="alert">
+					{{ message }}
+				</div>
+			{% endif %}
+			<input type="hidden" name="csrfToken" value="{{ csrfToken }}">
+			<button type="submit" class="btn btn-indigo">Envoyer</button>
+		</form>
+	{% endif %}
+</div>
+<script>
+	const replyButtons = document.querySelectorAll('.reply');
+
+replyButtons.forEach((button) => {
+button.addEventListener('click', (event) => {
+event.preventDefault();
+
+const commentId = button.getAttribute('data-comment-id');
+const author = button.getAttribute('data-author');
+let content = button.getAttribute('data-content');
+
+if (content.length > 200) {
+content = content.substring(0, 200) + '...';
+}
+
+const parentIdInput = document.querySelector('input[name="parentId"]');
+const replyPreview = document.querySelector('#reply-preview') || createReplyPreview();
+
+if (parentIdInput) {
+parentIdInput.value = commentId;
+const alert = createAlert(author, content);
+replyPreview.innerHTML = '';
+replyPreview.appendChild(alert);
+} else {
+const input = document.createElement('input');
+input.setAttribute('type', 'hidden');
+input.setAttribute('name', 'parentId');
+input.setAttribute('value', commentId);
+document.querySelector('form').appendChild(input);
+replyPreview.innerHTML = '';
+} replyPreview.classList.remove('d-none');
+const formGroup = document.querySelector('.form-group');
+formGroup.parentNode.insertBefore(replyPreview, formGroup);
+
+// Scroll to the reply form
+const replyForm = document.querySelector('.reply-form');
+replyForm.scrollIntoView({behavior: 'smooth'});
+
+function createReplyPreview() {
+const replyPreview = document.createElement('div');
+replyPreview.setAttribute('id', 'reply-preview');
+const formGroup = document.querySelector('.form-group');
+formGroup.parentNode.insertBefore(replyPreview, formGroup.nextSibling);
+return replyPreview;
+}
+
+function createAlert(author, content) {
+const alert = document.createElement('div');
+alert.setAttribute('class', 'alert alert-info fade show');
+alert.setAttribute('role', 'alert');
+alert.innerHTML = `
+    <small class="fst-italic fw-lighter text-muted">Vous répondez à ${author}:</small>
+    <p class="lead text-black text-break">${content}</p>`;
+return alert;
+}
+});
+});
+</script>
+<script>
+	function adjustTextareaHeight(textarea) {
+textarea.style.height = 'auto';
+textarea.style.height = textarea.scrollHeight + 'px';
+}
+
+const contentTextarea = document.getElementById('content');
+adjustTextareaHeight(contentTextarea);
+contentTextarea.addEventListener('input', () => {
+adjustTextareaHeight(contentTextarea);
+});
+</script>

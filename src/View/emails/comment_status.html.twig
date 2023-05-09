@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="fr">
+	<head>
+		<title>Commentaire
+			{{ comment.isEnabled ? 'approuvé' : 'refusé' }}
+		</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+	</head>
+
+	<body>
+		<h1>Votre commentaire a été
+			{{ comment.isEnabled ? 'approuvé' : 'refusé' }}</h1>
+		<div>
+			<span>
+				Votre commentaire
+				{{ comment.content }}
+				vient d'être
+				{{ comment.isEnabled ? 'approuvé' : 'refusé' }}
+			</span>
+			<p>{{ comment.isEnabled ? 'Félicitations !' : 'Désolé !' }}</p>
+		</body>
+	</body>
+</html>

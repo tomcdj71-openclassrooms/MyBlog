@@ -1,0 +1,16 @@
+{% if search is defined %}
+	<div class="alert alert-info" role="alert">
+		<h4 class="alert-heading">Résultat de la recherche par
+			{{ searchType }}</h4>
+		<p>
+			Vous avez recherché :
+			<strong>{{ search }}</strong>
+		</p>
+		<hr>
+		<p class="mb-0">
+			Nous avons trouvé
+			<strong>{{ posts|length }}</strong>
+			résultat(s) pour votre recherche.
+		</p>
+	</div>
+{% endif %}

@@ -1,0 +1,49 @@
+<div class="col-lg-4">
+	<div class="sidebar">
+		<h3 class="sidebar-title">Categories</h3>
+		<div class="sidebar-item categories">
+			<ul>
+				{% for category in categories %}
+					<li>
+						<a href="{{path('blog_category',{'slug':category.slug})}}">
+							{{ category.name }}
+							<span>({{ category.nbPosts }})</span>
+						</a>
+					</li>
+				{% endfor %}
+			</ul>
+		</div>
+		<!-- End sidebar categories-->
+		<h3 class="sidebar-title">Derniers posts</h3>
+		<div class="sidebar-item recent-posts">
+			{% if recentPosts is empty %}
+				<p>Il n'y a pas encore de posts</p>
+			{% else %}
+				{% for post in recentPosts %}
+					<div class="post-item clearfix">
+						<img src="{{ post.featuredImage }}" alt="Illustration of the post {{ post.slug }}" class="img-fluid">
+						<h4>
+							<a href="{{path('blog_post',{'slug':post.slug})}}">{{ post.title }}</a>
+						</h4>
+						<time datetime="{{ post.createdAt }}">
+							{{ post.createdAt|date("d/m/Y") }}</time>
+					</div>
+				{% endfor %}
+			{% endif %}
+		</div>
+		<!-- End sidebar recent posts-->
+		<h3 class="sidebar-title">Tags</h3>
+		<div class="sidebar-item tags">
+			<ul>
+				{% for tag in tags %}
+					<li>
+						<a href="{{ path('blog_tag', {'slug': tag.slug}) }}">{{ tag.name }}</a>
+					</li>
+				{% endfor %}
+
+			</ul>
+		</div>
+		<!-- End sidebar tags-->
+	</div>
+	<!-- End sidebar -->
+</div>

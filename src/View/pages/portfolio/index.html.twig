@@ -1,0 +1,151 @@
+{% extends 'base.html.twig' %}
+
+{% block javascripts %}
+	<script src="{{ asset('js/script.js') }}"></script>
+{% endblock %}
+{% block body %}
+	<div id="hero" class="hero route bg-image">
+		<div class="overlay-itro"></div>
+		<div class="hero-content display-table">
+			<div class="table-cell">
+				<div class="container">
+					<h1 class="hero-title mb-4">Je suis Thomas Chauveau</h1>
+					<p class="hero-subtitle">
+						<span class="typed"></span>
+					</p>
+				</div>
+				<a href="#contact" class="arrow-container">
+					<div class="arrow"></div>
+					<div class="arrow"></div>
+					<div class="arrow"></div>
+				</a>
+			</div>
+		</div>
+	</div>
+	<section id="contact" class="sect-mt4 route">
+		<div class="container">
+			<div class="row">
+				<div class="col-sm-12">
+					<div id="contact" class="box-shadow-full">
+						<div class="row">
+							<div class="col-md-6">
+								<div class="title-box-2">
+									<h5 class="title-left">
+										Contactez-moi !
+									</h5>
+								</div>
+								<div>
+									<form action="" method="post" role="form" class="contact-form" data-np-autofill-type="identity" data-np-checked="1">
+										{% if message is not empty %}
+											<div class="alert alert-info">
+												{{ message }}
+											</div>
+										{% endif %}
+										<div class="row">
+											<div class="col-md-12 mb-3">
+												<div class="form-group form-floating mb-3{% if errors.name is defined %} has-error{% endif %}">
+													<input type="text" id="name" name="name" class="form-control {% if errors.name is defined %} is-invalid{% endif %}" placeholder="Punchline" value="{{ post.name|default('') }}">
+													<label for="name">Votre nom</label>
+													{% if errors.name is defined %}
+														<div class="invalid-feedback">
+															{{ errors.name }}
+														</div>
+													{% endif %}
+												</div>
+											</div>
+											<div class="col-md-12 mb-3">
+												<div class="form-group form-floating mb-3{% if errors.email is defined %} has-error{% endif %}">
+													<input type="text" id="email" name="email" class="form-control {% if errors.email is defined %} is-invalid{% endif %}" placeholder="Punchline" value="{{ post.email|default('') }}">
+													<label for="email">Votre email</label>
+													{% if errors.email is defined %}
+														<div class="invalid-feedback">
+															{{ errors.email }}
+														</div>
+													{% endif %}
+												</div>
+											</div>
+											<div class="col-md-12 mb-3">
+												<div class="form-group form-floating mb-3{% if errors.subject is defined %} has-error{% endif %}">
+													<input type="text" id="subject" name="subject" class="form-control {% if errors.subject is defined %} is-invalid{% endif %}" placeholder="Punchline" value="{{ post.subject|default('') }}">
+													<label for="subject">Sujet de votre message</label>
+													{% if errors.subject is defined %}
+														<div class="invalid-feedback">
+															{{ errors.subject }}
+														</div>
+													{% endif %}
+												</div>
+											</div>
+											<div class="col-md-12">
+												<div class="form-group form-floating mb-3{% if errors.message is defined %} has-error{% endif %}">
+													<textarea id="message" name="message" class="form-control {% if errors.message is defined %} is-invalid{% endif %}" rows="5" placeholder="Contenu de l'article">{{ post.message|default('')|e('html_attr') }}</textarea>
+													<label for="message">Contenu du message</label>
+													{% if errors.message is defined %}
+														<div class="invalid-feedback">
+															{{ errors.message }}
+														</div>
+													{% endif %}
+												</div>
+											</div>
+											<input type="hidden" name="csrfToken" value="{{ csrfToken }}">
+											<div class="col-md-12 text-center">
+												<button type="submit" class="button button-a button-big button-rounded">Envoyer Message</button>
+											</div>
+										</div>
+									</form>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="title-box-2 pt-4 pt-md-0">
+									<h5 class="title-left">
+										Restons en contact
+									</h5>
+								</div>
+								<div class="more-info">
+									<p class="lead">
+										Vous avez une question, une remarque ou simplement envie de discuter ? N'hésitez pas à me contacter via le formulaire ci-dessous. Je serai ravi de vous répondre et de vous aider de mon mieux. Que ce soit pour discuter de votre projet, pour me faire part de vos idées ou pour simplement prendre contact, je suis là pour vous. N'hésitez plus, écrivez-moi dès maintenant et je vous répondrai dans les plus brefs délais.
+									</p>
+									<ul class="list-ico">
+										<li>
+											<span class="bi bi-geo-alt"></span>
+											35 Bd de Courcelles, 75008 Paris</li>
+										<li>
+											<span class="bi bi-phone"></span>
+											06-XX-XX-XX-XX</li>
+										<li>
+											<span class="bi bi-envelope"></span>
+											contact@etmoi.com</li>
+									</ul>
+								</div>
+								{% set socialLinks = [
+									{'name': 'twitter', 'website': 'https://twitter.com/', 'icon': 'bi bi-twitter'},
+									{'name': 'facebook', 'website': 'https://facebook.com/', 'icon': 'bi bi-facebook'},
+									{'name': 'github', 'website': 'https://github.com/', 'icon': 'bi bi-github'},
+									{'name': 'linkedin', 'website': 'https://linkedin.com/in/', 'icon': 'bi bi-linkedin'}
+								] %}
+								<div class="social-links">
+									{% for link in socialLinks %}
+										<a href="{{ link.website }}">
+											<i class="{{ link.icon }}"></i>
+										</a>
+									{% endfor %}
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+	<script>
+		function adjustTextareaHeight(textarea) {
+textarea.style.height = 'auto';
+textarea.style.height = textarea.scrollHeight + 'px';
+}
+
+const contentTextarea = document.getElementById('message');
+adjustTextareaHeight(contentTextarea);
+contentTextarea.addEventListener('input', () => {
+adjustTextareaHeight(contentTextarea);
+});
+	</script>
+{% endblock %}

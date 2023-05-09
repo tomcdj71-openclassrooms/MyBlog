@@ -1,0 +1,34 @@
+{% extends "pages/admin/base.html.twig" %}
+{% block body %}
+	<div class="d-flex justify-content-between align-items-center">
+		<h2>Gestion des Posts</h2>
+		<a href="{{ path('admin_post_add') }}" class="btn btn-success">
+			<i class="bi bi-plus-circle"></i>
+			Ajouter post
+		</a>
+	</div>
+	<div class="row my-4">
+		<div class="col-12 col-xl-12 mb-4 mb-lg-0">
+			<div class="d-flex align-items-center">
+				<div class="card">
+					<div class="card-header">
+						{% if data.message is not null %}
+							<div class="alert alert-success">
+								Message:
+								{{ data.message }}
+								<br>
+								Cliquez ici pour voir le post:
+								<a href="{{ path('blog_post', {slug: data.postSlug}) }}">{{ data.postData['title']}}</a>
+							</div>
+						{% endif %}
+					</div>
+					<div class="card-body">
+						<div class="table-wrapper">
+							<table id="table-all-posts"></table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

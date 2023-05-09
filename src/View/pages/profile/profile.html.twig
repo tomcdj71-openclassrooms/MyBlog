@@ -1,0 +1,146 @@
+{% extends "base.html.twig" %}
+{% block stylesheets %}
+	<link href="{{ asset('node_modules/bootstrap/dist/css/bootstrap.css') }}" rel="stylesheet">
+	<link href="{{ asset('node_modules/bootstrap-icons/font/bootstrap-icons.css') }}" rel="stylesheet">
+	<link href="{{ asset('css/style.css') }}" rel="stylesheet">
+	<link href="{{ asset('node_modules/bootstrap-table/dist/bootstrap-table.min.css') }}" rel="stylesheet">
+
+{% endblock %}
+{% block javascripts %}
+	<script src="{{ asset('node_modules/jquery/dist/jquery.min.js') }}"></script>
+	<script src="{{ asset('node_modules/@popperjs/core/dist/umd/popper.min.js') }}"></script>
+	<script src="{{ asset('node_modules/bootstrap/dist/js/bootstrap.min.js') }}"></script>
+	<script src="{{ asset('node_modules/bootstrap-table/dist/bootstrap-table.min.js') }}"></script>
+	<script src="{{ asset('node_modules/bootstrap-table/dist/locale/bootstrap-table-fr-FR.min.js') }}"></script>
+	<script src="{{ asset('js/tables.js') }}"></script>
+{% endblock %}
+
+{% block body %}
+	<section id="blog" class="blog mt-4">
+		<div id="user-id" data-user-id="{{ user.id }}"></div>
+		<div class="container pt-4" style="max-width:1800px" data-aos="fade-up">
+			<div class="row">
+				<div class="col-lg-3">
+					<div class="card">
+						<div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
+							<img src="{{ (user.avatar starts with 'http://' or user.avatar starts with 'https://') ? user.avatar : (asset('../uploads/avatars/' ~ user.avatar ~ '.jpg')) }}" alt="avatar of user {{ user.username }}" class="rounded-circle">
+							<h2>{{ user.firstName ? user.firstName : '' }}
+								{{ user.lastName ? user.lastName : ''}}</h2>
+							<h3>{{ user.role == 'ROLE_USER' ? 'Utilisateur' : 'Administrateur' }}</h3>
+							<p>{{ '@' ~ user.username }}</p>
+							{% set socialLinks = [
+								{'name': 'twitter', 'website': 'https://twitter.com/', 'username': user.twitter, 'icon': 'bi bi-twitter'},
+								{'name': 'facebook', 'website': 'https://facebook.com/','username': user.facebook, 'icon': 'bi bi-facebook'},
+								{'name': 'github', 'website': 'https://github.com/','username': user.github, 'icon': 'bi bi-github'},
+								{'name': 'linkedin', 'website': 'https://linkedin.com/in/','username': user.linkedin, 'icon': 'bi bi-linkedin'}
+							] %}
+							<div class="social-links">
+								{% for link in socialLinks %}
+									{% if link.username is not empty %}
+										<a href="{{ link.website ~ link.username }}">
+											<i class="{{ link.icon }}"></i>
+										</a>
+									{% endif %}
+								{% endfor %}
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-lg-9">
+					<div class="card">
+						<div
+							class="card-body pt-3">
+							<!-- Bordered Tabs -->
+							<ul class="nav nav-tabs nav-tabs-bordered" role="tablist">
+								<li class="nav-item" role="presentation">
+									<button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview" aria-selected="false" role="tab" tabindex="-1">Résumé</button>
+								</li>
+								{% if session.getUserFromSession() is not null and session.getUserFromSession().id == user.id %}
+									<li class="nav-item" role="presentation">
+										<button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit" aria-selected="true" role="tab">Modifier Profil</button>
+									</li>
+									<li class="nav-item" role="presentation">
+										<button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-comments" aria-selected="false" role="tab" tabindex="-1">Mes Commentaires</button>
+									</li>
+								{% endif %}
+								{% if hasPost %}
+									<li class="nav-item" role="presentation">
+										<button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-my-posts" aria-selected="false" tabindex="-1" role="tab">Mes Articles</button>
+									</li>
+								{% endif %}
+							</ul>
+							<div class="tab-content pt-2">
+								<div class="tab-pane fade profile-overview  active show" id="profile-overview" role="tabpanel">
+									<h5 class="card-title">A propos</h5>
+									<p class="small fst-italic">{{ user.bio }}</p>
+									<h5 class="card-title">Profile Details</h5>
+									<div class="row">
+										<div class="col-lg-3 col-md-4 label ">Nom Complet</div>
+										<div class="col-lg-9 col-md-8">{{ user.firstName ? user.firstName : '' }}
+											{{ user.lastName ? user.lastName : ''}}</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-3 col-md-4 label ">Nom d'utilisateur</div>
+										<div class="col-lg-9 col-md-8">{{ user.username ? '@' ~ user.username }}</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-3 col-md-4 label">Email</div>
+										<div class="col-lg-9 col-md-8">{{ user.email }}</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-3 col-md-4 label">Membre depuis</div>
+										<div class="col-lg-9 col-md-8">{{ user.createdAt|date("d/m/Y") }}</div>
+									</div>
+								</div>
+								<div
+									class="tab-pane fade profile-edit pt-3" id="profile-edit" role="tabpanel">
+									<!-- Profile Edit Form -->
+									{% if csrfToken is defined %}
+										{% include "_partials/profile_form.html.twig" with {'csrfToken': csrfToken, 'errors': errors} %}
+									{% endif %}
+									<!-- End Profile Edit Form -->
+								</div>
+								<div
+									class="tab-pane fade profile-comments pt-3" id="profile-comments" role="tabpanel">
+									<!-- Comments Table -->
+									<div class="d-flex align-items-center">
+										<div class="card">
+											<div class="card-header text-center">
+												<h4>Mes commentaires</h4>
+											</div>
+											<div class="card-body">
+												<div class="table-wrapper">
+													<table id="table-user-profile-comments{{ impersonate ? '-impersonate' : '' }}"></table>
+												</div>
+											</div>
+										</div>
+									</div>
+									<!-- End comments Table -->
+								</div>
+								<div
+									class="tab-pane fade pt-3" id="profile-my-posts" role="tabpanel">
+									<!-- Posts Table -->
+									<div class="d-flex align-items-center">
+										<div class="card">
+											<div class="card-header text-center">
+												<h4>Mes articles</h4>
+											</div>
+											<div class="card-body">
+												<div class="table-wrapper">
+													<table id="table-user-profile-posts{{ impersonate ? '-impersonate' : '' }}"></table>
+												</div>
+											</div>
+										</div>
+										<!-- End Post Table -->
+									</div>
+								</div>
+								<!-- End Bordered Tabs -->
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+	<script src="{{ asset('js/script.js') }}"></script>
+{% endblock %}

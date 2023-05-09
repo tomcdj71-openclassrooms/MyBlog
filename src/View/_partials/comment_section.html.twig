@@ -1,0 +1,124 @@
+{% import _self as macros %}
+
+<div id="comment-section" class="blog-comments">
+	{% set enabledComments = comments|filter(c => c.isEnabled) %}
+	<h4 class="comments-count">{{ enabledComments|length }}
+		Commentaire{{ enabledComments|length > 1 ? 's' : '' }}</h4>
+	{{ macros.renderComments(comments, profile , null, true) }}
+
+	{% macro renderComments(comments, profile, parentId = null, isParent = false) %}
+
+		{% for comment in comments %}
+			{% if comment.parentId == parentId %}
+				{% set isAuthor = profile is not null and profile.username == comment.author.username %}
+				{% if comment.isEnabled == true or isAuthor == true or (profile is not null and profile.role == 'ROLE_ADMIN') %}
+					{% set hasReplies = comments|filter(c => c.parentId == comment.id)|length > 0 %}
+					<div id="comment-{{ comment.id }}" class="comment{% if not comment.isEnabled %} comment-not-validated{% endif %}
+							{{ hasReplies ? (isParent ? ' comment-reply-parent' : ' comment-reply') : '' }}">
+						<div class="d-flex text-break text-wrap">
+							<div class="comment-img">
+								{% if comment.author.avatar starts with 'http://' or comment.author.avatar starts with 'https://' %}
+									<img src="{{ comment.author.avatar }}" alt="avatar of user {{ comment.author.username }}">
+								{% else %}
+									<img src="{{ asset('../uploads/avatars/' ~ comment.author.avatar ~ '.jpg') }}" alt="avatar of user {{ comment.author.username }}">
+								{% endif %}
+							</div>
+							<div class="w-100">
+								<h5 class="d-flex justify-content-between align-items-center">
+									<div>
+										<a href="{{ path('user_profile', {'slug': comment.author.username }) }}">{{ comment.author.username }}</a>
+										{% if profile is not null %}
+											<a href="#" class="reply" data-comment-id="{{ comment.id }}" data-author="{{ comment.author.username }}" data-content="{{ comment.content }}">
+												<i class="bi bi-reply-fill"></i>
+												<small>Répondre</small>
+											</a>
+										{% endif %}
+									</div>
+									{% if profile is not null and profile.role == 'ROLE_ADMIN' %}
+										<div class="d-flex action-box">
+											{% if comment.isEnabled %}
+												<div class="decline px-3">
+													<a href="#" class="toggle-status" data-comment-url="{{ path('ajax_admin_toggle_comment', {'id': comment.id })}}" title="Refuser">
+														<i class="bi bi-x-square h4"></i>
+													</a>
+												</div>
+											{% else %}
+												<div class="approve px-1">
+													<a href="#" class="toggle-status" data-comment-url="{{ path('ajax_admin_toggle_comment', {'id': comment.id })}}" title="Approuver">
+														<i class="bi bi-check-square h4"></i>
+													</a>
+												</div>
+											{% endif %}
+											<div class="edit px-1">
+												<a href="" title="Editer">
+													<i class="bi bi-pencil-square h4"></i>
+												</a>
+											</div>
+										</div>
+									{% endif %}
+								</h5>
+								<time datetime="{{ comment.createdAt }}">{{ comment.createdAt|date("d/m/Y") }}</time>
+								{% if not comment.isEnabled %}
+									<div class="alert alert-warning fade show" role="alert">
+										<strong>Commentaire en attente de validation</strong>
+									</div>
+								{% endif %}
+								{% if comment.parentId %}
+									{% set parentComment = comments|filter(c => c.id == comment.parentId)|first %}
+									{% set previewLength = 50 %}
+									{% set preview = parentComment.content|slice(0, previewLength) %}
+									<figure class="alert fade show text-muted border-bottom border-start pb-0">
+										<figcaption class="blockquote-footer">
+											<small>En réponse à
+												<a href="{{ path('user_profile', {'slug': parentComment.author.username }) }}">{{ parentComment.author.username }}</a>
+											</small>
+											<p class="fst-italic">
+												{{ preview }}...
+												<a href="#comment-{{ parentComment.id }}">(voir commentaire complet)</a>
+											</p>
+										</figcaption>
+									</figure>
+								{% endif %}
+								<p class="{% if not comment.isEnabled or isAuthor %}comment-not-validated-content{% endif %}">
+									{{ comment.content }}
+								</p>
+							</div>
+						</div>
+						{% if hasReplies %}
+							<div id="comment-reply-{{ comment.id }}" class="comment-reply">
+								{{ macros.renderComments(comments, profile, comment.id) }}
+							</div>
+						{% endif %}
+					</div>
+				{% endif %}
+			{% endif %}
+		{% endfor %}
+	{% endmacro %}
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+var toggleStatusLinks = document.querySelectorAll('.toggle-status');
+toggleStatusLinks.forEach(function (link) {
+link.addEventListener('click', function (event) {
+event.preventDefault();
+var commentUrl = event.currentTarget.getAttribute('data-comment-url');
+var xhr = new XMLHttpRequest();
+xhr.open('POST', commentUrl);
+xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+xhr.onload = function () {
+if (xhr.status === 200) {
+var response = JSON.parse(xhr.responseText);
+if (response.success) {
+location.reload();
+} else {
+console.error('An error occurred:', response.error);
+}
+} else {
+console.error('Request failed. Returned status of ', xhr.status);
+}
+};
+xhr.send();
+});
+});
+});
+	</script>
+	{% include "_partials/comment_form.html.twig" with {'user': profile, 'errors': errors, 'csrfToken': csrfToken} %}</div>
