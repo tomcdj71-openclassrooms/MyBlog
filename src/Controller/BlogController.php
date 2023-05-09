@@ -11,11 +11,13 @@ use App\Manager\CommentManager;
 use App\Manager\PostManager;
 use App\Manager\TagManager;
 use App\Manager\UserManager;
+use App\Router\HttpException;
 use App\Router\Request;
 use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Service\CommentService;
 use App\Service\CsrfTokenService;
+use Tracy\Debugger;
 
 class BlogController extends AbstractController
 {
@@ -86,9 +88,12 @@ class BlogController extends AbstractController
     public function blogPost($slug)
     {
         $post = $this->postManager->findOneBy('slug', $slug);
-        if (null === $post) {
-            header('Location: /404');
+        if (!$post) {
+            throw new HttpException(404, 'Aucun article ne correspond à ce slug.');
         }
+        Debugger::barDump('test');
+        Debugger::barDump($post);
+        $comments = $this->commentManager->findAllByPost($post->getId());
         $errors = [];
         $message = '';
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
@@ -110,7 +115,7 @@ class BlogController extends AbstractController
             'message' => $message ?? '',
             'postData' => $postData ?? [],
             'comment' => $comment ?? null,
-            'comments' => $this->commentManager->findAllByPost($post->getId()),
+            'comments' => $comments ?? [],
         ], $this->sidebar, $this->navbar));
     }
 

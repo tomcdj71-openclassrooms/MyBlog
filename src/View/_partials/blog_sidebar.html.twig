@@ -21,7 +21,11 @@
 			{% else %}
 				{% for post in recentPosts %}
 					<div class="post-item clearfix">
-						<img src="{{ post.featuredImage }}" alt="Illustration of the post {{ post.slug }}" class="img-fluid">
+						{% if post.featuredImage starts with 'http://' or post.featuredImage starts with 'https://' %}
+							<img src="{{ post.featuredImage }}" alt="Illustration of the post {{ post.title }}" class="img-fluid">
+						{% else %}
+							<img src="{{ asset('../uploads/featured/' ~ post.featuredImage ~ '.jpg') }}" alt="Illustration of the post {{ post.title }}" class="img-fluid">
+						{% endif %}
 						<h4>
 							<a href="{{path('blog_post',{'slug':post.slug})}}">{{ post.title }}</a>
 						</h4>
