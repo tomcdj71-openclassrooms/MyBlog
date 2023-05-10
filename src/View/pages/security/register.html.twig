@@ -11,16 +11,19 @@
 									<h5 class="card-title text-center pb-0 fs-4">Créer un compte</h5>
 									<p class="text-center small">Entre vos informations de connexion</p>
 								</div>
-								<form class="row g-3 needs-validation" method="POST" novalidate="" data-np-autofill-type="register" data-np-checked="1" data-np-watching="1">
+								<form class="row g-3 needs-validation" method="POST">
 									<div class="col-12">
 										<label for="email" class="form-label">Votre email</label>
 										<div class="input-group has-validation">
 											<span class="input-group-text" id="inputGroupPrepend">
 												<i class="bi bi-envelope"></i>
 											</span>
-											<input type="email" name="email" class="form-control" id="email" required="" data-np-autofill-type="identity_email" data-np-uid="570b29d1-12c5-4881-b6b2-8207cef012f9" autocomplete="off" data-np-checked="1">
-											<div class="invalid-feedback">Veuillez entrer une addresse mail valide!</div>
-											<span data-np-uid="850aa6be-7cf7-404e-a1e3-f2fe0d6c238d" style="width: 24px; min-width: 24px; height: 24px; background-image: url(&quot;moz-extension://fd2768e8-0512-443f-a150-1b711559b771/assets/manifestIcons/icon.svg&quot;); background-repeat: no-repeat; background-position: left center; background-size: auto; border: medium none; display: inline-block; visibility: visible; position: absolute; cursor: pointer; z-index: 998; padding: 0px; transition: none 0s ease 0s; pointer-events: all; right: 0px; left: 324px; top: 6px; min-height: 24px;"></span>
+											<input type="email" name="email" class="form-control {% if errors.email is defined and errors.email is not empty %} is-invalid{% endif %}" id="email" required="" value="{{ postData.email|default('')|e('html_attr') }}">
+											{% if errors.email is defined %}
+												<div class="invalid-feedback">
+													{{ errors.email }}
+												</div>
+											{% endif %}
 										</div>
 										<div class="col-12">
 											<label for="username" class="form-label">Nom d'utilisateur</label>
@@ -28,20 +31,27 @@
 												<span class="input-group-text" id="inputGroupPrepend">
 													<i class="bi bi-person"></i>
 												</span>
-												<input type="text" name="username" class="form-control" id="username" required="" data-np-autofill-type="identity_email" data-np-uid="850aa6be-7cf7-404e-a1e3-f2fe0d6c238d" autocomplete="off" data-np-checked="1">
+												<input type="text" name="username" class="form-control {% if errors.username is defined and errors.username is not empty %} is-invalid{% endif %}" id="username" required="" value="{{ postData.username|default('')|e('html_attr') }}">
 												<div class="invalid-feedback">Veuillez choisir votre nom d'utilisateur.</div>
-												<span data-np-uid="850aa6be-7cf7-404e-a1e3-f2fe0d6c238d" style="width: 24px; min-width: 24px; height: 24px; background-image: url(&quot;moz-extension://fd2768e8-0512-443f-a150-1b711559b771/assets/manifestIcons/icon.svg&quot;); background-repeat: no-repeat; background-position: left center; background-size: auto; border: medium none; display: inline-block; visibility: visible; position: absolute; cursor: pointer; z-index: 998; padding: 0px; transition: none 0s ease 0s; pointer-events: all; right: 0px; left: 324px; top: 6px; min-height: 24px;"></span>
 											</div>
+											{% if errors.username is defined %}
+												<div class="invalid-feedback">
+													{{ errors.username }}
+												</div>
+											{% endif %}
 										</div>
 										<div class="col-12">
 											<label for="password" class="form-label">Mot de passe</label>
-											<div class="input-group has-validation">
+											<div class="input-group">
 												<span class="input-group-text" id="inputGroupPrepend">
 													<i class="bi bi-lock"></i>
 												</span>
-												<input type="password" name="password" class="form-control" id="password" required="" data-np-autofill-type="generate" data-np-uid="5f4060e7-5886-4d69-b094-f77470665e27" autocomplete="off" data-np-checked="1">
-												<div class="invalid-feedback">Veuillez choisir votre mot de passe!</div>
-												<span data-np-uid="5f4060e7-5886-4d69-b094-f77470665e27" style="width: 24px; min-width: 24px; height: 24px; background-image: url(&quot;moz-extension://fd2768e8-0512-443f-a150-1b711559b771/assets/manifestIcons/icon.svg&quot;); background-repeat: no-repeat; background-position: left center; background-size: auto; border: medium none; display: inline-block; visibility: visible; position: absolute; cursor: pointer; z-index: 998; padding: 0px; transition: none 0s ease 0s; pointer-events: all; right: 0px; left: 343px; top: 421.8px; min-height: 24px;"></span>
+												<input type="password" name="password" class="form-control {% if errors.password is defined and errors.password is not empty %} is-invalid{% endif %}" id="password" required="true">
+												{% if errors.password is defined %}
+													<div class="invalid-feedback">
+														{{ errors.password }}
+													</div>
+												{% endif %}
 											</div>
 										</div>
 										<div class="col-12">
@@ -50,8 +60,12 @@
 												<span class="input-group-text" id="inputGroupPrepend">
 													<i class="bi bi-lock"></i>
 												</span>
-												<input type="password" name="passwordConfirm" class="form-control" id="passwordConfirm" required="">
-												<div class="invalid-feedback">Veuillez confirmer votre mot de passe!</div>
+												<input type="password" name="passwordConfirm" class="form-control {% if errors.passwordConfirm is defined and errors.passwordConfirm is not empty %} is-invalid{% endif %}" id="passwordConfirm" required="true">
+												{% if errors.passwordConfirm is defined %}
+													<div class="invalid-feedback">
+														{{ errors.passwordConfirm }}
+													</div>
+												{% endif %}
 											</div>
 										</div>
 									</div>

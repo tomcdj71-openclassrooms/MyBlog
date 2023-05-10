@@ -8,7 +8,7 @@
 			<div class="d-flex align-items-center">
 				<div class="card w-100">
 					<div class="card-body">
-						<form method="POST" action="{{ path('admin_post_add') }}" data-np-autofill-type="identity" data-np-checked="1" enctype="multipart/form-data">
+						<form method="POST" action="{{ path('admin_post_add') }}" enctype="multipart/form-data">
 							<div class="col row">
 								<div class="form-group form-floating my-3{% if errors.title is defined %} has-error{% endif %}">
 									<input type="text" id="title" name="title" class="form-control{% if errors.title is defined %} is-invalid{% else %} is-valid{% endif %}" placeholder="Super Article" value="{{ postData.title|default('') }}">

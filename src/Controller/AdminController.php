@@ -76,11 +76,10 @@ class AdminController extends AbstractController
     {
         $this->securityHelper->denyAccessUnlessAdmin();
         $data = [
-            'message' => $this->session->get('message', ''),
-            'postSlug' => $this->session->get('postSlug', ''),
-            'postData' => $this->session->get('postData', []),
+            'message' => $this->session->flash('message', ''),
+            'postSlug' => $this->session->flash('postSlug', ''),
+            'postData' => $this->session->flash('postData', ''),
         ];
-        $this->session->removeKeys(['message', 'postSlug', 'postData']);
 
         return $this->twig->render('pages/admin/pages/post_admin.html.twig', [
             'user' => $this->securityHelper->getUser(),

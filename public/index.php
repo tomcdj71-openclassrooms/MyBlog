@@ -9,9 +9,6 @@ use App\DependencyInjection\Container;
 use App\DependencyInjection\Injectable;
 use App\Router\HttpException;
 use App\Router\Router;
-use Tracy\Debugger;
-
-Debugger::enable();
 
 // Create the container
 $container = new Container();

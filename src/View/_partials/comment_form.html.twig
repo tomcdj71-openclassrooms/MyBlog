@@ -1,7 +1,7 @@
 {% import _self as macros %}
 <div class="reply-form">
 	<h4>Laisser un commentaire</h4>
-	{% if user is null %}
+	{% if profile is null %}
 		<div class="alert alert-info" role="alert">
 			<p>Vous devez être connecté pour pouvoir poster un commentaire.</p>
 			<p>
@@ -11,7 +11,7 @@
 			</p>
 		</div>
 	{% else %}
-		<form method="POST" action="{{ path('blog_post', {'slug': post.slug}) }}" data-np-autofill-type="identity" data-np-checked="1">
+		<form id="comment-form" method="POST" action="{{ path('blog_post', {'slug': post.slug}) }}">
 			<input type="hidden" name="parentId" value="">
 			<div class="col row">
 				<div class="form-group form-floating mb-3{% if errors.content is defined %} has-error{% endif %}">

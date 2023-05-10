@@ -89,7 +89,8 @@ class UserController extends AbstractController
             if ($validationResult['valid']) {
                 $login = $this->securityHelper->authenticateUser($postData);
                 if ($login) {
-                    return $this->request->redirectToRoute('blog');
+                    $url = $this->request->generateUrl('blog');
+                    $this->request->redirect($url);
                 }
                 $errors = ['email' => 'Email ou mot de passe incorrect.'];
             }
@@ -99,6 +100,8 @@ class UserController extends AbstractController
         return $this->twig->render('pages/security/login.html.twig', [
             'csrfToken' => $csrfToken,
             'errors' => $errors ?? null,
+            'postData' => $postData ?? null,
+            'message' => $message ?? null,
         ]);
     }
 
@@ -131,7 +134,8 @@ class UserController extends AbstractController
                         $this->twig->render('emails/registration.html.twig')
                     );
 
-                    return $this->request->redirectToRoute('login');
+                    $url = $this->request->generateUrl('blog');
+                    $this->request->redirect($url);
                 }
                 $errors[] = "Échec de l'enregistrement. Veuillez réessayer.";
             }
@@ -141,6 +145,8 @@ class UserController extends AbstractController
         return $this->twig->render('pages/security/register.html.twig', [
             'csrfToken' => $csrfToken,
             'errors' => $errors ?? null,
+            'postData' => $postData ?? null,
+            'message' => $message ?? null,
         ]);
     }
 
