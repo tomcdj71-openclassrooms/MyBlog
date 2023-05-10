@@ -90,4 +90,12 @@ class Session
     {
         return isset($this->sessionData['user']);
     }
+
+    public function flash(string $key)
+    {
+        $value = $this->get($key);
+        $this->remove($key);
+
+        return $value;
+    }
 }

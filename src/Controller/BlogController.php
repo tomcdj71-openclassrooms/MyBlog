@@ -17,7 +17,6 @@ use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Service\CommentService;
 use App\Service\CsrfTokenService;
-use Tracy\Debugger;
 
 class BlogController extends AbstractController
 {
@@ -83,7 +82,9 @@ class BlogController extends AbstractController
     /**
      * Display the blog post page.
      *
-     * @param mixed $slug
+     * @param mixed      $slug
+     * @param null|mixed $message
+     * @param null|mixed $errors
      */
     public function blogPost($slug)
     {
@@ -91,11 +92,9 @@ class BlogController extends AbstractController
         if (!$post) {
             throw new HttpException(404, 'Aucun article ne correspond à ce slug.');
         }
-        Debugger::barDump('test');
-        Debugger::barDump($post);
         $comments = $this->commentManager->findAllByPost($post->getId());
-        $errors = [];
-        $message = '';
+        $errors = $this->session->flash('errors');
+        $message = $this->session->flash('message');
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
             $postData = [
                 'content' => $this->serverRequest->getPost('content'),
@@ -105,6 +104,11 @@ class BlogController extends AbstractController
                 'csrfToken' => $this->serverRequest->getPost('csrfToken'),
             ];
             list($errors, $message, $postData, $comment) = $this->commentService->handleCommentPostRequest($postData);
+            $postData = null;
+            $errors ? $this->session->set('errors', $errors) : null;
+            $message ? $this->session->set('message', $message) : null;
+            $url = $this->request->generateUrl('blog_post', ['slug' => $slug]).'#comment-form';
+            $this->request->redirect($url);
         }
         $csrfToken = $this->csrfTokenService->generateToken('comment');
 
@@ -115,7 +119,7 @@ class BlogController extends AbstractController
             'message' => $message ?? '',
             'postData' => $postData ?? [],
             'comment' => $comment ?? null,
-            'comments' => $comments ?? [],
+            'comments' => $comments,
         ], $this->sidebar, $this->navbar));
     }
 
