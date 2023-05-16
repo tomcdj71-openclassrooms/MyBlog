@@ -283,10 +283,11 @@ class AjaxController extends AbstractController
 
             return;
         }
+
         $comment->setIsEnabled(!$comment->getIsEnabled());
         $success = $this->commentManager->updateIsEnabled($comment);
-        $subject = 'Commentaire '.$comment->getIsEnabled() ? 'approuvé' : 'refusé';
-        $this->mailerService->sendEmail(
+        $subject = 'Commentaire '.($comment->getIsEnabled() ? 'approuvé' : 'refusé');
+        $mailerError = $this->mailerService->sendEmail(
             $this->configuration->get('mailer.from_email'),
             $comment->getAuthor()->getEmail(),
             $subject,
@@ -294,8 +295,15 @@ class AjaxController extends AbstractController
                 'comment' => $comment,
             ])
         );
+        $this->session->set('success', $success ? 'Commentaire mis à jour.' : 'Erreur lors de la mise à jour du commentaire.');
+        $this->session->set('mailerError', $mailerError);
 
-        $this->sendJsonResponse(['success' => $success]);
+        $flashBag = [
+            'message' => $this->session->flash('success', ''),
+            'mailerError' => $this->session->flash('mailerError', ''),
+        ];
+
+        $this->sendJsonResponse(['success' => $success, 'mailerError' => $mailerError, $flashBag]);
     }
 
     public function togglePostStatus(int $postId)

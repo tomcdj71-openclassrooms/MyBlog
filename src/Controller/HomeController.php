@@ -42,7 +42,7 @@ class HomeController extends AbstractController
                 $message = 'Une erreur est survenue lors de l\'envoi de votre message.';
             } else {
                 $mailerConfig = $this->configuration->get('mailer');
-                $this->mailerService->sendEmail(
+                $mailerError = $this->mailerService->sendEmail(
                     $postData['data']['email'],
                     $mailerConfig['from_email'],
                     'Demande de contact - MyBlog',
@@ -50,7 +50,9 @@ class HomeController extends AbstractController
                         'data' => $postData['data'],
                     ])
                 );
-                $message = 'Votre message a été envoyé avec succès.';
+                if ($mailerError) {
+                    unset($message);
+                }
             }
         }
         $csrfToken = $this->csrfTokenService->generateToken('contact');
@@ -61,6 +63,7 @@ class HomeController extends AbstractController
             'errors' => $errors ?? null,
             'response' => $response ?? null,
             'csrfToken' => $csrfToken,
+            'mailerError' => $mailerError ?? null,
         ]);
     }
 }

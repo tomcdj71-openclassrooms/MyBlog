@@ -41,7 +41,7 @@ class ContactService extends AbstractService
         $commentFV = new ContactFormValidator($this->userManager, $this->session, $this->csrfTokenService);
         $response = $commentFV->validate($postData);
         $response['data'] = $postData;
-        $message = $response['valid'] ? 'Votre demande de contact a été prise en compte!' : null;
+        $message = $response['valid'] ? 'Votre demande de contact a été prise en compte!' : 'Votre demande de contact n\'a pas pu être prise en compte.';
         $errors = !$response['valid'] ? $response['errors'] : $errors;
 
         return [$errors, $message, $response];

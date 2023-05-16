@@ -69,6 +69,7 @@ class AdminController extends AbstractController
 
         return $this->twig->render('pages/admin/pages/comment_admin.html.twig', [
             'user' => $this->securityHelper->getUser(),
+            'flashBag' => $flashBag ?? [],
         ]);
     }
 

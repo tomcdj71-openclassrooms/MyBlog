@@ -126,18 +126,22 @@ class UserController extends AbstractController
                 $registered = $this->securityHelper->registerUser($postData);
                 if ($registered) {
                     $csrfToken = $this->csrfTokenService->generateToken('register');
-                    $message = 'Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter.';
-                    $this->mailerService->sendEmail(
+                    $message = 'Votre compte a été créé avec succès. Vous êtes désormais connecté.';
+                    $mailerError = $this->mailerService->sendEmail(
                         $this->configuration->get('mailer.from_email'),
                         $postData['email'],
                         'Bienvenue sur MyBlog',
                         $this->twig->render('emails/registration.html.twig')
                     );
+                    if ($mailerError) {
+                        $this->session->set('mailerError', $mailerError);
+                    }
+                    $this->session->set('success', $message);
 
                     $url = $this->request->generateUrl('blog');
                     $this->request->redirect($url);
                 }
-                $errors[] = "Échec de l'enregistrement. Veuillez réessayer.";
+                $errors[] = 'Échec de l\'enregistrement. Veuillez réessayer.';
             }
             $errors = array_merge($errors, $validationResult['errors']);
         }

@@ -70,12 +70,17 @@ class BlogController extends AbstractController
         $totalPosts = $this->postManager->countAll();
         $totalPages = ceil($totalPosts / $limit);
         $posts = $this->postManager->findAll($page, $limit);
+        $flashBag = [
+            'mailerError' => $this->session->get('mailerError') ? $this->session->flash('mailerError') : null,
+            'success' => $this->session->get('success') ? $this->session->flash('success') : null,
+        ];
 
         return $this->twig->render('pages/blog/index.html.twig', array_merge([
             'title' => 'MyBlog - Blog',
             'posts' => $posts['posts'],
             'currentPage' => $page,
             'totalPages' => $totalPages,
+            'flashBag' => $flashBag,
         ], $this->sidebar, $this->navbar));
     }
 

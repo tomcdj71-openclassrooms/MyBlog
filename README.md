@@ -23,4 +23,6 @@ On a Linux computer, you can use [use this tutorial](https://blog.eldernode.com/
 
 `mailcatcher --ip 127.0.0.1`
 
+The `env.php` file includes an environment variable. If you set it to 'prod', you will not have exceptions when sending an email without MailCatcher started. You'll get Exception only in 'dev' environment.
+
 Then, you'll find the web interface at [http://127.0.0.1:1080/](http://127.0.0.1:1080/)

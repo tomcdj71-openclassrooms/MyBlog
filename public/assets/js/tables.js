@@ -136,12 +136,26 @@ function toggleCommentApproval(buttonElement) {
     var refuseUrl = buttonElement.dataset.refuseUrl;
     var isApproved = buttonElement.textContent.trim() === 'Refuser';
     var url = isApproved ? refuseUrl : approveUrl;
+
     $.ajax({
         url,
         method: 'POST',
         success: function (response) {
+            console.log(response);
             if (response.success) {
                 $('#table-all-comments').bootstrapTable('refresh');
+                var successMessage = 'Le commentaire a bien été ' + (isApproved ? 'refusé' : 'approuvé');
+                var errorMessage = 'Le commentaire n\'a pas pu être ' + (isApproved ? 'refusé' : 'approuvé');
+                if (!$('#mailerSuccess').length) {
+                    $('<div id="mailerSuccess" class="alert alert-info"></div>').appendTo('#mailerSuccess');
+                }
+                $('#mailerSuccess').text(response.success ? successMessage : errorMessage).removeClass('invisible').show();
+            }
+            if (response.mailerError) {
+                if (!$('#mailerError').length) {
+                    $('<div id="mailerError" class="alert alert-danger"></div>').appendTo('#mailerError');
+                }
+                $('#mailerError').removeClass('invisible').show();
             }
         },
         error: function (error) {
@@ -149,6 +163,7 @@ function toggleCommentApproval(buttonElement) {
         }
     });
 }
+
 
 function togglePostApproval(buttonElement) {
     var approveUrl = buttonElement.dataset.approveUrl;

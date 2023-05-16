@@ -1,8 +1,5 @@
 {% extends 'base.html.twig' %}
 
-{% block javascripts %}
-	<script src="{{ asset('js/script.js') }}"></script>
-{% endblock %}
 {% block body %}
 	<div id="hero" class="hero route bg-image">
 		<div class="overlay-itro"></div>
@@ -39,6 +36,11 @@
 										{% if message is not empty %}
 											<div class="alert alert-info">
 												{{ message }}
+											</div>
+										{% endif %}
+										{% if mailerError is not empty %}
+											<div class="alert alert-danger">
+												{{ mailerError }}
 											</div>
 										{% endif %}
 										<div class="row">
@@ -136,6 +138,7 @@
 			</div>
 		</div>
 	</section>
+	<script src="{{ asset('js/script.js') }}"></script>
 	<script>
 		function adjustTextareaHeight(textarea) {
 textarea.style.height = 'auto';
