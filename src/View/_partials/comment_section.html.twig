@@ -14,14 +14,14 @@
 					<div id="comment-{{ comment.id }}" class="comment{% if not comment.isEnabled %} comment-not-validated{% endif %}
 																																																														{{ hasReplies ? (isParent ? ' comment-reply-parent' : ' comment-reply') : '' }}">
 						<div class="d-flex text-break text-wrap">
-							<div class="comment-img">
+							<div class="comment-img p-3">
 								{% if comment.author.avatar starts with 'http://' or comment.author.avatar starts with 'https://' %}
 									<img src="{{ comment.author.avatar }}" alt="avatar of user {{ comment.author.username }}">
 								{% else %}
 									<img src="{{ asset('../uploads/avatars/' ~ comment.author.avatar ~ '.jpg') }}" alt="avatar of user {{ comment.author.username }}">
 								{% endif %}
 							</div>
-							<div class="w-100">
+							<div class="w-100 pt-3">
 								<h5 class="d-flex justify-content-between align-items-center">
 									<div>
 										<a href="{{ path('user_profile', {'slug': comment.author.username }) }}">{{ comment.author.username }}</a>
