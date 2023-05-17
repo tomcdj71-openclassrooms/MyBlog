@@ -110,9 +110,12 @@ class AdminController extends AbstractController
     public function addPost()
     {
         $this->securityHelper->denyAccessUnlessAdmin();
-
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
             list($errors, $message, $postData, $postSlug) = $this->postService->handleAddPostRequest();
+            if ($errors) {
+                $this->session->set('postData', $postData);
+                Debugger::barDump($this->session->get('postData'));
+            }
             if (!empty($postSlug)) {
                 $this->session->set('message', $message);
                 $this->session->set('postSlug', $postSlug);
@@ -130,6 +133,7 @@ class AdminController extends AbstractController
             'csrfToken' => $csrfToken,
             'errors' => $errors ?? [],
             'message' => $message ?? '',
+            'postData' => $postData ?? '',
         ]);
     }
 
@@ -139,7 +143,6 @@ class AdminController extends AbstractController
         $post = $this->postManager->find($postId);
         if (!$post) {
         }
-
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
             list($errors, $message, $post, $postSlug, $postData) = $this->postService->handleEditPostRequest($post);
             if ($errors) {

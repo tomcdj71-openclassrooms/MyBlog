@@ -22,7 +22,7 @@
 							</div>
 							<div class="row">
 								<div class="form-group form-floating mb-3{% if errors.chapo is defined %} has-error{% endif %}">
-									<input type="text" id="chapo" name="chapo" class="form-control {% if errors.chapo is defined %} is-invalid{% endif %}" placeholder="Punchline" value="{{ postData.chapo is defined ? postData.chapo : post.chapo|default('') }}">
+									<input type="text" id="chapo" name="chapo" class="form-control{% if errors.chapo is defined %} is-invalid{% endif %}" placeholder="Punchline" value="{{ postData.chapo is defined ? postData.chapo : post.chapo|default('') }}">
 									<label for="chapo">Chapo</label>
 									{% if errors.chapo is defined %}
 										<div class="invalid-feedback">
@@ -33,7 +33,7 @@
 							</div>
 							<div class="row">
 								<div class="form-group form-floating mb-3{% if errors.content is defined %} has-error{% endif %}">
-									<textarea id="content" name="content" class="form-control {% if errors.content is defined %} is-invalid{% endif %}" rows="5" placeholder="Contenu de l'article">{{ postData.content is defined ? postData.content : post.content|default('')|e('html_attr') }}</textarea>
+									<textarea id="content" name="content" class="form-control{% if errors.content is defined %} is-invalid{% endif %}" rows="5" placeholder="Contenu de l'article">{{ postData.content is defined ? postData.content : post.content|default('')|e('html_attr') }}</textarea>
 									<label for="content">Contenu</label>
 									{% if errors.content is defined %}
 										<span class="invalid-feedback">
