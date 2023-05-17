@@ -31,6 +31,9 @@ class Router
         }
         $controllerClass = $matchedRoute[1];
         $controllerMethod = $matchedRoute[2];
+        if (!class_exists($controllerClass) || !method_exists($controllerClass, $controllerMethod)) {
+            throw new HttpException(404, 'Pas de route trouvée pour cette URL.');
+        }
         $controller = $this->container->get($controllerClass);
         $this->container->injectProperties($controller);
         if ($controller instanceof BlogController) {
