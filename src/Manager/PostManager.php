@@ -13,6 +13,7 @@ use App\Model\UserModel;
 use App\ModelParameters\PostModelParameters;
 use App\ModelParameters\TagModelParameters;
 use App\ModelParameters\UserModelParameters;
+use Tracy\Debugger;
 
 class PostManager
 {
@@ -364,9 +365,20 @@ class PostManager
         ];
         $sql .= ' WHERE id = :id';
         $statement = $this->database->prepare($sql);
+        // remove file extension from featured image
+        Debugger::barDump($data['featuredImage']);
         $statement->bindValue('id', $post->getId(), \PDO::PARAM_INT);
+        $statement->bindValue(':title', $data['title']);
+        $statement->bindValue(':content', $data['content']);
+        $statement->bindValue(':chapo', $data['chapo']);
+        $statement->bindValue(':featured_image', $data['featuredImage']);
+        $statement->bindValue(':updated_at', $data['updatedAt']);
+        $statement->bindValue(':is_enabled', (int) $data['isEnabled']);
+        $statement->bindValue(':category_id', $data['category']);
+        $statement->bindValue(':slug', $data['slug']);
+        $statement->execute();
 
-        return $statement->execute($params);
+        return true;
     }
 
     public function updatePostTags(PostModel $post, array $tags): bool

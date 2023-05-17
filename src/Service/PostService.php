@@ -14,6 +14,7 @@ use App\Manager\UserManager;
 use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Validator\PostFormValidator;
+use Tracy\Debugger;
 
 class PostService extends AbstractService
 {
@@ -167,17 +168,9 @@ class PostService extends AbstractService
             if ('csrfToken' === $key) {
                 continue;
             }
-            if ('' === $value) {
-                $postGetter = 'get'.ucfirst($key);
-                if (is_object($post) && method_exists($post, $postGetter)) {
-                    $postData[$key] = $post->{$postGetter}();
-                }
-            }
-            if (is_array($value)) {
-                if ('featuredImage' === $key && empty($value['name'])) {
-                    $postData[$key] = $post->getFeaturedImage();
-                } else {
-                    unset($postData[$key]);
+            foreach ($postData as $key => $value) {
+                if ('csrfToken' === $key) {
+                    continue;
                 }
             }
         }
@@ -199,16 +192,22 @@ class PostService extends AbstractService
                 }
             } else {
                 $postGetter = 'get'.ucfirst($key);
-
                 if (is_object($post) && method_exists($post, $postGetter) && $post->{$postGetter}() !== $value) {
                     $message[] = ucfirst($key).' a été modifié.';
                 }
             }
         }
         if (empty($errors)) {
+            // If $posData['featuredImage'] is empty or a string, it means that the user didn't change the featured image
+            // If $posData['featuredImage'] is an array, it means that the user changed the featured image
+            if (is_string($postData['featuredImage'])) {
+                unset($postData['featuredImage']);
+            }
             $postFormValidator = new PostFormValidator($this->userManager, $this->session, $this->csrfTokenService);
             $response = $postFormValidator->validate($postData);
+            Debugger::barDump($response);
             $responseData = $response['valid'] ? $this->editPost($post, $postData) : null;
+            Debugger::barDump($responseData);
             $postSlug = $responseData['postSlug'] ?? null;
             $tagsUpdated = $responseData['tagsUpdated'] ?? null;
             $message = $postSlug ? 'Votre article a été modifié avec succès!' : null;
@@ -262,23 +261,33 @@ class PostService extends AbstractService
                 } elseif ('tags' == $field) {
                     $tags = $this->tagManager->findByIds(explode(',', $data[$dataKey]));
                     $post->addTags($tags);
+                } elseif ('featuredImage' == $field) {
+                    if (!empty($data[$dataKey]['name']) && UPLOAD_ERR_NO_FILE !== $data[$dataKey]['error']) {
+                        $filename = $this->imageHelper->uploadImage($data[$dataKey], 1200, 900);
+                        if (0 === strpos($filename, 'Error')) {
+                            throw new \RuntimeException($filename);
+                        }
+                        $filename = explode('.', $filename)[0];
+                        $data[$dataKey] = $filename;
+                        $post->{$setter}($data[$dataKey]);
+                    } else {
+                        $data[$dataKey] = $post->getFeaturedImage();
+                    }
                 } else {
                     $post->{$setter}($data[$dataKey]);
                 }
             }
         }
+        $data['isEnabled'] = $post->getIsEnabled();
+
         $postUpdated = $this->postManager->updatePost($post, $data);
         $tagsUpdated = $this->postManager->updatePostTags($post, $post->getTags());
-
         if ($postUpdated && $tagsUpdated) {
             return [
+                'postData' => $data,
                 'postSlug' => $post->getSlug() ?? null,
                 'tagsUpdated' => $tagsUpdated ?? null,
             ];
         }
-
-        return null;
-
-        return null;
     }
 }

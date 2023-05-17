@@ -15,6 +15,7 @@ use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Service\CsrfTokenService;
 use App\Service\PostService;
+use Tracy\Debugger;
 
 class AdminController extends AbstractController
 {
@@ -135,13 +136,16 @@ class AdminController extends AbstractController
     public function editPost(int $postId)
     {
         $this->securityHelper->denyAccessUnlessAdmin();
-
         $post = $this->postManager->find($postId);
         if (!$post) {
         }
 
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
             list($errors, $message, $post, $postSlug, $postData) = $this->postService->handleEditPostRequest($post);
+            if ($errors) {
+                $this->session->set('postData', $postData);
+                Debugger::barDump($this->session->get('postData'));
+            }
             if (!empty($postSlug)) {
                 $this->session->set('message', $message);
                 $this->session->set('postSlug', $postSlug);
@@ -160,6 +164,7 @@ class AdminController extends AbstractController
             'csrfToken' => $csrfToken,
             'errors' => $errors ?? [],
             'message' => $message ?? '',
+            'postData' => $postData ?? '',
         ]);
     }
 }

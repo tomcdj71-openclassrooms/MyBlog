@@ -60,6 +60,14 @@ class PostFormValidator extends BaseValidator
                     'required' => true, 'errorMsg' => 'Veuillez selectionner au moins un tag.',
                 ],
             ],
+            'featuredImage' => [
+                'constraints' => [
+                    'required' => false,
+                    'type' => 'file',
+                    'fileType' => ['value' => ['jpg', 'jpeg', 'png'], 'errorMsg' => 'L\'image doit être au format jpg, jpeg ou png.'],
+                    'fileSize' => ['value' => 1000000, 'errorMsg' => 'L\'image ne doit pas dépasser 1Mo.'],
+                ],
+            ],
         ];
 
         return $this->validateData($data, $validationRules);
