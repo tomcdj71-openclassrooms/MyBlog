@@ -11,12 +11,15 @@ class MailerService
 {
     private MailerInterface $mailer;
 
-    public function __construct(MailerInterface $mailer)
+    private string $mode;
+
+    public function __construct(MailerInterface $mailer, string $mode)
     {
         $this->mailer = $mailer;
+        $this->mode = $mode;
     }
 
-    public function sendEmail(string $from, string $to, string $subject, string $body): void
+    public function sendEmail(string $from, string $to, string $subject, string $body): ?string
     {
         try {
             $email = (new Email())
@@ -27,7 +30,13 @@ class MailerService
             ;
             $this->mailer->send($email);
         } catch (\Exception $error) {
-            throw new \Exception('Une erreur est survenue lors de l\'envoi du mail.');
+            if ('dev' === $this->mode) {
+                throw new \Exception('Une erreur est survenue lors de l\'envoi du mail.');
+            }
+
+            return "MailCatcher n'est pas installé, ou n'est pas démarré. Veuillez consulter la documentation pour plus d'informations.";
         }
+
+        return null;
     }
 }

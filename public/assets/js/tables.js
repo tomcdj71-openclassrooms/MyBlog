@@ -97,6 +97,9 @@ function actionFormatter(value, row, index) {
     if (actions.editer) {
         actionButtons += '<a href="' + actions.editer + '" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i> Editer</a> ';
     }
+    if (actions.rechercher) {
+        actionButtons += '<a href="' + actions.rechercher + '" class="btn btn-sm btn-info"><i class="bi bi-search"></i> Rechercher</a> ';
+    }
     if (entityType === 'comment') {
         var isApproved = row.is_enabled;
         var buttonClass = isApproved ? 'btn-danger' : 'btn-success';
@@ -140,8 +143,25 @@ function toggleCommentApproval(buttonElement) {
         url,
         method: 'POST',
         success: function (response) {
+            console.log(response);
             if (response.success) {
-                $('#table-all-comments').bootstrapTable('refresh');
+                if ($('#table-all-comments').length) {
+                    $('#table-all-comments').bootstrapTable('refresh');
+                } else if ($('#table-user-profile-comments').length) {
+                    $('#table-user-profile-comments').bootstrapTable('refresh');
+                }
+                var successMessage = 'Le commentaire a bien été ' + (isApproved ? 'refusé' : 'approuvé');
+                var errorMessage = 'Le commentaire n\'a pas pu être ' + (isApproved ? 'refusé' : 'approuvé');
+                if (!$('#mailerSuccess').length) {
+                    $('<div id="mailerSuccess" class="alert alert-info"></div>').appendTo('#mailerSuccess');
+                }
+                $('#mailerSuccess').text(response.success ? successMessage : errorMessage).removeClass('invisible').show();
+            }
+            if (response.mailerError) {
+                if (!$('#mailerError').length) {
+                    $('<div id="mailerError" class="alert alert-danger"></div>').appendTo('#mailerError');
+                }
+                $('#mailerError').removeClass('invisible').show();
             }
         },
         error: function (error) {
@@ -149,6 +169,7 @@ function toggleCommentApproval(buttonElement) {
         }
     });
 }
+
 
 function togglePostApproval(buttonElement) {
     var approveUrl = buttonElement.dataset.approveUrl;
@@ -160,7 +181,13 @@ function togglePostApproval(buttonElement) {
         method: 'POST',
         success: function (response) {
             if (response.success) {
-                $('#table-all-posts').bootstrapTable('refresh');
+                if ($('#table-all-posts').length) {
+                    $('#table-all-posts').bootstrapTable('refresh');
+                } else if ($('#table-user-profile-posts').length) {
+                    $('#table-user-profile-posts').bootstrapTable('refresh');
+                } else if ($('#table-user-profile-posts-impersonate').length) {
+                    $('#table-user-profile-posts-impersonate').bootstrapTable('refresh');
+                }
             }
         },
         error: function (error) {
@@ -271,7 +298,6 @@ $(document).ready(function () {
             updateBootstrapTableOptions(page, limit);
         }));
     }
-
     var userId = $("#user-id").data("user-id");
     var ajaxUrl = '/ajax/user-posts';
     if ($('#table-user-profile-posts-impersonate').length) {
@@ -284,7 +310,6 @@ $(document).ready(function () {
             { field: 'created_at', title: 'Créé le', formatter: dateFormatter, width: '10', widthUnit: '%' },
             { field: 'tags', title: 'Tags', formatter: tagsFormatter, width: '15', widthUnit: '%' },
             { field: 'status', title: 'Statut', formatter: isEnabledFormatter, width: '10', widthUnit: '%' },
-            { field: 'actions', title: 'Actions', formatter: actionFormatter, width: '15', widthUnit: '%' }
         ], function () {
             var table = $('#table-user-profile-posts-impersonate');
             var page = table.bootstrapTable('getOptions').pageNumber;
@@ -293,7 +318,7 @@ $(document).ready(function () {
         }));
     }
 
-    if ($('#table-user-profile-posts').length) {
+    if ($('#table-user-profile-comments').length) {
         initBootstrapTable('#table-user-profile-comments', generateTableConfig('/ajax/user-comments', [
             { field: 'post_title', title: 'Post', formatter: titleFormatter, width: '15', widthUnit: '%' },
             { field: 'content', title: 'Contenu', formatter: contentPreviewFormatter, width: '55', widthUnit: '%' },

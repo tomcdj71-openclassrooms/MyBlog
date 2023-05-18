@@ -106,7 +106,7 @@ class TwigHelper
         return $currentRoute === $targetRoute;
     }
 
-    public function routeName(?PostModel $postModel = null, ?UserModel $userModel = null): string
+    public function routeName(?PostModel $postModel = null, ?UserModel $userModel = null): ?string
     {
         $currentUri = $this->serverRequest->getUri();
         $currentUri = rtrim($currentUri, '/');
@@ -127,16 +127,16 @@ class TwigHelper
             }
         }
 
-        throw new HttpException(404, 'Pas de route trouvée pour cette URL.');
+        return null;
     }
 
     /**
-     * Get a message based on the provided HTTP status code.
-     *
-     * @param int $statusCode The HTTP status code
-     *
-     * @return string The message associated with the status code
-     */
+         * Get a message based on the provided HTTP status code.
+         *
+         * @param int $statusCode The HTTP status code
+         *
+         * @return string The message associated with the status code
+         */
     public function getHttpStatusCodeMessage(int $statusCode): string
     {
         $messages = [

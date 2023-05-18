@@ -136,34 +136,22 @@ class UserManager
 
     public function updateProfile(UserModel $user, array $data): bool
     {
-        $sql = '
-        UPDATE user 
-        SET 
-            email = :email,
-            firstName = :firstName,
-            lastName = :lastName,
-            bio = :bio,
-            twitter = :twitter,
-            facebook = :facebook,
-            github = :github,
-            avatar = :avatar,
-            linkedin = :linkedin';
-        $params = [
-            ':email' => $data['email'] ?? $user->getEmail(),
-            ':firstName' => $data['firstName'] ?? $user->getFirstName(),
-            ':lastName' => $data['lastName'] ?? $user->getLastName(),
-            ':bio' => $data['bio'] ?? $user->getBio(),
-            ':avatar' => $data['avatar'] ?? $user->getAvatar(),
-            ':twitter' => $data['twitter'] ?? $user->getTwitter(),
-            ':facebook' => $data['facebook'] ?? $user->getFacebook(),
-            ':github' => $data['github'] ?? $user->getGithub(),
-            ':linkedin' => $data['linkedin'] ?? $user->getLinkedin(),
-            ':id' => $user->getId(),
-        ];
+        $sql = 'UPDATE user SET email = :email, firstName = :firstName, lastName = :lastName, bio = :bio, twitter = :twitter, facebook = :facebook, github = :github, avatar = :avatar, linkedin = :linkedin';
         $sql .= ' WHERE id = :id';
         $statement = $this->database->prepare($sql);
+        $statement->bindValue('id', $user->getId(), \PDO::PARAM_INT);
+        $statement->bindValue(':email', $data['email'] ?? $user->getEmail(), \PDO::PARAM_STR);
+        $statement->bindValue(':firstName', $data['firstName'] ?? $user->getFirstName(), \PDO::PARAM_STR);
+        $statement->bindValue(':lastName', $data['lastName'] ?? $user->getLastName(), \PDO::PARAM_STR);
+        $statement->bindValue(':bio', $data['bio'] ?? $user->getBio(), \PDO::PARAM_STR);
+        $statement->bindValue(':twitter', $data['twitter'] ?? $user->getTwitter(), \PDO::PARAM_STR);
+        $statement->bindValue(':facebook', $data['facebook'] ?? $user->getFacebook(), \PDO::PARAM_STR);
+        $statement->bindValue(':github', $data['github'] ?? $user->getGithub(), \PDO::PARAM_STR);
+        $statement->bindValue(':avatar', $data['avatar'] ?? $user->getAvatar(), \PDO::PARAM_STR);
+        $statement->bindValue(':linkedin', $data['linkedin'] ?? $user->getLinkedin(), \PDO::PARAM_STR);
+        $statement->execute();
 
-        return $statement->execute($params);
+        return true;
     }
 
     public function createUserModelFromArray(array $data): UserModel

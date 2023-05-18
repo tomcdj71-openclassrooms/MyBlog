@@ -34,11 +34,9 @@ class ImageHelper
         if (!$this->detectFileType($file['tmp_name'])) {
             return 'Erreur: Seuls les types de fichiers .jpg et .png sont autorisés.';
         }
-
         $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
         $filename = uniqid().'.'.$extension;
         $destination = $this->uploadDir.$filename;
-
         if (move_uploaded_file($file['tmp_name'], $destination)) {
             if ('png' === $extension) {
                 $convertedFile = $this->convertToJpg($destination);

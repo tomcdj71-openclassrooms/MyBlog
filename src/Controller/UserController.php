@@ -52,7 +52,10 @@ class UserController extends AbstractController
         $user = $this->securityHelper->getUser();
         $errors = [];
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
-            list($errors, $message, $postData, $update) = $this->profileService->handleProfilePostRequest($user);
+            list($errors, $message, $postData) = $this->profileService->handleProfilePostRequest($user);
+            if ($errors) {
+                $this->session->set('postData', $postData);
+            }
         }
         $userPostsData = $this->postService->getUserPostsData();
         $hasPost = ($userPostsData['total'] > 0) ? true : false;
@@ -126,18 +129,21 @@ class UserController extends AbstractController
                 $registered = $this->securityHelper->registerUser($postData);
                 if ($registered) {
                     $csrfToken = $this->csrfTokenService->generateToken('register');
-                    $message = 'Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter.';
-                    $this->mailerService->sendEmail(
+                    $message = 'Votre compte a été créé avec succès. Vous êtes désormais connecté.';
+                    $mailerError = $this->mailerService->sendEmail(
                         $this->configuration->get('mailer.from_email'),
                         $postData['email'],
                         'Bienvenue sur MyBlog',
                         $this->twig->render('emails/registration.html.twig')
                     );
-
+                    if ($mailerError) {
+                        $this->session->set('mailerError', $mailerError);
+                    }
+                    $this->session->set('success', $message);
                     $url = $this->request->generateUrl('blog');
                     $this->request->redirect($url);
                 }
-                $errors[] = "Échec de l'enregistrement. Veuillez réessayer.";
+                $errors[] = 'Échec de l\'enregistrement. Veuillez réessayer.';
             }
             $errors = array_merge($errors, $validationResult['errors']);
         }
@@ -177,7 +183,7 @@ class UserController extends AbstractController
     public function logout()
     {
         $this->session->destroy();
-
-        return $this->request->redirectToRoute('blog');
+        $url = $this->request->generateUrl('blog');
+        $this->request->redirect($url);
     }
 }

@@ -93,6 +93,11 @@ abstract class BaseValidator
                 }
 
                 break;
+
+            case 'file':
+                $errors = array_merge($errors, $this->validateFile($field, $data, $rules));
+
+                break;
         }
         if (isset($rules['constraints']['length'])) {
             $errors = array_merge($errors, $this->validateLength($field, $data, $rules));
@@ -139,5 +144,31 @@ abstract class BaseValidator
         $username = end($username);
 
         return preg_replace('/[^a-zA-Z0-9_]/', '', $username);
+    }
+
+    protected function validateFile(string $field, array $data, array $rules): array
+    {
+        $errors = [];
+        if (!isset($data[$field]) || UPLOAD_ERR_NO_FILE === $data[$field]['error']) {
+            return $errors;
+        }
+        if ($rules['constraints']['required'] && !is_uploaded_file($data[$field]['tmp_name'])) {
+            $errors[$field] = $rules['constraints']['errorMsg'] ?? '';
+
+            return $errors;
+        }
+        $fileType = pathinfo($data[$field]['name'], PATHINFO_EXTENSION);
+        if (!in_array($fileType, $rules['constraints']['fileType']['value'])) {
+            $errors[$field] = $rules['constraints']['fileType']['errorMsg'];
+
+            return $errors;
+        }
+        if ($data[$field]['size'] > $rules['constraints']['fileSize']['value']) {
+            $errors[$field] = $rules['constraints']['fileSize']['errorMsg'];
+
+            return $errors;
+        }
+
+        return $errors;
     }
 }

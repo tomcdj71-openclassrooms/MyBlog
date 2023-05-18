@@ -135,7 +135,6 @@ class PostManager
                     LEFT JOIN user u ON p.author_id = u.id
                     LEFT JOIN category c ON p.category_id = c.id
                     LEFT JOIN tag t ON instr("," || p.tags || ",", "," || t.id || ",") > 0
-                    WHERE p.is_enabled = 1 
                     GROUP BY p.id
                     ORDER BY p.created_at DESC
                     LIMIT :limit OFFSET :offset';
@@ -252,7 +251,7 @@ class PostManager
                 LEFT JOIN user u ON p.author_id = u.id
                 LEFT JOIN category c ON p.category_id = c.id
                 LEFT JOIN tag t ON instr(',' || p.tags || ',', ',' || t.id || ',') > 0
-                WHERE p.author_id = :user_id AND p.is_enabled = 1
+                WHERE p.author_id = :user_id
                 GROUP BY p.id
                 ORDER BY p.created_at DESC
                 LIMIT :limit
@@ -352,21 +351,20 @@ class PostManager
     public function updatePost(PostModel $post, array $data): bool
     {
         $sql = 'UPDATE post SET title = :title, content = :content, chapo = :chapo, updated_at = :updated_at, is_enabled = :is_enabled, featured_image = :featured_image, category_id = :category_id, slug = :slug';
-        $params = [
-            'title' => $data['title'],
-            'content' => $data['content'],
-            'chapo' => $data['chapo'],
-            'updated_at' => $data['updatedAt'],
-            'is_enabled' => $data['isEnabled'],
-            'featured_image' => $data['featuredImage'],
-            'category_id' => $data['category'],
-            'slug' => $data['slug'],
-        ];
         $sql .= ' WHERE id = :id';
         $statement = $this->database->prepare($sql);
         $statement->bindValue('id', $post->getId(), \PDO::PARAM_INT);
+        $statement->bindValue(':title', $data['title']);
+        $statement->bindValue(':content', $data['content']);
+        $statement->bindValue(':chapo', $data['chapo']);
+        $statement->bindValue(':featured_image', $data['featuredImage']);
+        $statement->bindValue(':updated_at', $data['updatedAt']);
+        $statement->bindValue(':is_enabled', (int) $data['isEnabled']);
+        $statement->bindValue(':category_id', $data['category']);
+        $statement->bindValue(':slug', $data['slug']);
+        $statement->execute();
 
-        return $statement->execute($params);
+        return true;
     }
 
     public function updatePostTags(PostModel $post, array $tags): bool

@@ -24,15 +24,6 @@ class EditProfileFormValidator extends BaseValidator
 
     public function validate(array $data): array
     {
-        $fields = ['firstName', 'lastName', 'bio', 'twitter', 'facebook', 'github', 'linkedin'];
-        foreach ($fields as $field) {
-            $getter = 'get'.ucfirst($field);
-            if (method_exists($this->securityHelper->getUser(), $getter) && 'lastName' !== $field && 'firstName' !== $field) {
-                if (empty($data[$field]) || $data[$field] === $this->securityHelper->getUser()->{$getter}()) {
-                    unset($data[$field]);
-                }
-            }
-        }
         $validationRules = [
             'firstName' => [
                 'constraints' => [
@@ -90,6 +81,14 @@ class EditProfileFormValidator extends BaseValidator
                 'constraints' => [
                     'required' => false,
                     'type' => 'username',
+                ],
+            ],
+            'avatar' => [
+                'constraints' => [
+                    'required' => false,
+                    'type' => 'file',
+                    'fileType' => ['value' => ['jpg', 'jpeg', 'png'], 'errorMsg' => 'L\'image doit être au format jpg, jpeg ou png.'],
+                    'fileSize' => ['value' => 1000000, 'errorMsg' => 'L\'image ne doit pas dépasser 1Mo.'],
                 ],
             ],
         ];

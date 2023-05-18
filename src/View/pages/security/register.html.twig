@@ -9,11 +9,11 @@
 							<div class="card-body">
 								<div class="pt-4 pb-2">
 									<h5 class="card-title text-center pb-0 fs-4">Créer un compte</h5>
-									<p class="text-center small">Entre vos informations de connexion</p>
+									<p class="text-center small">Entrez vos informations de connexion</p>
 								</div>
 								<form class="row g-3 needs-validation" method="POST">
 									<div class="col-12">
-										<label for="email" class="form-label">Votre email</label>
+										<label for="email" class="form-label">Votre email *</label>
 										<div class="input-group has-validation">
 											<span class="input-group-text" id="inputGroupPrepend">
 												<i class="bi bi-envelope"></i>
@@ -25,50 +25,50 @@
 												</div>
 											{% endif %}
 										</div>
-										<div class="col-12">
-											<label for="username" class="form-label">Nom d'utilisateur</label>
-											<div class="input-group has-validation">
-												<span class="input-group-text" id="inputGroupPrepend">
-													<i class="bi bi-person"></i>
-												</span>
-												<input type="text" name="username" class="form-control {% if errors.username is defined and errors.username is not empty %} is-invalid{% endif %}" id="username" required="" value="{{ postData.username|default('')|e('html_attr') }}">
-												<div class="invalid-feedback">Veuillez choisir votre nom d'utilisateur.</div>
-											</div>
+									</div>
+									<div class="col-12">
+										<label for="username" class="form-label">Nom d'utilisateur *</label>
+										<div class="input-group has-validation">
+											<span class="input-group-text" id="inputGroupPrepend">
+												<i class="bi bi-person"></i>
+											</span>
+											<input type="text" name="username" class="form-control {% if errors.username is defined and errors.username is not empty %} is-invalid{% endif %}" id="username" required="" value="{{ postData.username|default('')|e('html_attr') }}">
 											{% if errors.username is defined %}
 												<div class="invalid-feedback">
 													{{ errors.username }}
 												</div>
 											{% endif %}
 										</div>
-										<div class="col-12">
-											<label for="password" class="form-label">Mot de passe</label>
-											<div class="input-group">
-												<span class="input-group-text" id="inputGroupPrepend">
-													<i class="bi bi-lock"></i>
-												</span>
-												<input type="password" name="password" class="form-control {% if errors.password is defined and errors.password is not empty %} is-invalid{% endif %}" id="password" required="true">
-												{% if errors.password is defined %}
-													<div class="invalid-feedback">
-														{{ errors.password }}
-													</div>
-												{% endif %}
-											</div>
-										</div>
-										<div class="col-12">
-											<label for="passwordConfirm" class="form-label">Confirmation mot de passe</label>
-											<div class="input-group has-validation">
-												<span class="input-group-text" id="inputGroupPrepend">
-													<i class="bi bi-lock"></i>
-												</span>
-												<input type="password" name="passwordConfirm" class="form-control {% if errors.passwordConfirm is defined and errors.passwordConfirm is not empty %} is-invalid{% endif %}" id="passwordConfirm" required="true">
-												{% if errors.passwordConfirm is defined %}
-													<div class="invalid-feedback">
-														{{ errors.passwordConfirm }}
-													</div>
-												{% endif %}
-											</div>
+									</div>
+									<div class="col-12">
+										<label for="password" class="form-label">Mot de passe *</label>
+										<div class="input-group has-validation">
+											<span class="input-group-text" id="inputGroupPrepend">
+												<i class="bi bi-lock"></i>
+											</span>
+											<input type="password" name="password" class="form-control {% if errors.password is defined and errors.password is not empty %} is-invalid{% endif %}" id="password" required="" value="{{ postData.password|default('')|e('html_attr') }}">
+											{% if errors.password is defined %}
+												<div class="invalid-feedback">
+													{{ errors.password }}
+												</div>
+											{% endif %}
 										</div>
 									</div>
+									<div class="col-12">
+										<label for="passwordConfirm" class="form-label">Confirmation mot de passe *</label>
+										<div class="input-group has-validation">
+											<span class="input-group-text" id="inputGroupPrepend">
+												<i class="bi bi-lock"></i>
+											</span>
+											<input type="password" name="passwordConfirm" class="form-control {% if errors.passwordConfirm is defined and errors.passwordConfirm is not empty %} is-invalid{% endif %}" id="passwordConfirm" required="" value="{{ postData.passwordConfirm|default('')|e('html_attr') }}">
+											{% if errors.passwordConfirm is defined %}
+												<div class="invalid-feedback">
+													{{ errors.passwordConfirm }}
+												</div>
+											{% endif %}
+										</div>
+									</div>
+									<small class="form-text text-muted">Les champs (*) sont requis</small>
 									<input type="hidden" name="csrfToken" value="{{ csrfToken }}">
 									<div class="col-12">
 										<button class="btn btn-indigo w-100" type="submit" name="register">Créer un compte</button>

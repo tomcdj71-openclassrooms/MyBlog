@@ -54,15 +54,16 @@ class ServiceInjectable
         $container->set(\Symfony\Component\Mailer\MailerInterface::class, function (Container $container) {
             $transport = new \Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport(
                 $container->get(Configuration::class)->get('mailer.smtp_host'),
-                $container->get(Configuration::class)->get('mailer.smtp_port')
+                $container->get(Configuration::class)->get('mailer.smtp_port'),
             );
 
             return new \Symfony\Component\Mailer\Mailer($transport);
         });
         $container->set(self::SERVICE['mailer'], function (Container $container) {
             $mailerInterface = $container->get(\Symfony\Component\Mailer\MailerInterface::class);
+            $mode = $container->get(Configuration::class)->get('mode');
 
-            return new MailerService($mailerInterface);
+            return new MailerService($mailerInterface, $mode);
         });
     }
 }
