@@ -5,7 +5,7 @@
 	<div class="row mb-3">
 		<label for="avatar" class="col-md-4 col-lg-3 col-form-label">Avatar</label>
 		<div class="col-md-8 col-lg-9">
-			<img src="{{ asset('../uploads/avatars/' ~ user.avatar ~ '.jpg') }}" alt="avatar">
+			<img src="{{ (user.avatar starts with 'http://' or user.avatar starts with 'https://') ? user.avatar : (asset('../uploads/avatars/' ~ user.avatar ~ '.jpg')) }}" alt="avatar of user {{ user.username }}" class="rounded-circle">
 			<div class="pt-2">
 				<a href="#" class="btn btn-indigo btn-sm" title="Upload new profile image" onclick="document.getElementById('avatar').click();">
 					<i class="bi bi-upload"></i>
@@ -56,7 +56,7 @@
 	<div class="row mb-3">
 		<label for="email" class="col-md-4 col-lg-3 col-form-label">Email</label>
 		<div class="col-md-8 col-lg-9 form-group mb-3{% if errors.email is defined and errors.email is not empty %} has-error{% endif %}">
-			<input name="email" type="text" class="form-control {% if errors.email is defined  and errors.email is not empty %} is-invalid{% endif %}" id="email" value="{{ user.email ? user.email : ''}}" autocomplete="on">
+			<input disabled name="email" type="text" class="form-control {% if errors.email is defined  and errors.email is not empty %} is-invalid{% endif %}" id="email" placeholder="{{ user.email ? user.email : ''}}">
 			{% if errors.email is defined %}
 				<div class="invalid-feedback">
 					{{ errors.email }}
@@ -68,7 +68,7 @@
 	<div class="row mb-3">
 		<label for="twitter" class="col-md-4 col-lg-3 col-form-label">Profil Twitter</label>
 		<div class="col-md-8 col-lg-9 form-group mb-3{% if errors.twitter is defined and errors.twitter is not empty %} has-error{% endif %}">
-			<input name="twitter" type="text" class="form-control {% if errors.twitter is defined  and errors.twitter is not empty %} is-invalid{% endif %}" id="twitter" placeholder="{{ user.twitter ? user.twitter : 'https://twitter.com/username' }}" value="{{ user.twitter ? user.twitter : 'https://twitter.com/username' }}">
+			<input name="twitter" type="text" class="form-control {% if errors.twitter is defined  and errors.twitter is not empty %} is-invalid{% endif %}" id="twitter" placeholder="{{ user.twitter ? user.twitter : 'https://twitter.com/username' }}" value="{{ user.twitter ? user.twitter : '' }}">
 			{% if errors.twitter is defined %}
 				<div class="invalid-feedback">
 					{{ errors.twitter }}
@@ -80,7 +80,7 @@
 	<div class="row mb-3">
 		<label for="facebook" class="col-md-4 col-lg-3 col-form-label">Profil Facebook</label>
 		<div class="col-md-8 col-lg-9 form-group mb-3{% if errors.facebook is defined and errors.facebook is not empty %} has-error{% endif %}">
-			<input name="facebook" type="text" class="form-control {% if errors.facebook is defined  and errors.facebook is not empty %} is-invalid{% endif %}" id="facebook" placeholder="{{ user.facebook ? user.facebook : 'https://facebook.com/username' }}" value="{{ user.facebook ? user.facebook : 'https://facebook.com/username' }}">
+			<input name="facebook" type="text" class="form-control {% if errors.facebook is defined  and errors.facebook is not empty %} is-invalid{% endif %}" id="facebook" placeholder="{{ user.facebook ? user.facebook : 'https://facebook.com/username' }}" value="{{ user.facebook ? user.facebook : '' }}">
 			{% if errors.facebook is defined %}
 				<div class="invalid-feedback">
 					{{ errors.facebook }}
@@ -92,7 +92,7 @@
 	<div class="row mb-3">
 		<label for="github" class="col-md-4 col-lg-3 col-form-label">Profil Github</label>
 		<div class="col-md-8 col-lg-9 form-group mb-3{% if errors.github is defined and errors.github is not empty %} has-error{% endif %}">
-			<input name="github" type="text" class="form-control {% if errors.github is defined  and errors.github is not empty %} is-invalid{% endif %}" id="github" placeholder="{{ user.github ? user.github : 'https://github.com/username' }}" value="{{ user.github ? user.github : 'https://github.com/username' }}">
+			<input name="github" type="text" class="form-control {% if errors.github is defined  and errors.github is not empty %} is-invalid{% endif %}" id="github" placeholder="{{ user.github ? user.github : 'https://github.com/username' }}" value="{{ user.github ? user.github : '' }}">
 			{% if errors.github is defined %}
 				<div class="invalid-feedback">
 					{{ errors.github }}
@@ -104,7 +104,7 @@
 	<div class="row mb-3">
 		<label for="linkedin" class="col-md-4 col-lg-3 col-form-label">Profil LinkedIn</label>
 		<div class="col-md-8 col-lg-9 form-group mb-3{% if errors.linkedin is defined and errors.linkedin is not empty %} has-error{% endif %}">
-			<input name="linkedin" type="text" class="form-control {% if errors.linkedin is defined  and errors.linkedin is not empty %} is-invalid{% endif %}" id="linkedin" placeholder="{{ user.linkedin ? user.linkedin : 'https://linkedin.com/in/username' }}" value="{{ user.linkedin ? user.linkedin : 'https://linkedin.com/in/username' }}">
+			<input name="linkedin" type="text" class="form-control {% if errors.linkedin is defined  and errors.linkedin is not empty %} is-invalid{% endif %}" id="linkedin" placeholder="{{ user.linkedin ? user.linkedin : 'https://linkedin.com/in/username' }}" value="{{ user.linkedin ? user.linkedin : '' }}">
 			{% if errors.linkedin is defined %}
 				<div class="invalid-feedback">
 					{{ errors.linkedin }}

@@ -64,13 +64,17 @@ class AjaxController extends AbstractController
                 'content' => $comment->getContent(),
                 'created_at' => $comment->getCreatedAt(),
                 'parent_id' => $comment->getParentId(),
+                'is_enabled' => $comment->getIsEnabled(),
                 'post' => [
+                    'id' => $comment->getPost()->getId(),
                     'title' => $comment->getPost()->getTitle(),
                     'slug' => $comment->getPost()->getSlug(),
                 ],
                 'type' => 'myComments',
                 'actions' => [
-                    'voir' => '/post/'.$comment->getPost()->getSlug().'#comment-'.$comment->getId(),
+                    'voir' => '/blog/post/'.$comment->getPost()->getSlug().'#comment-'.$comment->getId(),
+                    'approuver' => '/ajax/admin-toggle-comment/'.$comment->getId(),
+                    'refuser' => '/ajax/admin-toggle-comment/'.$comment->getId(),
                 ],
             ];
         }
@@ -93,8 +97,10 @@ class AjaxController extends AbstractController
         }
         foreach ($userPostsData['rows'] as $key => $row) {
             $userPostsData['rows'][$key]['actions'] = [
-                'voir' => '/blog/post/'.$userPostsData['rows'][$key]['slug'],
-                'modifier' => '/admin/post/'.$userPostsData['rows'][$key]['id'].'/edit',
+                'voir' => '/blog/post/'.$userPostsData['rows'][$key]['id'],
+                'editer' => '/admin/post/'.$userPostsData['rows'][$key]['id'].'/edit',
+                'publish' => '/ajax/admin-toggle-post/'.$userPostsData['rows'][$key]['id'],
+                'unpublish' => '/ajax/admin-toggle-post/'.$userPostsData['rows'][$key]['id'],
             ];
             $userPostsData['rows'][$key]['type'] = 'myPosts';
         }
@@ -325,14 +331,12 @@ class AjaxController extends AbstractController
     public function promoteUser(int $userId)
     {
         $this->securityHelper->denyAccessUnlessAdmin();
-
         $user = $this->userManager->find($userId);
         if (null === $user) {
             $this->sendJsonResponse(['error' => 'Utilisateur non trouvé.'], 404);
 
             return;
         }
-
         $currentRole = $user->getRole();
         $newRole = 'ROLE_ADMIN' === $currentRole ? 'ROLE_USER' : 'ROLE_ADMIN';
         $user->setRole($newRole);

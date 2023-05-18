@@ -14,7 +14,6 @@ use App\Manager\UserManager;
 use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Validator\PostFormValidator;
-use Tracy\Debugger;
 
 class PostService extends AbstractService
 {
@@ -198,16 +197,12 @@ class PostService extends AbstractService
             }
         }
         if (empty($errors)) {
-            // If $posData['featuredImage'] is empty or a string, it means that the user didn't change the featured image
-            // If $posData['featuredImage'] is an array, it means that the user changed the featured image
             if (is_string($postData['featuredImage'])) {
                 unset($postData['featuredImage']);
             }
             $postFormValidator = new PostFormValidator($this->userManager, $this->session, $this->csrfTokenService);
             $response = $postFormValidator->validate($postData);
-            Debugger::barDump($response);
             $responseData = $response['valid'] ? $this->editPost($post, $postData) : null;
-            Debugger::barDump($responseData);
             $postSlug = $responseData['postSlug'] ?? null;
             $tagsUpdated = $responseData['tagsUpdated'] ?? null;
             $message = $postSlug ? 'Votre article a été modifié avec succès!' : null;
@@ -228,7 +223,6 @@ class PostService extends AbstractService
         }
         $filename = explode('.', $filename)[0];
         $data['avatar'] = $filename;
-
         $postData = [
             'title' => $data['title'],
             'content' => $data['content'],

@@ -13,7 +13,6 @@ use App\Model\UserModel;
 use App\ModelParameters\PostModelParameters;
 use App\ModelParameters\TagModelParameters;
 use App\ModelParameters\UserModelParameters;
-use Tracy\Debugger;
 
 class PostManager
 {
@@ -253,7 +252,7 @@ class PostManager
                 LEFT JOIN user u ON p.author_id = u.id
                 LEFT JOIN category c ON p.category_id = c.id
                 LEFT JOIN tag t ON instr(',' || p.tags || ',', ',' || t.id || ',') > 0
-                WHERE p.author_id = :user_id AND p.is_enabled = 1
+                WHERE p.author_id = :user_id
                 GROUP BY p.id
                 ORDER BY p.created_at DESC
                 LIMIT :limit
@@ -353,20 +352,8 @@ class PostManager
     public function updatePost(PostModel $post, array $data): bool
     {
         $sql = 'UPDATE post SET title = :title, content = :content, chapo = :chapo, updated_at = :updated_at, is_enabled = :is_enabled, featured_image = :featured_image, category_id = :category_id, slug = :slug';
-        $params = [
-            'title' => $data['title'],
-            'content' => $data['content'],
-            'chapo' => $data['chapo'],
-            'updated_at' => $data['updatedAt'],
-            'is_enabled' => $data['isEnabled'],
-            'featured_image' => $data['featuredImage'],
-            'category_id' => $data['category'],
-            'slug' => $data['slug'],
-        ];
         $sql .= ' WHERE id = :id';
         $statement = $this->database->prepare($sql);
-        // remove file extension from featured image
-        Debugger::barDump($data['featuredImage']);
         $statement->bindValue('id', $post->getId(), \PDO::PARAM_INT);
         $statement->bindValue(':title', $data['title']);
         $statement->bindValue(':content', $data['content']);

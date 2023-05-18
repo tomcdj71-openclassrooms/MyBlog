@@ -52,7 +52,10 @@ class UserController extends AbstractController
         $user = $this->securityHelper->getUser();
         $errors = [];
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
-            list($errors, $message, $postData, $update) = $this->profileService->handleProfilePostRequest($user);
+            list($errors, $message, $postData) = $this->profileService->handleProfilePostRequest($user);
+            if ($errors) {
+                $this->session->set('postData', $postData);
+            }
         }
         $userPostsData = $this->postService->getUserPostsData();
         $hasPost = ($userPostsData['total'] > 0) ? true : false;
@@ -137,7 +140,6 @@ class UserController extends AbstractController
                         $this->session->set('mailerError', $mailerError);
                     }
                     $this->session->set('success', $message);
-
                     $url = $this->request->generateUrl('blog');
                     $this->request->redirect($url);
                 }

@@ -147,7 +147,6 @@ class AdminController extends AbstractController
             list($errors, $message, $post, $postSlug, $postData) = $this->postService->handleEditPostRequest($post);
             if ($errors) {
                 $this->session->set('postData', $postData);
-                Debugger::barDump($this->session->get('postData'));
             }
             if (!empty($postSlug)) {
                 $this->session->set('message', $message);
