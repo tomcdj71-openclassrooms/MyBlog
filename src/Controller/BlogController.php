@@ -97,6 +97,9 @@ class BlogController extends AbstractController
         if (!$post) {
             throw new HttpException(404, 'Aucun article ne correspond à ce slug.');
         }
+        if (!$post->getIsEnabled() && !$this->securityHelper->hasRole('ROLE_ADMIN')) {
+            throw new HttpException(404, 'Aucun article ne correspond à ce slug.');
+        }
         $comments = $this->commentManager->findAllByPost($post->getId());
         $errors = $this->session->flash('errors');
         $message = $this->session->flash('message');
