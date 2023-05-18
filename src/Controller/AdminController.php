@@ -15,7 +15,6 @@ use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Service\CsrfTokenService;
 use App\Service\PostService;
-use Tracy\Debugger;
 
 class AdminController extends AbstractController
 {
@@ -114,7 +113,6 @@ class AdminController extends AbstractController
             list($errors, $message, $postData, $postSlug) = $this->postService->handleAddPostRequest();
             if ($errors) {
                 $this->session->set('postData', $postData);
-                Debugger::barDump($this->session->get('postData'));
             }
             if (!empty($postSlug)) {
                 $this->session->set('message', $message);

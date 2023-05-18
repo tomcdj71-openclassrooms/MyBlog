@@ -43,7 +43,7 @@ class ControllerInjectable
         'ajax' => [TwigHelper::class, Session::class, ServerRequest::class, SecurityHelper::class, UserManager::class, Request::class, Configuration::class, MailerService::class],
         'blog' => [TwigHelper::class, Session::class, ServerRequest::class, SecurityHelper::class, UserManager::class, Request::class, CategoryManager::class, TagManager::class, CommentManager::class, CommentService::class, PostManager::class, CsrfTokenService::class],
         'error' => [TwigHelper::class, Session::class, ServerRequest::class, SecurityHelper::class, UserManager::class, Request::class],
-        'home' => [MailerService::class, Configuration::class, ContactService::class, CsrfTokenService::class],
+        'home' => [MailerService::class, Configuration::class, ContactService::class, CsrfTokenService::class, Request::class],
         'user' => [TwigHelper::class, Session::class, ServerRequest::class, SecurityHelper::class, UserManager::class, Request::class, CsrfTokenService::class],
     ];
 

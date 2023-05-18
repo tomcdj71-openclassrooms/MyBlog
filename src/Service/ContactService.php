@@ -30,29 +30,32 @@ class ContactService extends AbstractService
         $this->userManager = $userManager;
     }
 
-    public function handleContactPostRequest(array $postData)
+    public function handleContactPostRequest()
     {
         $errors = [];
         $csrfToCheck = $this->serverRequest->getPost('csrfToken');
         if (!$this->csrfTokenService->checkCsrfToken('contact', $csrfToCheck)) {
             $errors[] = 'Jeton CSRF invalide.';
         }
-        $postData = $this->getPostData($postData);
+        $postData = $this->getPostData();
         $commentFV = new ContactFormValidator($this->userManager, $this->session, $this->csrfTokenService);
         $response = $commentFV->validate($postData);
         $response['data'] = $postData;
-        $message = $response['valid'] ? 'Votre demande de contact a été prise en compte!' : 'Votre demande de contact n\'a pas pu être prise en compte.';
+        $message = $response['valid'] ? 'Formulaire validé!' : null;
         $errors = !$response['valid'] ? $response['errors'] : $errors;
 
         return [$errors, $message, $response];
     }
 
-    public function getPostData(array $postData)
+    public function getPostData()
     {
         $fields = ['email', 'name', 'subject', 'message', 'csrfToken'];
 
-        return array_map(function ($field) {
+        $postData = array_map(function ($field) {
             return $this->serverRequest->getPost($field, '');
         }, array_combine($fields, $fields));
+        $postData['csrfToken'] = $this->serverRequest->getPost('csrfToken');
+
+        return $postData;
     }
 }
