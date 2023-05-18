@@ -183,7 +183,7 @@ class UserController extends AbstractController
     public function logout()
     {
         $this->session->destroy();
-
-        return $this->request->redirectToRoute('blog');
+        $url = $this->request->generateUrl('blog');
+        $this->request->redirect($url);
     }
 }

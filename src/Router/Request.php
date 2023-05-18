@@ -67,7 +67,7 @@ class Request
      */
     public function redirect(string $url, int $statusCode = 302)
     {
-        header('Location: '.$url, true, $statusCode);
+        header('Location: '.$url, true, $statusCode ? $statusCode : 302);
     }
 
     /**

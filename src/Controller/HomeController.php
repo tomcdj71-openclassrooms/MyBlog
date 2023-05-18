@@ -32,6 +32,11 @@ class HomeController extends AbstractController
      */
     public function index()
     {
+        $flashBag = [
+            'mailerError' => $this->session->get('mailerError') ? $this->session->flash('mailerError') : null,
+            'success' => $this->session->get('success') ? $this->session->flash('success') : null,
+        ];
+
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
             list($errors, $message, $postData) = $this->contactService->handleContactPostRequest();
             if ($errors) {
@@ -49,13 +54,11 @@ class HomeController extends AbstractController
                 $postData = null;
                 $this->session->set('success', $message);
                 $this->session->set('mailerError', $mailerError);
+                $url = $this->request->generateUrl('home');
+                $this->request->redirect($url.'#contact', 302);
             }
         }
         $csrfToken = $this->csrfTokenService->generateToken('contact');
-        $flashBag = [
-            'mailerError' => $this->session->get('mailerError') ? $this->session->flash('mailerError') : null,
-            'success' => $this->session->get('success') ? $this->session->flash('success') : null,
-        ];
 
         return $this->twig->render('pages/portfolio/index.html.twig', [
             'user' => $this->securityHelper->getUser(),
