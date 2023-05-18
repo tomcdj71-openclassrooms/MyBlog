@@ -135,7 +135,6 @@ class PostManager
                     LEFT JOIN user u ON p.author_id = u.id
                     LEFT JOIN category c ON p.category_id = c.id
                     LEFT JOIN tag t ON instr("," || p.tags || ",", "," || t.id || ",") > 0
-                    WHERE p.is_enabled = 1 
                     GROUP BY p.id
                     ORDER BY p.created_at DESC
                     LIMIT :limit OFFSET :offset';

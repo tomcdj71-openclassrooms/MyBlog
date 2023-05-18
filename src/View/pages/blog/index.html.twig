@@ -31,52 +31,54 @@
 					{% endif %}
 					{% include "_partials/blog_search_filter.html.twig" %}
 					{% for post in posts %}
-						<article class="entry">
-							<div class="entry-img">
-								{% if post.featuredImage starts with 'http://' or post.featuredImage starts with 'https://' %}
-									<img src="{{ post.featuredImage }}" alt="Illustration of the post {{ post.title }}" class="img-fluid">
-								{% else %}
-									<img src="{{ asset('../uploads/featured/' ~ post.featuredImage ~ '.jpg') }}" alt="Illustration of the post {{ post.title }}" class="img-fluid">
-								{% endif %}
-							</div>
-							<h2 class="entry-title">
-								<a href="{{ path('blog_post', {'slug': post.slug}) }}">{{ post.title }}</a>
-							</h2>
-							<div class="entry-meta">
-								<ul>
-									<li class="d-flex align-items-center">
-										<i class="bi bi-person"></i>
-										<a href="{{ path('blog_author', {'username': post.author.getUsername() }) }}">
-											{{ post.author.getUsername() }}</a>
-									</li>
-									<li class="d-flex align-items-center">
-										<i class="bi bi-clock"></i>
-										<a href="{{ path('blog_date', {'date': post.createdAt|date("y-m-d")}) }}">
-											<time datetime="{{ post.createdAt|date("d/m/Y") }}">
-												{{ post.createdAt|date("d/m/Y") }}</time>
-										</a>
-									</li>
-									<li class="d-flex align-items-center">
-										<i class="bi bi-folder"></i>
-										<a href="{{ path('blog_category', {'slug': post.category.slug }) }}">{{ post.category.name }}</a>
-									</li>
-									<li class="d-flex align-items-center">
-										<i class="bi bi-chat-dots"></i>
-										<a href="{{ path('blog_post', {'slug': post.slug}) }}#comment-section">
-											{{ post.comments.number_of_comments }}
-											Commentaire{{ post.comments.number_of_comments > 1 ? 's' : '' }}</a>
-									</li>
-								</ul>
-							</div>
-							<div class="entry-content">
-								<p>
-									{{ post.chapo }}
-								</p>
-								<div class="read-more">
-									<a href="{{ path('blog_post', {'slug': post.slug}) }}">Voir Plus</a>
+						{% if post.isEnabled %}
+							<article class="entry">
+								<div class="entry-img">
+									{% if post.featuredImage starts with 'http://' or post.featuredImage starts with 'https://' %}
+										<img src="{{ post.featuredImage }}" alt="Illustration of the post {{ post.title }}" class="img-fluid">
+									{% else %}
+										<img src="{{ asset('../uploads/featured/' ~ post.featuredImage ~ '.jpg') }}" alt="Illustration of the post {{ post.title }}" class="img-fluid">
+									{% endif %}
 								</div>
-							</div>
-						</article>
+								<h2 class="entry-title">
+									<a href="{{ path('blog_post', {'slug': post.slug}) }}">{{ post.title }}</a>
+								</h2>
+								<div class="entry-meta">
+									<ul>
+										<li class="d-flex align-items-center">
+											<i class="bi bi-person"></i>
+											<a href="{{ path('blog_author', {'username': post.author.getUsername() }) }}">
+												{{ post.author.getUsername() }}</a>
+										</li>
+										<li class="d-flex align-items-center">
+											<i class="bi bi-clock"></i>
+											<a href="{{ path('blog_date', {'date': post.createdAt|date("y-m-d")}) }}">
+												<time datetime="{{ post.createdAt|date("d/m/Y") }}">
+													{{ post.createdAt|date("d/m/Y") }}</time>
+											</a>
+										</li>
+										<li class="d-flex align-items-center">
+											<i class="bi bi-folder"></i>
+											<a href="{{ path('blog_category', {'slug': post.category.slug }) }}">{{ post.category.name }}</a>
+										</li>
+										<li class="d-flex align-items-center">
+											<i class="bi bi-chat-dots"></i>
+											<a href="{{ path('blog_post', {'slug': post.slug}) }}#comment-section">
+												{{ post.comments.number_of_comments }}
+												Commentaire{{ post.comments.number_of_comments > 1 ? 's' : '' }}</a>
+										</li>
+									</ul>
+								</div>
+								<div class="entry-content">
+									<p>
+										{{ post.chapo }}
+									</p>
+									<div class="read-more">
+										<a href="{{ path('blog_post', {'slug': post.slug}) }}">Voir Plus</a>
+									</div>
+								</div>
+							</article>
+						{% endif %}
 					{% endfor %}
 					<!-- End blog entry -->
 					<div class="blog-pagination">
