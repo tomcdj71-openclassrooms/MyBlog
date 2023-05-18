@@ -97,6 +97,9 @@ function actionFormatter(value, row, index) {
     if (actions.editer) {
         actionButtons += '<a href="' + actions.editer + '" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i> Editer</a> ';
     }
+    if (actions.rechercher) {
+        actionButtons += '<a href="' + actions.rechercher + '" class="btn btn-sm btn-info"><i class="bi bi-search"></i> Rechercher</a> ';
+    }
     if (entityType === 'comment') {
         var isApproved = row.is_enabled;
         var buttonClass = isApproved ? 'btn-danger' : 'btn-success';

@@ -111,7 +111,6 @@ class AjaxController extends AbstractController
     public function manageAllComments()
     {
         $this->securityHelper->denyAccessUnlessAdmin();
-
         $offset = $this->serverRequest->getQuery('offset', 1);
         $limit = $this->serverRequest->getQuery('limit', 10);
         $page = intval($offset / $limit) + 1;
@@ -155,7 +154,6 @@ class AjaxController extends AbstractController
     public function allTags()
     {
         $this->securityHelper->denyAccessUnlessAdmin();
-
         $tags = $this->tagManager->findAll();
         $tagsArray = [];
         foreach ($tags as $tag) {
@@ -165,8 +163,7 @@ class AjaxController extends AbstractController
                 'slug' => $tag->getSlug(),
                 'type' => 'allTags',
                 'actions' => [
-                    'voir' => '/blog/tag/'.$tag->getSlug(),
-                    'editer' => '/admin/tag/'.$tag->getId().'/edit',
+                    'rechercher' => '/blog/tag/'.$tag->getSlug(),
                 ],
             ];
         }
@@ -182,7 +179,6 @@ class AjaxController extends AbstractController
     public function allCategories()
     {
         $this->securityHelper->denyAccessUnlessAdmin();
-
         $categories = $this->categoryManager->findAll();
         $categoriesArray = [];
         foreach ($categories as $category) {
@@ -192,8 +188,7 @@ class AjaxController extends AbstractController
                 'slug' => $category->getSlug(),
                 'type' => 'allCategories',
                 'actions' => [
-                    'voir' => '/blog/category/'.$category->getSlug(),
-                    'editer' => '/admin/category/'.$category->getId().'/edit',
+                    'rechercher' => '/blog/category/'.$category->getSlug(),
                 ],
             ];
         }
@@ -209,7 +204,6 @@ class AjaxController extends AbstractController
     public function allUsers()
     {
         $this->securityHelper->denyAccessUnlessAdmin();
-
         $users = $this->userManager->findAll();
         $usersArray = [];
         foreach ($users as $user) {
@@ -221,7 +215,7 @@ class AjaxController extends AbstractController
                 'created_at' => $user->getCreatedAt(),
                 'type' => 'allUsers',
                 'actions' => [
-                    'voir' => '/admin/user/'.$user->getId().'/edit',
+                    'voir' => '/profile/'.$user->getUsername(),
                     'promote' => '/ajax/admin-promote-user/'.$user->getId(),
                     'demote' => '/ajax/admin-promote-user/'.$user->getId(),
                 ],
@@ -238,7 +232,6 @@ class AjaxController extends AbstractController
     public function allPosts()
     {
         $this->securityHelper->denyAccessUnlessAdmin();
-
         $offset = $this->serverRequest->getQuery('offset', 1);
         $limit = $this->serverRequest->getQuery('limit', 10);
         $page = intval($offset / $limit) + 1;
@@ -282,14 +275,12 @@ class AjaxController extends AbstractController
     public function toggleCommentStatus(int $commentId)
     {
         $this->securityHelper->denyAccessUnlessAdmin();
-
         $comment = $this->commentManager->find($commentId);
         if (null === $comment) {
             $this->sendJsonResponse(['error' => 'Commentaire non trouvé.'], 404);
 
             return;
         }
-
         $comment->setIsEnabled(!$comment->getIsEnabled());
         $success = $this->commentManager->updateIsEnabled($comment);
         $subject = 'Commentaire '.($comment->getIsEnabled() ? 'approuvé' : 'refusé');
@@ -303,7 +294,6 @@ class AjaxController extends AbstractController
         );
         $this->session->set('success', $success ? 'Commentaire mis à jour.' : 'Erreur lors de la mise à jour du commentaire.');
         $this->session->set('mailerError', $mailerError);
-
         $flashBag = [
             'message' => $this->session->flash('success', ''),
             'mailerError' => $this->session->flash('mailerError', ''),
@@ -315,7 +305,6 @@ class AjaxController extends AbstractController
     public function togglePostStatus(int $postId)
     {
         $this->securityHelper->denyAccessUnlessAdmin();
-
         $post = $this->postManager->find($postId);
         if (null === $post) {
             $this->sendJsonResponse(['error' => 'Article non trouvé.'], 404);
@@ -324,7 +313,6 @@ class AjaxController extends AbstractController
         }
         $post->setIsEnabled(!$post->getIsEnabled());
         $success = $this->postManager->updateIsEnabled($post);
-
         $this->sendJsonResponse(['success' => $success]);
     }
 
@@ -341,7 +329,6 @@ class AjaxController extends AbstractController
         $newRole = 'ROLE_ADMIN' === $currentRole ? 'ROLE_USER' : 'ROLE_ADMIN';
         $user->setRole($newRole);
         $success = $this->userManager->updateRole($user);
-
         $this->sendJsonResponse(['success' => $success]);
     }
 
