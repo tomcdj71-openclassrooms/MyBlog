@@ -34,7 +34,6 @@ class Route
             'login' => ['/login', UserController::class, 'login', 'GET|POST', 'Se Connecter'],
             'logout' => ['/logout', UserController::class, 'logout', 'GET', 'Déconnexion'],
             'register' => ['/register', UserController::class, 'register', 'GET|POST', "S'inscrire"],
-            'admin_index' => ['/admin', AdminController::class, 'index', 'GET', 'Admin Dashboard'],
             'admin_tags' => ['/admin/tags', AdminController::class, 'tags', 'GET|POST', 'Gestion des Tags'],
             'admin_categories' => ['/admin/categories', AdminController::class, 'categories', 'GET|POST', 'Gestion des Catégories'],
             'admin_posts' => ['/admin/posts', AdminController::class, 'posts', 'GET|POST', 'Gestion des Articles'],

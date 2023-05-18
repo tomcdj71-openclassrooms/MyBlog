@@ -19,7 +19,7 @@
 					</li>
 					{% if profile.role == 'ROLE_ADMIN' %}
 						<li>
-							<a class="dropdown-item" href="{{ path('admin_index') }}">Tableau de bord</a>
+							<a class="dropdown-item" href="{{ path('admin_posts') }}">Tableau de bord</a>
 						</li>
 					{% endif %}
 					<li>
@@ -30,7 +30,7 @@
 			<div class="d-md-none">
 				<a class="nav-link centered-pill-button {{ current_route('my_profile') ? 'active' : '' }}" href="{{ path('my_profile') }}">Mon profil</a>
 				{% if profile.role == 'ROLE_ADMIN' %}
-					<a class="nav-link centered-pill-button {{ current_route('admin_index') ? 'active' : '' }}" href="{{ path('admin_index') }}">Tableau de bord</a>
+					<a class="nav-link centered-pill-button {{ current_route('admin_posts') ? 'active' : '' }}" href="{{ path('admin_posts') }}">Tableau de bord</a>
 				{% endif %}
 				<a class="nav-link centered-pill-button" href="{{ path('logout') }}">Déconnexion</a>
 			</div>
