@@ -41,22 +41,23 @@ class HomeController extends AbstractController
             list($errors, $message, $postData) = $this->contactService->handleContactPostRequest();
             if ($errors) {
                 $this->session->set('postData', $postData);
-            } else {
-                $mailerError = $this->mailerService->sendEmail(
-                    $postData['data']['email'],
-                    $this->configuration->get('mailer.from_email'),
-                    'Demande de contact - MyBlog',
-                    $this->twig->render('emails/contact.html.twig', [
-                        'data' => $postData['data'],
-                    ])
-                );
-                $this->session->remove('postData');
-                $postData = null;
-                $this->session->set('success', $message);
-                $this->session->set('mailerError', $mailerError);
-                $url = $this->request->generateUrl('home');
-                $this->request->redirect($url.'#contact', 302);
+
+                return;
             }
+            $mailerError = $this->mailerService->sendEmail(
+                $postData['data']['email'],
+                $this->configuration->get('mailer.from_email'),
+                'Demande de contact - MyBlog',
+                $this->twig->render('emails/contact.html.twig', [
+                    'data' => $postData['data'],
+                ])
+            );
+            $this->session->remove('postData');
+            $postData = null;
+            $this->session->set('success', $message);
+            $this->session->set('mailerError', $mailerError);
+            $url = $this->request->generateUrl('home');
+            $this->request->redirect($url.'#contact', 302);
         }
         $csrfToken = $this->csrfTokenService->generateToken('contact');
 

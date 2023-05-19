@@ -62,7 +62,6 @@ class UserController extends AbstractController
         $csrfToken = $this->csrfTokenService->generateToken('editProfile');
 
         return $this->twig->render('pages/profile/profile.html.twig', array_merge([
-            'errors' => $errors ?? null,
             'csrfToken' => $csrfToken,
             'hasPost' => $hasPost,
             'impersonate' => false,
@@ -104,7 +103,6 @@ class UserController extends AbstractController
             'csrfToken' => $csrfToken,
             'errors' => $errors ?? null,
             'postData' => $postData ?? null,
-            'message' => $message ?? null,
         ]);
     }
 

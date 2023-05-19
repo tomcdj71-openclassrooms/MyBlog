@@ -32,8 +32,8 @@
 								</li>
 								<li class="d-flex align-items-center">
 									<i class="bi bi-chat-dots"></i>
-									<a href="#comment-section" class="comments-count">{{ post.comments.number_of_comments }}
-										Commentaire{{ post.comments.number_of_comments > 1 ? 's' : '' }}</a>
+									<a href="#comment-section" class="comments-count">{{ post.commentCount }}
+										Commentaire{{ post.commentCount > 1 ? 's' : '' }}</a>
 								</li>
 								{% if profile.role is defined and profile.role == 'ROLE_ADMIN' %}
 									<li class="d-flex align-items-center">

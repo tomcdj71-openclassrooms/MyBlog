@@ -117,7 +117,7 @@ class TwigHelper
             $routePattern = rtrim($route[0], '/');
             $routePattern = '' === $routePattern ? '/' : $routePattern;
             $pattern = '@^'.preg_replace('@\\\{[^/]+@', '([^/]+)', preg_quote($routePattern, '@')).'$@D';
-            if (preg_match($pattern, $currentUri, $matches)) {
+            if (preg_match($pattern, $currentUri)) {
                 $routeName = $route[4];
                 if ('Article' === $routeName && null !== $postModel) {
                     return $prefix.$routeName.' - '.$postModel->getTitle();
@@ -131,12 +131,12 @@ class TwigHelper
     }
 
     /**
-         * Get a message based on the provided HTTP status code.
-         *
-         * @param int $statusCode The HTTP status code
-         *
-         * @return string The message associated with the status code
-         */
+     * Get a message based on the provided HTTP status code.
+     *
+     * @param int $statusCode The HTTP status code
+     *
+     * @return string The message associated with the status code
+     */
     public function getHttpStatusCodeMessage(int $statusCode): string
     {
         $messages = [

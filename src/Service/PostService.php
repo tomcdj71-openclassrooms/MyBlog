@@ -273,7 +273,6 @@ class PostService extends AbstractService
             }
         }
         $data['isEnabled'] = $post->getIsEnabled();
-
         $postUpdated = $this->postManager->updatePost($post, $data);
         $tagsUpdated = $this->postManager->updatePostTags($post, $post->getTags());
         if ($postUpdated && $tagsUpdated) {

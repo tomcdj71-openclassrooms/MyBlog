@@ -139,6 +139,7 @@ class AdminController extends AbstractController
         $this->securityHelper->denyAccessUnlessAdmin();
         $post = $this->postManager->find($postId);
         if (!$post) {
+            throw new \Exception('Artice non trouvé', 404);
         }
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
             list($errors, $message, $post, $postSlug, $postData) = $this->postService->handleEditPostRequest($post);

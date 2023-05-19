@@ -5,56 +5,49 @@ declare(strict_types=1);
 namespace App\Manager;
 
 use App\Config\DatabaseConnexion;
+use App\Factory\ModelFactory;
 use App\Model\CategoryModel;
 use App\Model\CommentModel;
 use App\Model\PostModel;
 use App\Model\TagModel;
 use App\Model\UserModel;
-use App\ModelParameters\PostModelParameters;
-use App\ModelParameters\TagModelParameters;
-use App\ModelParameters\UserModelParameters;
 
 class PostManager
 {
     private \PDO $database;
-    private PostModelParameters $postModelParams;
-    private UserModelParameters $userModelParams;
-    private TagModelParameters $tagModelParams;
+    private ModelFactory $modelFactory;
 
     public function __construct(DatabaseConnexion $databaseConnexion)
     {
         $this->database = $databaseConnexion->connect();
-        $this->postModelParams = new PostModelParameters();
-        $this->userModelParams = new UserModelParameters();
-        $this->tagModelParams = new TagModelParameters();
+        $this->modelFactory = new ModelFactory();
     }
 
     public function find(int $id): ?PostModel
     {
         try {
             $sql = 'SELECT p.id as post_id, p.title, p.author_id, p.content, p.chapo, p.created_at, p.updated_at, p.is_enabled, p.featured_image, p.category_id, p.slug,
-                    u.id as user_id, u.*,
-                    c.id as category_id, c.name as category_name, c.slug as category_slug,
-                    GROUP_CONCAT(DISTINCT t.name) as tag_names,
-                    GROUP_CONCAT(DISTINCT t.id) as tag_ids,
-                    GROUP_CONCAT(DISTINCT t.slug) as tag_slugs,
-                    (SELECT COUNT(*) FROM comment cm WHERE cm.post_id = p.id AND cm.is_enabled = 1) as number_of_comments
-                    FROM post p
-                    LEFT JOIN user u ON p.author_id = u.id
-                    LEFT JOIN category c ON p.category_id = c.id
-                    LEFT JOIN post_tag pt ON p.id = pt.post_id
-                    LEFT JOIN tag t ON pt.tag_id = t.id
-                    WHERE p.id = :id
-                    GROUP BY p.id';
+                u.id as user_id, u.*,
+                c.id as category_id, c.name as category_name, c.slug as category_slug,
+                GROUP_CONCAT(DISTINCT t.name) as tag_names,
+                GROUP_CONCAT(DISTINCT t.id) as tag_ids,
+                GROUP_CONCAT(DISTINCT t.slug) as tag_slugs,
+                (SELECT COUNT(*) FROM comment cm WHERE cm.post_id = p.id AND cm.is_enabled = 1) as number_of_comments
+                FROM post p
+                LEFT JOIN user u ON p.author_id = u.id
+                LEFT JOIN category c ON p.category_id = c.id
+                LEFT JOIN post_tag pt ON p.id = pt.post_id
+                LEFT JOIN tag t ON pt.tag_id = t.id
+                WHERE p.id = :id
+                GROUP BY p.id';
             $statement = $this->database->prepare($sql);
             $statement->execute(['id' => $id]);
             $data = $statement->fetch(\PDO::FETCH_ASSOC);
             if (!$data) {
                 return null;
             }
-            $preparedData = $this->preparePostData($data);
 
-            return $this->createPostModelFromArray($preparedData);
+            return $this->preparePostData($data);
         } catch (\PDOException $error) {
             throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
@@ -80,8 +73,7 @@ class PostManager
             $statement->execute(['value' => $value]);
             $posts = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                $preparedData = $this->preparePostData($data);
-                $posts[] = $this->createPostModelFromArray($preparedData);
+                $posts[] = $this->preparePostData($data);
             }
 
             return $posts;
@@ -113,9 +105,8 @@ class PostManager
             if (!$data) {
                 return null;
             }
-            $preparedData = $this->preparePostData($data);
 
-            return $this->createPostModelFromArray($preparedData);
+            return $this->preparePostData($data);
         } catch (\PDOException $error) {
             throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
@@ -145,8 +136,7 @@ class PostManager
             $statement->execute();
             $posts = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                $preparedData = $this->preparePostData($data);
-                $posts[] = $this->createPostModelFromArray($preparedData);
+                $posts[] = $this->preparePostData($data);
             }
 
             return [
@@ -196,8 +186,7 @@ class PostManager
             ]);
             $posts = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                $preparedData = $this->preparePostData($data);
-                $posts[] = $this->createPostModelFromArray($preparedData);
+                $posts[] = $this->preparePostData($data);
             }
 
             return $posts;
@@ -227,8 +216,7 @@ class PostManager
             $statement->execute(['tag_slug' => $tag]);
             $posts = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                $preparedData = $this->preparePostData($data);
-                $posts[] = $this->createPostModelFromArray($preparedData);
+                $posts[] = $this->preparePostData($data);
             }
 
             return $posts;
@@ -264,8 +252,7 @@ class PostManager
             ]);
             $posts = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                $preparedData = $this->preparePostData($data);
-                $posts[] = $this->createPostModelFromArray($preparedData);
+                $posts[] = $this->preparePostData($data);
             }
             $sql = 'SELECT COUNT(*) FROM post WHERE author_id = :user_id';
             $statement = $this->database->prepare($sql);
@@ -294,10 +281,7 @@ class PostManager
             $statement->execute(['limit' => $limit]);
             $posts = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                $data['author'] = [];
-                $data['category'] = [];
-                $data['tags'] = [];
-                $posts[] = $this->createPostModelFromArray($data);
+                $posts[] = $this->preparePostData($data);
             }
 
             return $posts;
@@ -350,8 +334,11 @@ class PostManager
 
     public function updatePost(PostModel $post, array $data): bool
     {
-        $sql = 'UPDATE post SET title = :title, content = :content, chapo = :chapo, updated_at = :updated_at, is_enabled = :is_enabled, featured_image = :featured_image, category_id = :category_id, slug = :slug';
-        $sql .= ' WHERE id = :id';
+        $tagIds = implode(',', array_map(function ($tag) {
+            return $tag->getId();
+        }, $post->getTags()));
+
+        $sql = 'UPDATE post SET title = :title, content = :content, chapo = :chapo, updated_at = :updated_at, is_enabled = :is_enabled, featured_image = :featured_image, category_id = :category_id, slug = :slug, tags = :tags WHERE id = :id';
         $statement = $this->database->prepare($sql);
         $statement->bindValue('id', $post->getId(), \PDO::PARAM_INT);
         $statement->bindValue(':title', $data['title']);
@@ -362,6 +349,7 @@ class PostManager
         $statement->bindValue(':is_enabled', (int) $data['isEnabled']);
         $statement->bindValue(':category_id', $data['category']);
         $statement->bindValue(':slug', $data['slug']);
+        $statement->bindValue(':tags', $tagIds);
         $statement->execute();
 
         return true;
@@ -372,10 +360,9 @@ class PostManager
         $deleteSql = 'DELETE FROM post_tag WHERE post_id = :post_id';
         $deleteStatement = $this->database->prepare($deleteSql);
         $deleteStatement->bindValue('post_id', $post->getId(), \PDO::PARAM_INT);
-        $deleteResult = $deleteStatement->execute();
+        $deleteStatement->execute();
         $insertSql = 'INSERT INTO post_tag (post_id, tag_id) VALUES (:post_id, :tag_id)';
         $insertStatement = $this->database->prepare($insertSql);
-
         foreach ($tags as $tag) {
             $insertStatement->bindValue('post_id', $post->getId(), \PDO::PARAM_INT);
             $insertStatement->bindValue('tag_id', $tag->getId(), \PDO::PARAM_INT);
@@ -403,88 +390,13 @@ class PostManager
         }
     }
 
-    protected function createPostModelFromArray(array $data): PostModel
+    public function preparePostData(array $data): PostModel
     {
-        if (!isset($data['tags'])) {
-            $data['tags'] = [];
-        }
-        if (!isset($data['comments'])) {
-            $data['comments'] = [];
-        }
-        if (empty($data['author'])) {
-            $data['author'] = null;
-        }
-        if (empty($data['category'])) {
-            $data['category'] = null;
-        }
-        $postModelParams = $this->postModelParams->createFromData($data);
+        $data['author'] = $this->modelFactory->createModelFromArray(UserModel::class, $data);
+        $data['category'] = $this->modelFactory->createModelFromArray(CategoryModel::class, $data);
+        $data['tags'] = $this->modelFactory->createModelFromArray(TagModel::class, $data);
+        $data['comments'] = $this->modelFactory->createModelFromArray(CommentModel::class, $data);
 
-        return new PostModel($postModelParams);
-    }
-
-    private function prepareAuthor(array $data): ?UserModel
-    {
-        $authorModelParams = $this->userModelParams->createFromData($data);
-
-        return new UserModel($authorModelParams);
-    }
-
-    private function prepareCategory(array $data): ?CategoryModel
-    {
-        return new CategoryModel(
-            $data['category_id'],
-            $data['category_name'],
-            $data['category_slug'],
-        );
-    }
-
-    private function prepareTags(array $data): array
-    {
-        $tagIds = explode(',', $data['tag_ids'] ?? '');
-        $tagNames = explode(',', $data['tag_names'] ?? '');
-        $tagSlugs = explode(',', $data['tag_slugs'] ?? '');
-        $tagsArray = [];
-        for ($i = 0; $i < count($tagIds); ++$i) {
-            $tagsData = [
-                'id' => $tagIds[$i],
-                'name' => $tagNames[$i],
-                'slug' => $tagSlugs[$i],
-            ];
-            $tagModelParams = $this->tagModelParams->createFromData($tagsData);
-            $tagsArray[] = new TagModel($tagModelParams);
-        }
-
-        return $tagsArray;
-    }
-
-    private function prepareComments(array $data): array
-    {
-        $comments = [];
-        if (!empty($data['comments'])) {
-            foreach ($data['comments'] as $comment) {
-                $comments[] = new CommentModel(
-                    $comment['id'],
-                    $comment['content'],
-                    $comment['created_at'],
-                    $comment['updated_at'],
-                    $comment['is_enabled'],
-                    $comment['author'],
-                    $comment['post_id'],
-                );
-            }
-        }
-        $comments['number_of_comments'] = $data['number_of_comments'];
-
-        return $comments;
-    }
-
-    private function preparePostData(array $data): array
-    {
-        $data['author'] = $this->prepareAuthor($data);
-        $data['category'] = $this->prepareCategory($data);
-        $data['tags'] = $this->prepareTags($data);
-        $data['comments'] = $this->prepareComments($data);
-
-        return $data;
+        return $this->modelFactory->createModelFromArray(PostModel::class, $data);
     }
 }
