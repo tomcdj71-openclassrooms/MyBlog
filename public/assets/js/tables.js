@@ -145,25 +145,25 @@ function toggleCommentApproval(buttonElement) {
         url,
         method: 'POST',
         success: function (response) {
-            console.log(response);
             if (response.success) {
                 if ($('#table-all-comments').length) {
                     $('#table-all-comments').bootstrapTable('refresh');
                 } else if ($('#table-user-profile-comments').length) {
                     $('#table-user-profile-comments').bootstrapTable('refresh');
                 }
-                var successMessage = 'Le commentaire a bien été ' + (isApproved ? 'refusé' : 'approuvé');
-                var errorMessage = 'Le commentaire n\'a pas pu être ' + (isApproved ? 'refusé' : 'approuvé');
+                var successMessage = '<svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Success:"><use xlink:href="#check-circle-fill"/></svg>' + 'Le commentaire a bien été ' + (isApproved ? 'refusé' : 'approuvé');
+                var errorMessage = '<svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>' + 'Le commentaire n\'a pas pu être ' + (isApproved ? 'refusé' : 'approuvé');
                 if (!$('#mailerSuccess').length) {
                     $('<div id="mailerSuccess" class="alert alert-info"></div>').appendTo('#mailerSuccess');
                 }
-                $('#mailerSuccess').text(response.success ? successMessage : errorMessage).removeClass('invisible').show();
+                $('#mailerSuccess').html(response.success ? successMessage : errorMessage).removeClass('invisible').show();
             }
             if (response.mailerError) {
+                var mailerErrorMessage = '<svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>' + response.mailerError;
                 if (!$('#mailerError').length) {
                     $('<div id="mailerError" class="alert alert-danger"></div>').appendTo('#mailerError');
                 }
-                $('#mailerError').removeClass('invisible').show();
+                $('#mailerError').html(mailerErrorMessage).removeClass('invisible').show();
             }
         },
         error: function (error) {
@@ -171,7 +171,6 @@ function toggleCommentApproval(buttonElement) {
         }
     });
 }
-
 
 function togglePostApproval(buttonElement) {
     var approveUrl = buttonElement.dataset.approveUrl;
@@ -190,6 +189,12 @@ function togglePostApproval(buttonElement) {
                 } else if ($('#table-user-profile-posts-impersonate').length) {
                     $('#table-user-profile-posts-impersonate').bootstrapTable('refresh');
                 }
+                var successMessage = '<svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Success:"><use xlink:href="#check-circle-fill"/></svg>' + 'L\'article a bien été ' + (isPublished ? 'dépublié' : 'publié');
+                var errorMessage = '<svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>' + 'L\'article n\'a pas pu être ' + (isPublished ? 'dépublié' : 'publié');
+                if (!$('#mailerSuccess').length) {
+                    $('<div id="mailerSuccess" class="alert alert-info"></div>').appendTo('#mailerSuccess');
+                }
+                $('#mailerSuccess').html(response.success ? successMessage : errorMessage).removeClass('invisible').show();
             }
         },
         error: function (error) {
@@ -214,6 +219,12 @@ function togglePromote(buttonElement) {
             if (response.success) {
                 $('#table-all-users').bootstrapTable('refresh');
             }
+            var successMessage = '<svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Success:"><use xlink:href="#check-circle-fill"/></svg>' + 'L\'utilisateur a été ' + (isRoleAdmin ? 'rétrogradé' : 'promu');
+            var errorMessage = '<svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>' + 'L\'article n\'a pas pu être ' + (isRoleAdmin ? 'rétrogradé' : 'promu');
+            if (!$('#mailerSuccess').length) {
+                $('<div id="mailerSuccess" class="alert alert-info"></div>').appendTo('#mailerSuccess');
+            }
+            $('#mailerSuccess').html(response.success ? successMessage : errorMessage).removeClass('invisible').show();
         },
         error: function (error) {
             console.error(error);

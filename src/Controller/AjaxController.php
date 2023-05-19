@@ -287,7 +287,7 @@ class AjaxController extends AbstractController
                 'comment' => $comment,
             ])
         );
-        $this->session->set('success', $success ? 'Commentaire mis à jour.' : 'Erreur lors de la mise à jour du commentaire.');
+        $this->session->set('success', $success);
         $this->session->set('mailerError', $mailerError);
         $flashBag = [
             'message' => $this->session->flash('success', ''),
