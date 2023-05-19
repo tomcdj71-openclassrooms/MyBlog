@@ -131,6 +131,12 @@ class PostService extends AbstractService
             $errors[] = 'Jeton CSRF invalide.';
         }
         $postData = $this->getPostData();
+        if (empty($postData['featuredImage']['name'])) {
+            $this->session->set('errors', ['Veuillez sélectionner une image.']);
+            $this->session->set('postData', $postData);
+
+            throw new \RuntimeException('Veuillez sélectionner une image.');
+        }
         $postFormValidator = new PostFormValidator($this->userManager, $this->session, $this->csrfTokenService);
         $response = $postFormValidator->validate($postData);
         $postSlug = $response['valid'] ? $this->createPost($postData) : null;
@@ -182,14 +188,11 @@ class PostService extends AbstractService
             }
             $postFormValidator = new PostFormValidator($this->userManager, $this->session, $this->csrfTokenService);
             $response = $postFormValidator->validate($postData);
-            if ($response['valid']) {
-                $responseData = $this->editPost($post, $postData);
-                $postSlug = $responseData['postSlug'] ?? null;
-                $tagsUpdated = $responseData['tagsUpdated'] ?? null;
-                $message = $postSlug ? 'Votre article a été modifié avec succès!' : null;
-            } else {
-                $errors = $response['errors'];
-            }
+            $responseData = $response['valid'] ? $this->editPost($post, $postData) : null;
+            $postSlug = $responseData['postSlug'] ?? null;
+            $tagsUpdated = $responseData['tagsUpdated'] ?? null;
+            $message = $response['valid'] && $postSlug ? 'Votre article a été modifié avec succès!' : null;
+            $errors = $response['valid'] ? $errors : $response['errors'];
         }
 
         return [$errors, $message, $post, $postSlug, $postData, $tagsUpdated];
