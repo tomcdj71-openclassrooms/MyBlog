@@ -86,20 +86,9 @@ class ProfileService extends AbstractService
             $dataKey = lcfirst($field);
             if (isset($data[$dataKey])) {
                 if ('avatar' == $field) {
-                    if (!empty($data[$dataKey]['name']) && UPLOAD_ERR_NO_FILE !== $data[$dataKey]['error']) {
-                        $filename = $this->imageHelper->uploadImage($data[$dataKey], 200, 200);
-                        if (0 === strpos($filename, 'Error')) {
-                            throw new \RuntimeException($filename);
-                        }
-                        $filename = explode('.', $filename)[0];
-                        $data[$dataKey] = $filename;
-                        $user->{$setter}($data[$dataKey]);
-                    } else {
-                        $data[$dataKey] = $user->getAvatar();
-                    }
-                } else {
-                    $user->{$setter}($data[$dataKey]);
+                    $data[$dataKey] = $this->setAvatar($user, $data[$dataKey]);
                 }
+                $user->{$setter}($data[$dataKey]);
             }
         }
         $userUpdated = $this->userManager->updateProfile($user, $data);
@@ -108,5 +97,19 @@ class ProfileService extends AbstractService
                 'postData' => $data,
             ];
         }
+    }
+
+    private function setAvatar($user, $avatarData)
+    {
+        if (!empty($avatarData['name']) && UPLOAD_ERR_NO_FILE !== $avatarData['error']) {
+            $filename = $this->imageHelper->uploadImage($avatarData, 200, 200);
+            if (0 === strpos($filename, 'Error')) {
+                throw new \RuntimeException($filename);
+            }
+
+            return explode('.', $filename)[0];
+        }
+
+        return $user->getAvatar();
     }
 }
