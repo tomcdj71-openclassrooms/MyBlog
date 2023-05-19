@@ -11,6 +11,7 @@ use App\Model\CommentModel;
 use App\Model\PostModel;
 use App\Model\TagModel;
 use App\Model\UserModel;
+use Tracy\Debugger;
 
 class PostManager
 {
@@ -337,7 +338,7 @@ class PostManager
         $tagIds = implode(',', array_map(function ($tag) {
             return $tag->getId();
         }, $post->getTags()));
-
+        Debugger::barDump($data);
         $sql = 'UPDATE post SET title = :title, content = :content, chapo = :chapo, updated_at = :updated_at, is_enabled = :is_enabled, featured_image = :featured_image, category_id = :category_id, slug = :slug, tags = :tags WHERE id = :id';
         $statement = $this->database->prepare($sql);
         $statement->bindValue('id', $post->getId(), \PDO::PARAM_INT);

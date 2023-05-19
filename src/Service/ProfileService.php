@@ -84,7 +84,6 @@ class ProfileService extends AbstractService
         foreach ($fields as $field) {
             $setter = 'set'.$field;
             $dataKey = lcfirst($field);
-
             if (isset($data[$dataKey])) {
                 if ('avatar' == $field) {
                     if (!empty($data[$dataKey]['name']) && UPLOAD_ERR_NO_FILE !== $data[$dataKey]['error']) {
