@@ -9,10 +9,12 @@ use App\DependencyInjection\Container;
 use App\DependencyInjection\Injectable;
 use App\Router\HttpException;
 use App\Router\Router;
+use Tracy\Debugger;
 
 // Create the container
 $container = new Container();
 
+Debugger::enable();
 // Register the services
 Injectable::register($container);
 

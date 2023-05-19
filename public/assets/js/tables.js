@@ -101,10 +101,12 @@ function actionFormatter(value, row, index) {
         actionButtons += '<a href="' + actions.rechercher + '" class="btn btn-sm btn-info"><i class="bi bi-search"></i> Rechercher</a> ';
     }
     if (entityType === 'comment') {
-        var isApproved = row.is_enabled;
-        var buttonClass = isApproved ? 'btn-danger' : 'btn-success';
-        var buttonText = isApproved ? 'Refuser' : 'Approuver';
-        actionButtons += '<button class="btn btn-sm ' + buttonClass + '" onclick="toggleCommentApproval(this)" data-approve-url="' + actions.approuver + '" data-refuse-url="' + actions.refuser + '">' + buttonText + '</button>';
+        if (actions.approuver) {
+            var isApproved = row.is_enabled;
+            var buttonClass = isApproved ? 'btn-danger' : 'btn-success';
+            var buttonText = isApproved ? 'Refuser' : 'Approuver';
+            actionButtons += '<button class="btn btn-sm ' + buttonClass + '" onclick="toggleCommentApproval(this)" data-approve-url="' + actions.approuver + '" data-refuse-url="' + actions.refuser + '">' + buttonText + '</button>';
+        }
     }
     if (entityType === 'post') {
         var isPublished = row.is_enabled;

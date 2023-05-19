@@ -41,17 +41,13 @@ class AjaxController extends AbstractController
         $this->mailerService = $mailerService;
     }
 
-    public function myComments(bool $impersonate = false)
+    public function myComments()
     {
-        if ($impersonate) {
-            $username = $this->serverRequest->getPath();
-            $user = $this->userManager->findOneBy(['username' => $username]);
-        } else {
-            $user = $this->securityHelper->getUser();
-        }
+        $user = $this->userManager->findOneBy(['username' => $this->serverRequest->getPath()]) ? $this->userManager->findOneBy(['username' => $this->serverRequest->getPath()]) : $this->securityHelper->getUser();
         if (!$user) {
             throw new \Exception('Utilisateur non trouvé');
         }
+        $currentUser = $this->securityHelper->getUser();
         $offset = $this->serverRequest->getQuery('offset', 1);
         $limit = $this->serverRequest->getQuery('limit', 10);
         $page = intval($offset / $limit) + 1;
@@ -59,6 +55,13 @@ class AjaxController extends AbstractController
         $totalComments = $this->commentManager->countUserComments($user->getId());
         $userCommentsArray = [];
         foreach ($userComments as $comment) {
+            $actions = [
+                'voir' => '/blog/post/'.$comment->getPost()->getSlug().'#comment-'.$comment->getId(),
+            ];
+            if ($currentUser && $this->securityHelper->hasRole('ROLE_ADMIN')) {
+                $actions['approuver'] = '/ajax/admin-toggle-comment/'.$comment->getId();
+                $actions['refuser'] = '/ajax/admin-toggle-comment/'.$comment->getId();
+            }
             $userCommentsArray[] = [
                 'id' => $comment->getId(),
                 'content' => $comment->getContent(),
@@ -71,11 +74,7 @@ class AjaxController extends AbstractController
                     'slug' => $comment->getPost()->getSlug(),
                 ],
                 'type' => 'myComments',
-                'actions' => [
-                    'voir' => '/blog/post/'.$comment->getPost()->getSlug().'#comment-'.$comment->getId(),
-                    'approuver' => '/ajax/admin-toggle-comment/'.$comment->getId(),
-                    'refuser' => '/ajax/admin-toggle-comment/'.$comment->getId(),
-                ],
+                'actions' => $actions,
             ];
         }
         $response = [
@@ -89,12 +88,8 @@ class AjaxController extends AbstractController
 
     public function myPosts()
     {
-        $userId = $_GET['userId'] ?? null;
-        if ($userId) {
-            $userPostsData = $this->postService->getOtherUserPostsData($userId);
-        } else {
-            $userPostsData = $this->postService->getUserPostsData();
-        }
+        $userId = $this->serverRequest->getQuery('userId');
+        $userPostsData = $userId ? $this->postService->getOtherUserPostsData($userId) : $this->postService->getUserPostsData();
         foreach ($userPostsData['rows'] as $key => $row) {
             $userPostsData['rows'][$key]['actions'] = [
                 'voir' => '/blog/post/'.$userPostsData['rows'][$key]['id'],
