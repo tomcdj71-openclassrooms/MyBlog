@@ -38,12 +38,9 @@ class Session
 
     public function removeKeys($keys): void
     {
-        if (is_array($keys)) {
-            foreach ($keys as $key) {
-                $this->remove($key);
-            }
-        } else {
-            $this->remove($keys);
+        $keys = is_array($keys) ? $keys : [$keys];
+        foreach ($keys as $key) {
+            $this->remove($key);
         }
     }
 

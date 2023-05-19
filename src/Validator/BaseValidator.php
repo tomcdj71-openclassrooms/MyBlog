@@ -72,7 +72,7 @@ abstract class BaseValidator
 
             case 'int':
                 if (!is_numeric($data[$field])) {
-                    $errors[$field] = $rules['constraints']['errorMsg'] ?? '';
+                    $errors[$field] = 'Un nombre entier est attendu.';
                 }
 
                 break;
@@ -85,11 +85,9 @@ abstract class BaseValidator
                 break;
 
             case 'username':
-                $sanitizedUsername = $this->sanitizeExternalUsername($data[$field]);
-                if (empty($sanitizedUsername)) {
+                $data[$field] = $this->sanitizeExternalUsername($data[$field]);
+                if (empty($data[$field])) {
                     $errors[$field] = $rules['constraints']['errorMsg'] ?? '';
-                } else {
-                    $data[$field] = $sanitizedUsername;
                 }
 
                 break;
