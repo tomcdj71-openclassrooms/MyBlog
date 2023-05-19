@@ -7,6 +7,8 @@
 			Ajouter post
 		</a>
 	</div>
+	<div id="mailerError" class="alert alert-danger invisible"></div>
+	<div id="mailerSuccess" class="alert alert-info invisible"></div>
 	<div class="row my-4">
 		<div class="col-12 col-xl-12 mb-4 mb-lg-0">
 			<div class="d-flex align-items-center">
@@ -18,7 +20,7 @@
 								{{ data.message }}
 								<br>
 								Cliquez ici pour voir le post:
-								<a href="{{ path('blog_post', {slug: data.postSlug}) }}">{{ data.postData['title']}}</a>
+								<a href="{{ path('blog_post', {slug: data.postSlug}) }}">{{ data.postData['title'] is defined ? data.postData['title'] : data.postData.title }}</a>
 							</div>
 						{% endif %}
 					</div>

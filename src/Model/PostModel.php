@@ -21,6 +21,7 @@ class PostModel
     private $slug;
     private array $comments;
     private array $tags;
+    private $commentCount;
 
     public function __construct(PostModelParameters $postModelParams)
     {
@@ -37,6 +38,7 @@ class PostModel
         $this->slug = $postModelParams->slug;
         $this->comments = $postModelParams->comments;
         $this->tags = $postModelParams->tags;
+        $this->commentCount = $postModelParams->commentCount;
     }
 
     public function getId(): int
@@ -86,7 +88,7 @@ class PostModel
 
     public function getCategory(): ?CategoryModel
     {
-        return $this->category;
+        return $this->category ?? null;
     }
 
     public function getSlug(): string
@@ -96,7 +98,7 @@ class PostModel
 
     public function getTags(): array
     {
-        return $this->tags;
+        return $this->tags ?? [];
     }
 
     public function setId(int $id): self
@@ -184,5 +186,10 @@ class PostModel
     public function getComments(): array
     {
         return $this->comments;
+    }
+
+    public function getCommentCount(): int
+    {
+        return $this->commentCount;
     }
 }

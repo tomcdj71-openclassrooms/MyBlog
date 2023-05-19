@@ -20,12 +20,12 @@ class PostModelParameters
     public $featuredImage;
     public ?CategoryModel $category = null;
     public $slug;
-    public array $comments;
-    public array $tags;
+    public array $comments = [];
+    public array $tags = [];
+    public $commentCount;
 
     public static function createFromData(array $data): self
     {
-        // If $data['tags_array'] is not set, then use $data['tags'] instead
         $data['tags_array'] = $data['tags_array'] ?? $data['tags'];
         $postModelParams = new self();
         $postModelParams->id = (int) ($data['post_id'] ?? $data['id']);
@@ -41,6 +41,7 @@ class PostModelParameters
         $postModelParams->slug = $data['slug'];
         $postModelParams->comments = $data['comments'];
         $postModelParams->tags = $data['tags'];
+        $postModelParams->commentCount = $data['number_of_comments'] ?? $data['comment_count'] ?? 0;
 
         return $postModelParams;
     }

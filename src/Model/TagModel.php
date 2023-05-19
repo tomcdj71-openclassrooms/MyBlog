@@ -48,25 +48,4 @@ class TagModel
     {
         $this->slug = $slug;
     }
-
-    public function toArray(): array
-    {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'slug' => $this->slug,
-        ];
-    }
-
-    public function fromArray(array $data): void
-    {
-        $this->id = $data['id'];
-        $this->name = $data['name'];
-        $this->slug = $data['slug'];
-    }
-
-    public function jsonSerialize(): array
-    {
-        return $this->toArray();
-    }
 }

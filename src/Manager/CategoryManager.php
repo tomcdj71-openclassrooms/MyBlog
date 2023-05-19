@@ -143,34 +143,4 @@ class CategoryManager
             throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
     }
-
-    public function update(CategoryModel $category): bool
-    {
-        try {
-            $sql = 'UPDATE category SET name = :name, slug = :slug WHERE id = :id';
-            $statement = $this->database->prepare($sql);
-            $statement->execute([
-                'id' => $category->getId(),
-                'name' => $category->getName(),
-                'slug' => $category->getSlug(),
-            ]);
-
-            return true;
-        } catch (\PDOException $error) {
-            throw new \PDOException($error->getMessage(), (int) $error->getCode());
-        }
-    }
-
-    public function delete(int $id): bool
-    {
-        try {
-            $sql = 'DELETE FROM category WHERE id = :id';
-            $statement = $this->database->prepare($sql);
-            $statement->execute(['id' => $id]);
-
-            return true;
-        } catch (\PDOException $error) {
-            throw new \PDOException($error->getMessage(), (int) $error->getCode());
-        }
-    }
 }

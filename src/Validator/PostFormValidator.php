@@ -52,7 +52,7 @@ class PostFormValidator extends BaseValidator
             'category' => [
                 'constraints' => [
                     'required' => true, 'errorMsg' => 'La catégorie est obligatoire.',
-                    'type' => 'int', 'errorMsg' => 'La catégorie doit être un nombre entier.',
+                    'type' => 'int',
                 ],
             ],
             'tags' => [

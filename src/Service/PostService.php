@@ -131,6 +131,12 @@ class PostService extends AbstractService
             $errors[] = 'Jeton CSRF invalide.';
         }
         $postData = $this->getPostData();
+        if (empty($postData['featuredImage']['name'])) {
+            $this->session->set('errors', ['Veuillez sélectionner une image.']);
+            $this->session->set('postData', $postData);
+
+            throw new \RuntimeException('Veuillez sélectionner une image.');
+        }
         $postFormValidator = new PostFormValidator($this->userManager, $this->session, $this->csrfTokenService);
         $response = $postFormValidator->validate($postData);
         $postSlug = $response['valid'] ? $this->createPost($postData) : null;
@@ -158,42 +164,22 @@ class PostService extends AbstractService
         $errors = [];
         $message = [];
         $postSlug = null;
+        $tagsUpdated = null;
         $postData = $this->getPostData();
         $csrfToCheck = $this->serverRequest->getPost('csrfToken');
         if (!$this->csrfTokenService->checkCsrfToken('editPost', $csrfToCheck)) {
             $errors[] = 'Jeton CSRF invalide.';
         }
+        $postData['slug'] = isset($postData['title']) ? $this->stringHelper->slugify($postData['title']) : $post->getSlug();
+        $postData['updatedAt'] = (new \DateTime())->format('Y-m-d H:i:s');
+        $postData['isEnabled'] = false;
         foreach ($postData as $key => $value) {
             if ('csrfToken' === $key) {
                 continue;
             }
-            foreach ($postData as $key => $value) {
-                if ('csrfToken' === $key) {
-                    continue;
-                }
-            }
-        }
-        $postData['slug'] = isset($postData['title']) ? $this->stringHelper->slugify($postData['title']) : $post->getSlug();
-        $updatedAt = new \DateTime();
-        $postData['updatedAt'] = $updatedAt->format('Y-m-d H:i:s');
-        $postData['isEnabled'] = false;
-        foreach ($postData as $key => $value) {
-            if ('category' === $key) {
-                if ((int) $value !== (int) $post->getCategory()->getId()) {
-                    $message[] = 'La catégorie a été modifiée.';
-                }
-            } elseif ('tags' === $key) {
-                $tags = implode(',', array_map(function ($tag) {
-                    return $tag->getId();
-                }, $post->getTags()));
-                if ($tags !== $value) {
-                    $message[] = 'Les tags ont été modifiés.';
-                }
-            } else {
-                $postGetter = 'get'.ucfirst($key);
-                if (is_object($post) && method_exists($post, $postGetter) && $post->{$postGetter}() !== $value) {
-                    $message[] = ucfirst($key).' a été modifié.';
-                }
+            $postGetter = 'get'.ucfirst($key);
+            if (method_exists($post, $postGetter) && $post->{$postGetter}() !== $value) {
+                $message[] = ucfirst($key).' a été modifié.';
             }
         }
         if (empty($errors)) {
@@ -205,11 +191,57 @@ class PostService extends AbstractService
             $responseData = $response['valid'] ? $this->editPost($post, $postData) : null;
             $postSlug = $responseData['postSlug'] ?? null;
             $tagsUpdated = $responseData['tagsUpdated'] ?? null;
-            $message = $postSlug ? 'Votre article a été modifié avec succès!' : null;
-            $errors = $response['valid'] ? null : $response['errors'];
+            $message = $response['valid'] && $postSlug ? 'Votre article a été modifié avec succès!' : null;
+            $errors = $response['valid'] ? $errors : $response['errors'];
         }
 
         return [$errors, $message, $post, $postSlug, $postData, $tagsUpdated];
+    }
+
+    public function editPost($post, $data)
+    {
+        $fields = ['title', 'chapo', 'content', 'category', 'tags', 'featuredImage', 'slug', 'updated_at', 'is_enabled'];
+        foreach ($fields as $field) {
+            $setter = 'set'.$field;
+            $dataKey = lcfirst($field);
+            if (isset($data[$dataKey])) {
+                switch ($field) {
+                    case 'category':
+                        $this->setCategory($post, $data[$dataKey]);
+
+                        break;
+
+                    case 'tags':
+                        $this->setTags($post, $data[$dataKey]);
+
+                        break;
+
+                    case 'featuredImage':
+                        $featuredImage = $this->setFeaturedImage($post, $data[$dataKey]);
+                        if (null !== $featuredImage) {
+                            $post->{$setter}($featuredImage);
+                            $data[$dataKey] = $featuredImage;
+                        }
+
+                        break;
+
+                    default:
+                        $post->{$setter}($data[$dataKey]);
+
+                        break;
+                }
+            }
+        }
+        $data['isEnabled'] = $post->getIsEnabled();
+        $postUpdated = $this->postManager->updatePost($post, $data);
+        $tagsUpdated = $this->postManager->updatePostTags($post, $post->getTags());
+        if ($postUpdated && $tagsUpdated) {
+            return [
+                'postData' => $data,
+                'postSlug' => $post->getSlug() ?? null,
+                'tagsUpdated' => $tagsUpdated ?? null,
+            ];
+        }
     }
 
     public function createPost(array $data)
@@ -222,7 +254,6 @@ class PostService extends AbstractService
             throw new \RuntimeException($filename);
         }
         $filename = explode('.', $filename)[0];
-        $data['avatar'] = $filename;
         $postData = [
             'title' => $data['title'],
             'content' => $data['content'],
@@ -242,46 +273,31 @@ class PostService extends AbstractService
         return $createdPost ? $createdPost->getSlug() : null;
     }
 
-    public function editPost($post, $data)
+    private function setCategory($post, $categoryData)
     {
-        $fields = ['title', 'chapo', 'content', 'category', 'tags', 'featuredImage', 'slug', 'updated_at', 'is_enabled'];
-        foreach ($fields as $field) {
-            $setter = 'set'.$field;
-            $dataKey = lcfirst($field);
-            if (isset($data[$dataKey])) {
-                if ('category' == $field) {
-                    $category = $this->categoryManager->find((int) $data[$dataKey]);
-                    $post->setCategory($category);
-                } elseif ('tags' == $field) {
-                    $tags = $this->tagManager->findByIds(explode(',', $data[$dataKey]));
-                    $post->addTags($tags);
-                } elseif ('featuredImage' == $field) {
-                    if (!empty($data[$dataKey]['name']) && UPLOAD_ERR_NO_FILE !== $data[$dataKey]['error']) {
-                        $filename = $this->imageHelper->uploadImage($data[$dataKey], 1200, 900);
-                        if (0 === strpos($filename, 'Error')) {
-                            throw new \RuntimeException($filename);
-                        }
-                        $filename = explode('.', $filename)[0];
-                        $data[$dataKey] = $filename;
-                        $post->{$setter}($data[$dataKey]);
-                    } else {
-                        $data[$dataKey] = $post->getFeaturedImage();
-                    }
-                } else {
-                    $post->{$setter}($data[$dataKey]);
-                }
-            }
-        }
-        $data['isEnabled'] = $post->getIsEnabled();
+        $category = $this->categoryManager->find((int) $categoryData);
+        $post->setCategory($category);
+    }
 
-        $postUpdated = $this->postManager->updatePost($post, $data);
-        $tagsUpdated = $this->postManager->updatePostTags($post, $post->getTags());
-        if ($postUpdated && $tagsUpdated) {
-            return [
-                'postData' => $data,
-                'postSlug' => $post->getSlug() ?? null,
-                'tagsUpdated' => $tagsUpdated ?? null,
-            ];
+    private function setTags($post, $tagsData)
+    {
+        $tags = $this->tagManager->findByIds(explode(',', $tagsData));
+        $post->addTags($tags);
+    }
+
+    private function setFeaturedImage($post, $imageData)
+    {
+        if (!empty($imageData['name']) && UPLOAD_ERR_NO_FILE !== $imageData['error']) {
+            $filename = $this->imageHelper->uploadImage($imageData, 1200, 900);
+            if (0 === strpos($filename, 'Error')) {
+                throw new \RuntimeException($filename);
+            }
+            $filename = explode('.', $filename)[0];
+            $imageData = $filename;
+            $post->setFeaturedImage($imageData);
+
+            return $imageData;
         }
+        $imageData = $post->getFeaturedImage();
     }
 }

@@ -69,7 +69,6 @@ class AdminController extends AbstractController
 
         return $this->twig->render('pages/admin/pages/comment_admin.html.twig', [
             'user' => $this->securityHelper->getUser(),
-            'flashBag' => $flashBag ?? [],
         ]);
     }
 
@@ -110,9 +109,10 @@ class AdminController extends AbstractController
     {
         $this->securityHelper->denyAccessUnlessAdmin();
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
-            list($errors, $message, $postData, $postSlug) = $this->postService->handleAddPostRequest();
-            if ($errors) {
-                $this->session->set('postData', $postData);
+            try {
+                list($errors, $message, $postData, $postSlug) = $this->postService->handleAddPostRequest();
+            } catch (\RuntimeException $e) {
+                $errors['featuredImage'] = $e->getMessage();
             }
             if (!empty($postSlug)) {
                 $this->session->set('message', $message);
@@ -131,7 +131,7 @@ class AdminController extends AbstractController
             'csrfToken' => $csrfToken,
             'errors' => $errors ?? [],
             'message' => $message ?? '',
-            'postData' => $postData ?? '',
+            'postData' => $this->session->get('postData', '') ?? $postData,
         ]);
     }
 
@@ -140,6 +140,7 @@ class AdminController extends AbstractController
         $this->securityHelper->denyAccessUnlessAdmin();
         $post = $this->postManager->find($postId);
         if (!$post) {
+            throw new \Exception('Artice non trouvé', 404);
         }
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
             list($errors, $message, $post, $postSlug, $postData) = $this->postService->handleEditPostRequest($post);

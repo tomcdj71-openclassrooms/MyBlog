@@ -27,19 +27,19 @@ class UserModelParameters
     {
         $userModelParams = new self();
         $userModelParams->id = (int) ($data['user_id'] ?? $data['id']);
-        $userModelParams->username = $data['username'];
-        $userModelParams->email = $data['email'];
-        $userModelParams->password = $data['password'];
-        $userModelParams->createdAt = $data['created_at'];
-        $userModelParams->role = $data['role'];
+        $userModelParams->username = $data['username'] ?? null;
+        $userModelParams->email = $data['email'] ?? null;
+        $userModelParams->password = $data['password'] ?? null;
+        $userModelParams->createdAt = $data['created_at'] ?? null;
+        $userModelParams->role = $data['role'] ?? null;
         $userModelParams->avatar = $data['avatar'] ?? null;
-        $userModelParams->bio = $data['bio'];
-        $userModelParams->firstName = $data['firstName'];
-        $userModelParams->lastName = $data['lastName'];
-        $userModelParams->twitter = $data['twitter'];
-        $userModelParams->facebook = $data['facebook'];
-        $userModelParams->linkedin = $data['linkedin'];
-        $userModelParams->github = $data['github'];
+        $userModelParams->bio = $data['bio'] ?? null;
+        $userModelParams->firstName = $data['firstName'] ?? null;
+        $userModelParams->lastName = $data['lastName'] ?? null;
+        $userModelParams->twitter = $data['twitter'] ?? null;
+        $userModelParams->facebook = $data['facebook'] ?? null;
+        $userModelParams->linkedin = $data['linkedin'] ?? null;
+        $userModelParams->github = $data['github'] ?? null;
 
         return $userModelParams;
     }
