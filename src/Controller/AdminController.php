@@ -15,7 +15,6 @@ use App\Router\ServerRequest;
 use App\Router\Session;
 use App\Service\CsrfTokenService;
 use App\Service\PostService;
-use Tracy\Debugger;
 
 class AdminController extends AbstractController
 {
@@ -119,7 +118,6 @@ class AdminController extends AbstractController
                 $this->session->set('message', $message);
                 $this->session->set('postSlug', $postSlug);
                 $this->session->set('postData', $postData);
-                Debugger::barDump($this->session->get('postData'));
                 $url = $this->request->generateUrl('admin_posts');
                 $this->request->redirect($url);
             }
