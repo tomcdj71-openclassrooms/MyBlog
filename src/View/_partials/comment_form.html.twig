@@ -15,7 +15,7 @@
 			<input type="hidden" name="parentId" value="">
 			<div class="col row">
 				<div class="form-group form-floating mb-3{% if errors.content is defined %} has-error{% endif %}">
-					<textarea id="content" name="content" class="form-control {% if errors.content is defined %} is-invalid{% endif %}" placeholder="Contenu du commentaire">{{ postData.content|default('')|e('html_attr') }}</textarea>
+					<textarea id="content" name="content" class="form-control {% if errors.content is defined %} is-invalid{% endif %}" placeholder="Contenu du commentaire">{{ formData.content|default('') }}</textarea>
 					{% if errors.content is defined %}
 						<div class="invalid-feedback">
 							{{ errors.content }}
@@ -34,7 +34,12 @@
 	{% endif %}
 </div>
 <script>
-	const replyButtons = document.querySelectorAll('.reply');
+	let formData = {
+'content': JSON.parse('{{ formData.content|default(null)|json_encode()|e('js') }}'),
+'parent_id': JSON.parse('{{ formData.parent_id|default(null)|json_encode()|e('js') }}')
+};
+
+const replyButtons = document.querySelectorAll('.reply');
 
 replyButtons.forEach((button) => {
 button.addEventListener('click', (event) => {
@@ -84,15 +89,22 @@ const alert = document.createElement('div');
 alert.setAttribute('class', 'alert alert-info fade show');
 alert.setAttribute('role', 'alert');
 alert.innerHTML = `
-    <small class="fst-italic fw-lighter text-muted">Vous répondez à ${author}:</small>
-    <p class="lead text-black text-break">${content}</p>`;
+					<small class="fst-italic fw-lighter text-muted">Vous répondez à ${author}:</small>
+					<p class="lead text-black text-break">${content}</p>`;
 return alert;
 }
 });
 });
-</script>
-<script>
-	function adjustTextareaHeight(textarea) {
+window.addEventListener('DOMContentLoaded', (event) => {
+if (formData && formData.parent_id) {
+const replyButton = Array.from(replyButtons).find(button => button.getAttribute('data-comment-id') === formData.parent_id);
+if (replyButton) {
+replyButton.click();
+}
+}
+});
+
+function adjustTextareaHeight(textarea) {
 textarea.style.height = 'auto';
 textarea.style.height = textarea.scrollHeight + 'px';
 }

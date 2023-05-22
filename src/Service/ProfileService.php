@@ -34,7 +34,7 @@ class ProfileService extends AbstractService
     {
         $errors = [];
         $message = [];
-        $postData = $this->getPostData();
+        $formData = $this->getFormData();
         $csrfToCheck = $this->serverRequest->getPost('csrfToken');
         if (!$this->csrfTokenService->checkCsrfToken('editProfile', $csrfToCheck)) {
             $errors[] = 'Jeton CSRF invalide.';
@@ -42,40 +42,40 @@ class ProfileService extends AbstractService
         if (!$this->csrfTokenService->checkCsrfToken('editProfile', $csrfToCheck)) {
             $errors[] = 'Jeton CSRF invalide.';
         }
-        foreach ($postData as $key => $value) {
+        foreach ($formData as $key => $value) {
             if ('csrfToken' === $key) {
                 continue;
             }
-            foreach ($postData as $key => $value) {
+            foreach ($formData as $key => $value) {
                 if ('editProfile' === $key) {
                     continue;
                 }
             }
         }
         if (empty($errors)) {
-            if (is_string($postData['avatar'])) {
-                unset($postData['avatar']);
+            if (is_string($formData['avatar'])) {
+                unset($formData['avatar']);
             }
             $editProfileFV = new EditProfileFormValidator($this->userManager, $this->session, $this->csrfTokenService, $this->securityHelper);
-            $response = $editProfileFV->validate($postData);
+            $response = $editProfileFV->validate($formData);
             $update = $response['valid'] ? $this->updateUserProfile($user, $response['data']) : null;
             $message = $response['valid'] ? 'Mise à jour du profil effectué avec succès!' : null;
             $errors = !$response['valid'] ? $response['errors'] : $errors;
 
-            return [$errors, $message, $postData, $update];
+            return [$errors, $message, $formData, $update];
         }
     }
 
-    public function getPostData()
+    public function getFormData()
     {
         $fields = ['firstName', 'lastName', 'bio', 'twitter', 'facebook', 'github', 'linkedin'];
-        $postData = array_map(function ($field) {
+        $formData = array_map(function ($field) {
             return $this->serverRequest->getPost($field, '');
         }, array_combine($fields, $fields));
-        $postData['avatar'] = $_FILES['avatar'] ?? null;
-        $postData['csrfToken'] = $this->serverRequest->getPost('csrfToken');
+        $formData['avatar'] = $_FILES['avatar'] ?? null;
+        $formData['csrfToken'] = $this->serverRequest->getPost('csrfToken');
 
-        return $postData;
+        return $formData;
     }
 
     public function updateUserProfile($user, $data)
@@ -94,7 +94,7 @@ class ProfileService extends AbstractService
         $userUpdated = $this->userManager->updateProfile($user, $data);
         if ($userUpdated) {
             return [
-                'postData' => $data,
+                'formData' => $data,
             ];
         }
     }

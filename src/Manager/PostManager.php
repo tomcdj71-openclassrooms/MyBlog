@@ -47,7 +47,7 @@ class PostManager
                 return null;
             }
 
-            return $this->preparePostData($data);
+            return $this->prepareformData($data);
         } catch (\PDOException $error) {
             throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
@@ -73,7 +73,7 @@ class PostManager
             $statement->execute(['value' => $value]);
             $posts = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                $posts[] = $this->preparePostData($data);
+                $posts[] = $this->prepareformData($data);
             }
 
             return $posts;
@@ -106,7 +106,7 @@ class PostManager
                 return null;
             }
 
-            return $this->preparePostData($data);
+            return $this->prepareformData($data);
         } catch (\PDOException $error) {
             throw new \PDOException($error->getMessage(), (int) $error->getCode());
         }
@@ -136,7 +136,7 @@ class PostManager
             $statement->execute();
             $posts = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                $posts[] = $this->preparePostData($data);
+                $posts[] = $this->prepareformData($data);
             }
 
             return [
@@ -186,7 +186,7 @@ class PostManager
             ]);
             $posts = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                $posts[] = $this->preparePostData($data);
+                $posts[] = $this->prepareformData($data);
             }
 
             return $posts;
@@ -216,7 +216,7 @@ class PostManager
             $statement->execute(['tag_slug' => $tag]);
             $posts = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                $posts[] = $this->preparePostData($data);
+                $posts[] = $this->prepareformData($data);
             }
 
             return $posts;
@@ -252,7 +252,7 @@ class PostManager
             ]);
             $posts = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                $posts[] = $this->preparePostData($data);
+                $posts[] = $this->prepareformData($data);
             }
             $sql = 'SELECT COUNT(*) FROM post WHERE author_id = :user_id';
             $statement = $this->database->prepare($sql);
@@ -281,7 +281,7 @@ class PostManager
             $statement->execute(['limit' => $limit]);
             $posts = [];
             while ($data = $statement->fetch(\PDO::FETCH_ASSOC)) {
-                $posts[] = $this->preparePostData($data);
+                $posts[] = $this->prepareformData($data);
             }
 
             return $posts;
@@ -303,23 +303,23 @@ class PostManager
         }
     }
 
-    public function create(array $postData): ?PostModel
+    public function create(array $formData): ?PostModel
     {
         try {
             $sql = 'INSERT INTO post (title, content, author_id, chapo, created_at, updated_at, is_enabled, featured_image, category_id, slug, tags) VALUES (:title, :content, :author_id, :chapo, :created_at, :updated_at, :is_enabled, :featured_image, :category_id, :slug, :tags)';
             $statement = $this->database->prepare($sql);
             $params = [
-                'title' => $postData['title'],
-                'content' => $postData['content'],
-                'author_id' => $postData['author'],
-                'chapo' => $postData['chapo'],
-                'created_at' => $postData['createdAt'],
-                'updated_at' => $postData['updatedAt'],
-                'is_enabled' => $postData['isEnabled'],
-                'featured_image' => $postData['featuredImage'],
-                'category_id' => $postData['category'],
-                'slug' => $postData['slug'],
-                'tags' => $postData['tags'],
+                'title' => $formData['title'],
+                'content' => $formData['content'],
+                'author_id' => $formData['author'],
+                'chapo' => $formData['chapo'],
+                'created_at' => $formData['createdAt'],
+                'updated_at' => $formData['updatedAt'],
+                'is_enabled' => $formData['isEnabled'],
+                'featured_image' => $formData['featuredImage'],
+                'category_id' => $formData['category'],
+                'slug' => $formData['slug'],
+                'tags' => $formData['tags'],
             ];
             $statement->execute($params);
             $lastInsertId = $this->database->lastInsertId();
@@ -389,7 +389,7 @@ class PostManager
         }
     }
 
-    public function preparePostData(array $data): PostModel
+    public function prepareformData(array $data): PostModel
     {
         $data['author'] = $this->modelFactory->createModelFromArray(UserModel::class, $data);
         $data['category'] = $this->modelFactory->createModelFromArray(CategoryModel::class, $data);

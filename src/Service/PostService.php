@@ -130,33 +130,33 @@ class PostService extends AbstractService
         if (!$this->csrfTokenService->checkCsrfToken('addPost', $csrfToCheck)) {
             $errors[] = 'Jeton CSRF invalide.';
         }
-        $postData = $this->getPostData();
-        if (empty($postData['featuredImage']['name'])) {
+        $formData = $this->getFormData();
+        if (empty($formData['featuredImage']['name'])) {
             $this->session->set('errors', ['Veuillez sélectionner une image.']);
-            $this->session->set('postData', $postData);
+            $this->session->set('formData', $formData);
 
             throw new \RuntimeException('Veuillez sélectionner une image.');
         }
         $postFormValidator = new PostFormValidator($this->userManager, $this->session, $this->csrfTokenService);
-        $response = $postFormValidator->validate($postData);
-        $postSlug = $response['valid'] ? $this->createPost($postData) : null;
+        $response = $postFormValidator->validate($formData);
+        $postSlug = $response['valid'] ? $this->createPost($formData) : null;
         $message = $postSlug ? 'Votre article a été ajouté avec succès!' : null;
         $errors = $response['valid'] ? null : $response['errors'];
 
-        return [$errors, $message, $postData, $postSlug];
+        return [$errors, $message, $formData, $postSlug];
     }
 
-    public function getPostData()
+    public function getFormData()
     {
         $fields = ['title', 'chapo', 'content', 'category', 'tags'];
-        $postData = array_map(function ($field) {
+        $formData = array_map(function ($field) {
             return $this->serverRequest->getPost($field, '');
         }, array_combine($fields, $fields));
-        $postData['tags'] = implode(',', $postData['tags']);
-        $postData['featuredImage'] = $_FILES['featuredImage'] ?? null;
-        $postData['csrfToken'] = $this->serverRequest->getPost('csrfToken');
+        $formData['tags'] = implode(',', $formData['tags']);
+        $formData['featuredImage'] = $_FILES['featuredImage'] ?? null;
+        $formData['csrfToken'] = $this->serverRequest->getPost('csrfToken');
 
-        return $postData;
+        return $formData;
     }
 
     public function handleEditPostRequest($post)
@@ -165,15 +165,15 @@ class PostService extends AbstractService
         $message = [];
         $postSlug = null;
         $tagsUpdated = null;
-        $postData = $this->getPostData();
+        $formData = $this->getFormData();
         $csrfToCheck = $this->serverRequest->getPost('csrfToken');
         if (!$this->csrfTokenService->checkCsrfToken('editPost', $csrfToCheck)) {
             $errors[] = 'Jeton CSRF invalide.';
         }
-        $postData['slug'] = isset($postData['title']) ? $this->stringHelper->slugify($postData['title']) : $post->getSlug();
-        $postData['updatedAt'] = (new \DateTime())->format('Y-m-d H:i:s');
-        $postData['isEnabled'] = false;
-        foreach ($postData as $key => $value) {
+        $formData['slug'] = isset($formData['title']) ? $this->stringHelper->slugify($formData['title']) : $post->getSlug();
+        $formData['updatedAt'] = (new \DateTime())->format('Y-m-d H:i:s');
+        $formData['isEnabled'] = false;
+        foreach ($formData as $key => $value) {
             if ('csrfToken' === $key) {
                 continue;
             }
@@ -183,19 +183,19 @@ class PostService extends AbstractService
             }
         }
         if (empty($errors)) {
-            if (is_string($postData['featuredImage'])) {
-                unset($postData['featuredImage']);
-            }
             $postFormValidator = new PostFormValidator($this->userManager, $this->session, $this->csrfTokenService);
-            $response = $postFormValidator->validate($postData);
-            $responseData = $response['valid'] ? $this->editPost($post, $postData) : null;
+            $response = $postFormValidator->validate($formData);
+            if (empty($formData['featuredImage']['name'])) {
+                $formData['featuredImage'] = $post->getFeaturedImage();
+            }
+            $responseData = $response['valid'] ? $this->editPost($post, $formData) : null;
             $postSlug = $responseData['postSlug'] ?? null;
             $tagsUpdated = $responseData['tagsUpdated'] ?? null;
             $message = $response['valid'] && $postSlug ? 'Votre article a été modifié avec succès!' : null;
             $errors = $response['valid'] ? $errors : $response['errors'];
         }
 
-        return [$errors, $message, $post, $postSlug, $postData, $tagsUpdated];
+        return [$errors, $message, $post, $postSlug, $formData, $tagsUpdated];
     }
 
     public function editPost($post, $data)
@@ -217,10 +217,12 @@ class PostService extends AbstractService
                         break;
 
                     case 'featuredImage':
-                        $featuredImage = $this->setFeaturedImage($post, $data[$dataKey]);
-                        if (null !== $featuredImage) {
-                            $post->{$setter}($featuredImage);
-                            $data[$dataKey] = $featuredImage;
+                        if (isset($data[$dataKey])) {
+                            $featuredImage = $this->setFeaturedImage($post, $data[$dataKey]);
+                            if (null !== $featuredImage) {
+                                $post->{$setter}($featuredImage);
+                                $data[$dataKey] = $featuredImage;
+                            }
                         }
 
                         break;
@@ -237,7 +239,7 @@ class PostService extends AbstractService
         $tagsUpdated = $this->postManager->updatePostTags($post, $post->getTags());
         if ($postUpdated && $tagsUpdated) {
             return [
-                'postData' => $data,
+                'formData' => $data,
                 'postSlug' => $post->getSlug() ?? null,
                 'tagsUpdated' => $tagsUpdated ?? null,
             ];
@@ -254,7 +256,7 @@ class PostService extends AbstractService
             throw new \RuntimeException($filename);
         }
         $filename = explode('.', $filename)[0];
-        $postData = [
+        $formData = [
             'title' => $data['title'],
             'content' => $data['content'],
             'author' => $user->getId(),
@@ -268,7 +270,7 @@ class PostService extends AbstractService
             'tags' => $data['tags'],
             'csrfToken' => $data['csrfToken'],
         ];
-        $createdPost = $this->postManager->create($postData);
+        $createdPost = $this->postManager->create($formData);
 
         return $createdPost ? $createdPost->getSlug() : null;
     }
@@ -289,7 +291,7 @@ class PostService extends AbstractService
     {
         if (!empty($imageData['name']) && UPLOAD_ERR_NO_FILE !== $imageData['error']) {
             $filename = $this->imageHelper->uploadImage($imageData, 1200, 900);
-            if (0 === strpos($filename, 'Error')) {
+            if (0 === strpos($filename, 'Erreur')) {
                 throw new \RuntimeException($filename);
             }
             $filename = explode('.', $filename)[0];

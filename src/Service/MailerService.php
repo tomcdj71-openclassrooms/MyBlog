@@ -31,10 +31,10 @@ class MailerService
             $this->mailer->send($email);
         } catch (\Exception $error) {
             if ('dev' === $this->mode) {
-                throw new \Exception('Une erreur est survenue lors de l\'envoi du mail.');
+                throw new \Exception("Un problème avec votre mailer DSN est survenu. Veuillez consulter la documentation pour plus d'informations.");
             }
 
-            return "MailCatcher n'est pas installé, ou n'est pas démarré. Veuillez consulter la documentation pour plus d'informations.";
+            return 'Une erreur est survenue lors de l\'envoi du mail.';
         }
 
         return null;

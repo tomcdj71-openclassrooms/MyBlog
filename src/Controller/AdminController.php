@@ -78,7 +78,7 @@ class AdminController extends AbstractController
         $data = [
             'message' => $this->session->flash('message', ''),
             'postSlug' => $this->session->flash('postSlug', ''),
-            'postData' => $this->session->flash('postData', ''),
+            'formData' => $this->session->flash('formData', ''),
         ];
 
         return $this->twig->render('pages/admin/pages/post_admin.html.twig', [
@@ -110,14 +110,14 @@ class AdminController extends AbstractController
         $this->securityHelper->denyAccessUnlessAdmin();
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
             try {
-                list($errors, $message, $postData, $postSlug) = $this->postService->handleAddPostRequest();
+                list($errors, $message, $formData, $postSlug) = $this->postService->handleAddPostRequest();
             } catch (\RuntimeException $e) {
                 $errors['featuredImage'] = $e->getMessage();
             }
             if (!empty($postSlug)) {
                 $this->session->set('message', $message);
                 $this->session->set('postSlug', $postSlug);
-                $this->session->set('postData', $postData);
+                $this->session->set('formData', $formData);
                 $url = $this->request->generateUrl('admin_posts');
                 $this->request->redirect($url);
             }
@@ -131,7 +131,7 @@ class AdminController extends AbstractController
             'csrfToken' => $csrfToken,
             'errors' => $errors ?? [],
             'message' => $message ?? '',
-            'postData' => $this->session->get('postData', '') ?? $postData,
+            'formData' => $this->session->get('formData', '') ?? $formData,
         ]);
     }
 
@@ -143,14 +143,14 @@ class AdminController extends AbstractController
             throw new \Exception('Artice non trouvé', 404);
         }
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
-            list($errors, $message, $post, $postSlug, $postData) = $this->postService->handleEditPostRequest($post);
+            list($errors, $message, $post, $postSlug, $formData) = $this->postService->handleEditPostRequest($post);
             if ($errors) {
-                $this->session->set('postData', $postData);
+                $this->session->set('formData', $formData);
             }
             if (!empty($postSlug)) {
                 $this->session->set('message', $message);
                 $this->session->set('postSlug', $postSlug);
-                $this->session->set('postData', $postData);
+                $this->session->set('formData', $formData);
                 $url = $this->request->generateUrl('admin_posts');
                 $this->request->redirect($url);
             }
@@ -165,7 +165,7 @@ class AdminController extends AbstractController
             'csrfToken' => $csrfToken,
             'errors' => $errors ?? [],
             'message' => $message ?? '',
-            'postData' => $postData ?? '',
+            'formData' => $formData ?? '',
         ]);
     }
 }
