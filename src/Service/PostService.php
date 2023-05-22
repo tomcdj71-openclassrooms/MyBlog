@@ -130,7 +130,7 @@ class PostService extends AbstractService
         if (!$this->csrfTokenService->checkCsrfToken('addPost', $csrfToCheck)) {
             $errors[] = 'Jeton CSRF invalide.';
         }
-        $formData = $this->getformData();
+        $formData = $this->getFormData();
         if (empty($formData['featuredImage']['name'])) {
             $this->session->set('errors', ['Veuillez sélectionner une image.']);
             $this->session->set('formData', $formData);
@@ -146,7 +146,7 @@ class PostService extends AbstractService
         return [$errors, $message, $formData, $postSlug];
     }
 
-    public function getformData()
+    public function getFormData()
     {
         $fields = ['title', 'chapo', 'content', 'category', 'tags'];
         $formData = array_map(function ($field) {
@@ -165,7 +165,7 @@ class PostService extends AbstractService
         $message = [];
         $postSlug = null;
         $tagsUpdated = null;
-        $formData = $this->getformData();
+        $formData = $this->getFormData();
         $csrfToCheck = $this->serverRequest->getPost('csrfToken');
         if (!$this->csrfTokenService->checkCsrfToken('editPost', $csrfToCheck)) {
             $errors[] = 'Jeton CSRF invalide.';
@@ -183,11 +183,11 @@ class PostService extends AbstractService
             }
         }
         if (empty($errors)) {
-            if (is_string($formData['featuredImage'])) {
-                unset($formData['featuredImage']);
-            }
             $postFormValidator = new PostFormValidator($this->userManager, $this->session, $this->csrfTokenService);
             $response = $postFormValidator->validate($formData);
+            if (empty($formData['featuredImage']['name'])) {
+                $formData['featuredImage'] = $post->getFeaturedImage();
+            }
             $responseData = $response['valid'] ? $this->editPost($post, $formData) : null;
             $postSlug = $responseData['postSlug'] ?? null;
             $tagsUpdated = $responseData['tagsUpdated'] ?? null;
@@ -217,10 +217,12 @@ class PostService extends AbstractService
                         break;
 
                     case 'featuredImage':
-                        $featuredImage = $this->setFeaturedImage($post, $data[$dataKey]);
-                        if (null !== $featuredImage) {
-                            $post->{$setter}($featuredImage);
-                            $data[$dataKey] = $featuredImage;
+                        if (isset($data[$dataKey])) {
+                            $featuredImage = $this->setFeaturedImage($post, $data[$dataKey]);
+                            if (null !== $featuredImage) {
+                                $post->{$setter}($featuredImage);
+                                $data[$dataKey] = $featuredImage;
+                            }
                         }
 
                         break;
@@ -289,7 +291,7 @@ class PostService extends AbstractService
     {
         if (!empty($imageData['name']) && UPLOAD_ERR_NO_FILE !== $imageData['error']) {
             $filename = $this->imageHelper->uploadImage($imageData, 1200, 900);
-            if (0 === strpos($filename, 'Error')) {
+            if (0 === strpos($filename, 'Erreur')) {
                 throw new \RuntimeException($filename);
             }
             $filename = explode('.', $filename)[0];

@@ -34,7 +34,7 @@ class ProfileService extends AbstractService
     {
         $errors = [];
         $message = [];
-        $formData = $this->getformData();
+        $formData = $this->getFormData();
         $csrfToCheck = $this->serverRequest->getPost('csrfToken');
         if (!$this->csrfTokenService->checkCsrfToken('editProfile', $csrfToCheck)) {
             $errors[] = 'Jeton CSRF invalide.';
@@ -66,7 +66,7 @@ class ProfileService extends AbstractService
         }
     }
 
-    public function getformData()
+    public function getFormData()
     {
         $fields = ['firstName', 'lastName', 'bio', 'twitter', 'facebook', 'github', 'linkedin'];
         $formData = array_map(function ($field) {

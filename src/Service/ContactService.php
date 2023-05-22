@@ -37,7 +37,7 @@ class ContactService extends AbstractService
         if (!$this->csrfTokenService->checkCsrfToken('contact', $csrfToCheck)) {
             $errors[] = 'Jeton CSRF invalide.';
         }
-        $formData = $this->getformData();
+        $formData = $this->getFormData();
         $commentFV = new ContactFormValidator($this->userManager, $this->session, $this->csrfTokenService);
         $response = $commentFV->validate($formData);
         $response['data'] = $formData;
@@ -47,7 +47,7 @@ class ContactService extends AbstractService
         return [$errors, $message, $response];
     }
 
-    public function getformData()
+    public function getFormData()
     {
         $fields = ['email', 'name', 'subject', 'message', 'csrfToken'];
 
