@@ -20,12 +20,12 @@ class SecurityHelper
         $this->session = $session;
     }
 
-    public function registerUser(array $postData): bool
+    public function registerUser(array $formData): bool
     {
         $userData = [
-            'username' => $postData['username'],
-            'email' => $postData['email'],
-            'password' => password_hash($postData['password'], PASSWORD_DEFAULT),
+            'username' => $formData['username'],
+            'email' => $formData['email'],
+            'password' => password_hash($formData['password'], PASSWORD_DEFAULT),
             'role' => 'ROLE_USER',
             'avatar' => 'https://i.pravatar.cc/150?img=6',
         ];
@@ -35,7 +35,7 @@ class SecurityHelper
         }
         $user = $this->authenticateUser([
             'email' => $user->getEmail(),
-            'password' => $postData['password'],
+            'password' => $formData['password'],
         ]);
         if (!$user) {
             return false;

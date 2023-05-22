@@ -11,7 +11,7 @@
 						<form method="POST" action="{{ path('admin_post_edit', {'id': post.id} ) }}" enctype="multipart/form-data">
 							<div class="row">
 								<div class="form-group form-floating my-3{% if errors.title is defined %} has-error{% endif %}">
-									<input type="text" id="title" name="title" class="form-control{% if errors.title is defined %} is-invalid{% endif %}" placeholder="Super Article" value="{{ postData.title is defined ? postData.title : post.title|default('') }}">
+									<input type="text" id="title" name="title" class="form-control{% if errors.title is defined %} is-invalid{% endif %}" placeholder="Super Article" value="{{ formData.title is defined ? formData.title : post.title|default('') }}">
 									<label for="title">Titre</label>
 									{% if errors.title is defined %}
 										<div class="invalid-feedback">
@@ -22,7 +22,7 @@
 							</div>
 							<div class="row">
 								<div class="form-group form-floating mb-3{% if errors.chapo is defined %} has-error{% endif %}">
-									<input type="text" id="chapo" name="chapo" class="form-control{% if errors.chapo is defined %} is-invalid{% endif %}" placeholder="Punchline" value="{{ postData.chapo is defined ? postData.chapo : post.chapo|default('') }}">
+									<input type="text" id="chapo" name="chapo" class="form-control{% if errors.chapo is defined %} is-invalid{% endif %}" placeholder="Punchline" value="{{ formData.chapo is defined ? formData.chapo : post.chapo|default('') }}">
 									<label for="chapo">Chapo</label>
 									{% if errors.chapo is defined %}
 										<div class="invalid-feedback">
@@ -33,7 +33,7 @@
 							</div>
 							<div class="row">
 								<div class="form-group form-floating mb-3{% if errors.content is defined %} has-error{% endif %}">
-									<textarea id="content" name="content" class="form-control{% if errors.content is defined %} is-invalid{% endif %}" rows="5" placeholder="Contenu de l'article">{{ postData.content is defined ? postData.content : post.content|default('')|e('html_attr') }}</textarea>
+									<textarea id="content" name="content" class="form-control{% if errors.content is defined %} is-invalid{% endif %}" rows="5" placeholder="Contenu de l'article">{{ formData.content is defined ? formData.content : post.content|default('')|e('html_attr') }}</textarea>
 									<label for="content">Contenu</label>
 									{% if errors.content is defined %}
 										<span class="invalid-feedback">
@@ -46,9 +46,9 @@
 								<div class="form-group{% if errors.featuredImage is defined %} is-invalid has-error{% endif %}">
 									<label for="featuredImage" class="form-label">Image de l'article</label>
 									{% if errors.featuredImage is defined %}
-									<div class="alert alert-danger">
-										{{ errors.featuredImage }}
-									</div>
+										<div class="alert alert-danger">
+											{{ errors.featuredImage }}
+										</div>
 									{% endif %}
 									<input class="form-control mb-3" type="file" name="featuredImage" id="featuredImage">
 								</div>

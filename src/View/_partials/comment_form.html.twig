@@ -15,7 +15,7 @@
 			<input type="hidden" name="parentId" value="">
 			<div class="col row">
 				<div class="form-group form-floating mb-3{% if errors.content is defined %} has-error{% endif %}">
-					<textarea id="content" name="content" class="form-control {% if errors.content is defined %} is-invalid{% endif %}" placeholder="Contenu du commentaire">{{ postData.content|default('') }}</textarea>
+					<textarea id="content" name="content" class="form-control {% if errors.content is defined %} is-invalid{% endif %}" placeholder="Contenu du commentaire">{{ formData.content|default('') }}</textarea>
 					{% if errors.content is defined %}
 						<div class="invalid-feedback">
 							{{ errors.content }}
@@ -34,9 +34,9 @@
 	{% endif %}
 </div>
 <script>
-	let postData = {
-'content': JSON.parse('{{ postData.content|default(null)|json_encode()|e('js') }}'),
-'parent_id': JSON.parse('{{ postData.parent_id|default(null)|json_encode()|e('js') }}')
+	let formData = {
+'content': JSON.parse('{{ formData.content|default(null)|json_encode()|e('js') }}'),
+'parent_id': JSON.parse('{{ formData.parent_id|default(null)|json_encode()|e('js') }}')
 };
 
 const replyButtons = document.querySelectorAll('.reply');
@@ -96,8 +96,8 @@ return alert;
 });
 });
 window.addEventListener('DOMContentLoaded', (event) => {
-if (postData && postData.parent_id) {
-const replyButton = Array.from(replyButtons).find(button => button.getAttribute('data-comment-id') === postData.parent_id);
+if (formData && formData.parent_id) {
+const replyButton = Array.from(replyButtons).find(button => button.getAttribute('data-comment-id') === formData.parent_id);
 if (replyButton) {
 replyButton.click();
 }

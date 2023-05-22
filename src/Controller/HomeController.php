@@ -38,22 +38,22 @@ class HomeController extends AbstractController
         ];
 
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
-            list($errors, $message, $postData) = $this->contactService->handleContactPostRequest();
+            list($errors, $message, $formData) = $this->contactService->handleContactPostRequest();
             if ($errors) {
-                $this->session->set('postData', $postData);
+                $this->session->set('formData', $formData);
 
                 return;
             }
             $mailerError = $this->mailerService->sendEmail(
-                $postData['data']['email'],
+                $formData['data']['email'],
                 $this->configuration->get('mailer.from_email'),
                 'Demande de contact - MyBlog',
                 $this->twig->render('emails/contact.html.twig', [
-                    'data' => $postData['data'],
+                    'data' => $formData['data'],
                 ])
             );
-            $this->session->remove('postData');
-            $postData = null;
+            $this->session->remove('formData');
+            $formData = null;
             $this->session->set('success', $message);
             $this->session->set('mailerError', $mailerError);
             $url = $this->request->generateUrl('home');
@@ -67,7 +67,7 @@ class HomeController extends AbstractController
             'csrfToken' => $csrfToken,
             'mailerError' => $mailerError ?? null,
             'flashBag' => $flashBag ?? [],
-            'postData' => $postData ?? null,
+            'formData' => $formData ?? null,
         ]);
     }
 }

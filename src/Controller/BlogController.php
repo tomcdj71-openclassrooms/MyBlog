@@ -104,32 +104,32 @@ class BlogController extends AbstractController
         $errors = $this->session->flash('errors');
         $message = $this->session->flash('message');
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
-            $postData = [
+            $formData = [
                 'content' => $this->serverRequest->getPost('content'),
                 'post_id' => $post,
                 'user_id' => $this->session->getUserFromSession()->getId(),
                 'parent_id' => $this->serverRequest->getPost('parentId'),
                 'csrfToken' => $this->serverRequest->getPost('csrfToken'),
             ];
-            list($errors, $message, $postData, $comment) = $this->commentService->handleCommentPostRequest($postData);
-            $postData ? $this->session->set('postData', $postData) : null;
+            list($errors, $message, $formData, $comment) = $this->commentService->handleCommentPostRequest($formData);
+            $formData ? $this->session->set('formData', $formData) : null;
             $errors ? $this->session->set('errors', $errors) : null;
             if (!$errors) {
-                $this->session->remove('postData');
+                $this->session->remove('formData');
             }
             $message ? $this->session->set('message', $message) : null;
-            $url = $this->request->generateUrl('blog_post', ['slug' => $slug, 'postData' => $postData]).'#comment-form';
+            $url = $this->request->generateUrl('blog_post', ['slug' => $slug, 'formData' => $formData]).'#comment-form';
             $this->request->redirect($url);
         }
         $csrfToken = $this->csrfTokenService->generateToken('comment');
-        $postData = $this->session->get('postData');
+        $formData = $this->session->get('formData');
 
         return $this->twig->render('pages/blog/post.html.twig', array_merge([
             'csrfToken' => $csrfToken,
             'post' => $post,
             'errors' => $errors ?? [],
             'message' => $message ?? '',
-            'postData' => $postData ?? [],
+            'formData' => $formData ?? [],
             'comment' => $comment ?? null,
             'comments' => $comments,
         ], $this->sidebar, $this->navbar));

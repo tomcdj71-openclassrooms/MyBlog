@@ -18,7 +18,7 @@
 											<span class="input-group-text" id="inputGroupPrepend">
 												<i class="bi bi-envelope"></i>
 											</span>
-											<input type="email" name="email" class="form-control {% if errors.email is defined and errors.email is not empty %} is-invalid{% endif %}" id="email" required="" value="{{ postData.email|default('')|e('html_attr') }}">
+											<input type="email" name="email" class="form-control {% if errors.email is defined and errors.email is not empty %} is-invalid{% endif %}" id="email" required="" value="{{ formData.email|default('')|e('html_attr') }}">
 											{% if errors.email is defined %}
 												<div class="invalid-feedback">
 													{{ errors.email }}
@@ -32,7 +32,7 @@
 											<span class="input-group-text" id="inputGroupPrepend">
 												<i class="bi bi-person"></i>
 											</span>
-											<input type="text" name="username" class="form-control {% if errors.username is defined and errors.username is not empty %} is-invalid{% endif %}" id="username" required="" value="{{ postData.username|default('')|e('html_attr') }}">
+											<input type="text" name="username" class="form-control {% if errors.username is defined and errors.username is not empty %} is-invalid{% endif %}" id="username" required="" value="{{ formData.username|default('')|e('html_attr') }}">
 											{% if errors.username is defined %}
 												<div class="invalid-feedback">
 													{{ errors.username }}
@@ -46,7 +46,7 @@
 											<span class="input-group-text" id="inputGroupPrepend">
 												<i class="bi bi-lock"></i>
 											</span>
-											<input type="password" name="password" class="form-control {% if errors.password is defined and errors.password is not empty %} is-invalid{% endif %}" id="password" required="" value="{{ postData.password|default('')|e('html_attr') }}">
+											<input type="password" name="password" class="form-control {% if errors.password is defined and errors.password is not empty %} is-invalid{% endif %}" id="password" required="" value="{{ formData.password|default('')|e('html_attr') }}">
 											{% if errors.password is defined %}
 												<div class="invalid-feedback">
 													{{ errors.password }}
@@ -60,7 +60,7 @@
 											<span class="input-group-text" id="inputGroupPrepend">
 												<i class="bi bi-lock"></i>
 											</span>
-											<input type="password" name="passwordConfirm" class="form-control {% if errors.passwordConfirm is defined and errors.passwordConfirm is not empty %} is-invalid{% endif %}" id="passwordConfirm" required="" value="{{ postData.passwordConfirm|default('')|e('html_attr') }}">
+											<input type="password" name="passwordConfirm" class="form-control {% if errors.passwordConfirm is defined and errors.passwordConfirm is not empty %} is-invalid{% endif %}" id="passwordConfirm" required="" value="{{ formData.passwordConfirm|default('')|e('html_attr') }}">
 											{% if errors.passwordConfirm is defined %}
 												<div class="invalid-feedback">
 													{{ errors.passwordConfirm }}

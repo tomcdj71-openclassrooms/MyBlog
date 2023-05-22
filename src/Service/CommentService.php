@@ -30,35 +30,35 @@ class CommentService extends AbstractService
         $this->userManager = $userManager;
     }
 
-    public function handleCommentPostRequest(array $postData)
+    public function handleCommentPostRequest(array $formData)
     {
         $errors = [];
         $csrfToCheck = $this->serverRequest->getPost('csrfToken');
         if (!$this->csrfTokenService->checkCsrfToken('comment', $csrfToCheck)) {
             $errors[] = 'Jeton CSRF invalide.';
         }
-        $postData = $this->getPostData($postData);
+        $formData = $this->getformData($formData);
         $commentFV = new CommentFormValidator($this->userManager, $this->session, $this->csrfTokenService);
-        $response = $commentFV->validate($postData);
-        $comment = $response['valid'] ? $this->createComment($postData) : null;
+        $response = $commentFV->validate($formData);
+        $comment = $response['valid'] ? $this->createComment($formData) : null;
         $message = $response['valid'] ? 'Votre commentaire a été ajouté avec succès!' : null;
         $errors = !$response['valid'] ? $response['errors'] : $errors;
 
-        return [$errors, $message, $postData, $comment];
+        return [$errors, $message, $formData, $comment];
     }
 
-    public function getPostData($postObject)
+    public function getformData($postObject)
     {
         $fields = ['content', 'parent_id', 'csrfToken'];
-        $postData = array_map(function ($field) {
+        $formData = array_map(function ($field) {
             return $this->serverRequest->getPost($field, '');
         }, array_combine($fields, $fields));
 
-        $postData['post_id'] = $postObject['post_id'] ?? null;
-        $postData['author_id'] = $this->securityHelper->getUser();
-        $postData['parent_id'] = $this->serverRequest->getPost('parentId') ?? null;
+        $formData['post_id'] = $postObject['post_id'] ?? null;
+        $formData['author_id'] = $this->securityHelper->getUser();
+        $formData['parent_id'] = $this->serverRequest->getPost('parentId') ?? null;
 
-        return $postData;
+        return $formData;
     }
 
     public function createComment(array $data)

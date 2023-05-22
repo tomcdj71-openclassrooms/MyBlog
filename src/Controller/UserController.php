@@ -52,9 +52,9 @@ class UserController extends AbstractController
         $user = $this->securityHelper->getUser();
         $errors = [];
         if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
-            list($errors, $message, $postData) = $this->profileService->handleProfilePostRequest($user);
+            list($errors, $message, $formData) = $this->profileService->handleProfilePostRequest($user);
             if ($errors) {
-                $this->session->set('postData', $postData);
+                $this->session->set('formData', $formData);
             }
         }
         $userPostsData = $this->postService->getUserPostsData();
@@ -68,7 +68,7 @@ class UserController extends AbstractController
             'user' => $user,
             'errors' => $errors ?? [],
             'message' => $message ?? '',
-            'postData' => $postData ?? [],
+            'formData' => $formData ?? [],
             'session' => $this->session,
         ], $this->navbar));
     }
@@ -81,15 +81,15 @@ class UserController extends AbstractController
         $this->securityHelper->denyAccessIfAuthenticated();
         $errors = [];
         if ('POST' === $this->serverRequest->getRequestMethod()) {
-            $postData = [
+            $formData = [
                 'email' => filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL),
                 'password' => filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS),
                 'csrfToken' => filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS),
             ];
-            $validationResult = $this->loginFV->validate($postData);
+            $validationResult = $this->loginFV->validate($formData);
             $errors = $validationResult['errors'];
             if ($validationResult['valid']) {
-                $login = $this->securityHelper->authenticateUser($postData);
+                $login = $this->securityHelper->authenticateUser($formData);
                 if ($login) {
                     $url = $this->request->generateUrl('blog');
                     $this->request->redirect($url);
@@ -102,7 +102,7 @@ class UserController extends AbstractController
         return $this->twig->render('pages/security/login.html.twig', [
             'csrfToken' => $csrfToken,
             'errors' => $errors ?? null,
-            'postData' => $postData ?? null,
+            'formData' => $formData ?? null,
         ]);
     }
 
@@ -115,22 +115,22 @@ class UserController extends AbstractController
         $errors = [];
         $csrfToken = $this->csrfTokenService->generateToken('register');
         if ('POST' === $this->serverRequest->getRequestMethod()) {
-            $postData = [
+            $formData = [
                 'email' => filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL),
                 'username' => filter_input(INPUT_POST, 'username', FILTER_SANITIZE_SPECIAL_CHARS),
                 'password' => filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS),
                 'passwordConfirm' => filter_input(INPUT_POST, 'passwordConfirm', FILTER_SANITIZE_SPECIAL_CHARS),
                 'csrfToken' => $csrfToken,
             ];
-            $validationResult = $this->registrationFV->validate($postData);
+            $validationResult = $this->registrationFV->validate($formData);
             if ($validationResult['valid']) {
-                $registered = $this->securityHelper->registerUser($postData);
+                $registered = $this->securityHelper->registerUser($formData);
                 if ($registered) {
                     $csrfToken = $this->csrfTokenService->generateToken('register');
                     $message = 'Votre compte a été créé avec succès. Vous êtes désormais connecté.';
                     $mailerError = $this->mailerService->sendEmail(
                         $this->configuration->get('mailer.from_email'),
-                        $postData['email'],
+                        $formData['email'],
                         'Bienvenue sur MyBlog',
                         $this->twig->render('emails/registration.html.twig')
                     );
@@ -149,7 +149,7 @@ class UserController extends AbstractController
         return $this->twig->render('pages/security/register.html.twig', [
             'csrfToken' => $csrfToken,
             'errors' => $errors ?? null,
-            'postData' => $postData ?? null,
+            'formData' => $formData ?? null,
             'message' => $message ?? null,
         ]);
     }
