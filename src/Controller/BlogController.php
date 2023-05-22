@@ -112,13 +112,17 @@ class BlogController extends AbstractController
                 'csrfToken' => $this->serverRequest->getPost('csrfToken'),
             ];
             list($errors, $message, $postData, $comment) = $this->commentService->handleCommentPostRequest($postData);
-            $postData = null;
+            $postData ? $this->session->set('postData', $postData) : null;
             $errors ? $this->session->set('errors', $errors) : null;
+            if (!$errors) {
+                $this->session->remove('postData');
+            }
             $message ? $this->session->set('message', $message) : null;
-            $url = $this->request->generateUrl('blog_post', ['slug' => $slug]).'#comment-form';
+            $url = $this->request->generateUrl('blog_post', ['slug' => $slug, 'postData' => $postData]).'#comment-form';
             $this->request->redirect($url);
         }
         $csrfToken = $this->csrfTokenService->generateToken('comment');
+        $postData = $this->session->get('postData');
 
         return $this->twig->render('pages/blog/post.html.twig', array_merge([
             'csrfToken' => $csrfToken,
