@@ -18,7 +18,7 @@
 git clone https://github.com/tomcdj71/MyBlog
 cd MyBlog
 composer install --no-dev --optimize-autoloader
-pnpm -C public install
+pnpm -C public/assets install
 ```
 
 ## Usage
