@@ -11,7 +11,7 @@ use App\DependencyInjection\Injectable;
 use App\Router\HttpException;
 use App\Router\Router;
 
-/**
+/*
  * As it is a dev dependency, it is not available in production environment
  * To install it, run the following command:
  * composer require --dev tracy/tracy

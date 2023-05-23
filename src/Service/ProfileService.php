@@ -39,9 +39,6 @@ class ProfileService extends AbstractService
         if (!$this->csrfTokenService->checkCsrfToken('editProfile', $csrfToCheck)) {
             $errors[] = 'Jeton CSRF invalide.';
         }
-        if (!$this->csrfTokenService->checkCsrfToken('editProfile', $csrfToCheck)) {
-            $errors[] = 'Jeton CSRF invalide.';
-        }
         foreach ($formData as $key => $value) {
             if ('csrfToken' === $key) {
                 continue;

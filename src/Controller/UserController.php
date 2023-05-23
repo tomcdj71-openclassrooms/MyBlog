@@ -15,7 +15,7 @@ use App\Service\CsrfTokenService;
 use App\Service\MailerService;
 use App\Service\PostService;
 use App\Service\ProfileService;
-use App\Validator\LoginFormValidator;
+use App\Service\SecurityService;
 use App\Validator\RegistrationFormValidator;
 
 class UserController extends AbstractController
@@ -24,7 +24,7 @@ class UserController extends AbstractController
     private MailerService $mailerService;
     private ProfileService $profileService;
     private PostService $postService;
-    private LoginFormValidator $loginFV;
+    private SecurityService $securityService;
     private Configuration $configuration;
     private RegistrationFormValidator $registrationFV;
     private CsrfTokenService $csrfTokenService;
@@ -38,8 +38,9 @@ class UserController extends AbstractController
         UserManager $userManager,
         Request $request,
         CsrfTokenService $csrfTokenService,
+        SecurityService $securityService,
     ) {
-        parent::__construct($twig, $session, $serverRequest, $securityHelper, $userManager, $request, $csrfTokenService);
+        parent::__construct($twig, $session, $serverRequest, $securityHelper, $userManager, $request, $csrfTokenService, $securityService);
         $this->navbar = [
             'profile' => $this->securityHelper->getUser(),
         ];
@@ -79,30 +80,24 @@ class UserController extends AbstractController
     public function login()
     {
         $this->securityHelper->denyAccessIfAuthenticated();
-        $errors = [];
-        if ('POST' === $this->serverRequest->getRequestMethod()) {
-            $formData = [
-                'email' => filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL),
-                'password' => filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS),
-                'csrfToken' => filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS),
-            ];
-            $validationResult = $this->loginFV->validate($formData);
-            $errors = $validationResult['errors'];
-            if ($validationResult['valid']) {
-                $login = $this->securityHelper->authenticateUser($formData);
-                if ($login) {
-                    $url = $this->request->generateUrl('blog');
-                    $this->request->redirect($url);
-                }
-                $errors = ['email' => 'Email ou mot de passe incorrect.'];
+        if ('POST' == $this->serverRequest->getRequestMethod() && filter_input(INPUT_POST, 'csrfToken', FILTER_SANITIZE_SPECIAL_CHARS)) {
+            list($errors, $formData) = $this->securityService->handleLoginPostRequest();
+            if ($errors) {
+                $this->session->set('formData', $formData);
+                $this->session->set('errors', $errors);
+            }
+            if ($this->securityHelper->getUser()) {
+                $url = $this->request->generateUrl('blog');
+                $this->request->redirect($url);
             }
         }
         $csrfToken = $this->csrfTokenService->generateToken('login');
 
         return $this->twig->render('pages/security/login.html.twig', [
             'csrfToken' => $csrfToken,
-            'errors' => $errors ?? null,
-            'formData' => $formData ?? null,
+            'errors' => $this->session->flash('errors'),
+            'message' => $this->session->flash('message'),
+            'formData' => $this->session->flash('formData'),
         ]);
     }
 
@@ -148,8 +143,8 @@ class UserController extends AbstractController
 
         return $this->twig->render('pages/security/register.html.twig', [
             'csrfToken' => $csrfToken,
-            'errors' => $errors ?? null,
-            'formData' => $formData ?? null,
+            'errors' => $errors ?? $this->session->flash('errors') ?? null,
+            'formData' => $formData ?? $this->session->flash('formData') ?? null,
             'message' => $message ?? null,
         ]);
     }
