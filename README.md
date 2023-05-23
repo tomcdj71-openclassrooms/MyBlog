@@ -9,7 +9,7 @@
 
 `composer install --no-dev --optimize-autoloader`
 
-then, navigate to public and do :
+then, navigate to public/install and do :
 `pnpm install`
 
 if you don't have pnpm, run `npm install`
