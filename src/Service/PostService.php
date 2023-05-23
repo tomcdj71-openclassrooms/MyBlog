@@ -53,74 +53,82 @@ class PostService extends AbstractService
 
     public function getUserPostsData()
     {
-        $user = $this->securityHelper->getUser();
-        if (!$user) {
-            header('Location: /login');
-        }
-        $offset = $this->serverRequest->getQuery('offset') ? intval($this->serverRequest->getQuery('offset')) : 1;
-        $limit = $this->serverRequest->getQuery('limit') ? intval($this->serverRequest->getQuery('limit')) : 10;
-        $page = intval($offset / $limit) + 1;
-        $userPostsData = $this->postManager->findUserPosts($user->getId(), $page, $limit);
-        $userPosts = $userPostsData['posts'];
-        $userPostsArray = [];
-        $comments = '';
-        foreach ($userPosts as $post) {
-            $numberOfComments = isset($comments['number_of_comments']) ? $comments['number_of_comments'] : 0;
-            $tags = array_map(function ($tag) {
-                return $tag->getName();
-            }, $post->getTags());
-            $userPostsArray[] = [
-                'id' => $post->getId(),
-                'title' => $post->getTitle(),
-                'slug' => $post->getSlug(),
-                'created_at' => $post->getCreatedAt(),
-                'is_enabled' => $post->getIsEnabled(),
-                'category' => $post->getCategory()->getName(),
-                'comments' => $numberOfComments.' commentaire(s)',
-                'tags' => $tags,
-                'type' => 'myPosts',
-            ];
-        }
-        $totalPosts = $userPostsData['count'];
+        try {
+            $user = $this->securityHelper->getUser();
+            if (!$user) {
+                header('Location: /login');
+            }
+            $offset = $this->serverRequest->getQuery('offset') ? intval($this->serverRequest->getQuery('offset')) : 1;
+            $limit = $this->serverRequest->getQuery('limit') ? intval($this->serverRequest->getQuery('limit')) : 10;
+            $page = intval($offset / $limit) + 1;
+            $userPostsData = $this->postManager->findUserPosts($user->getId(), $page, $limit);
+            $userPosts = $userPostsData['posts'];
+            $userPostsArray = [];
+            $comments = '';
+            foreach ($userPosts as $post) {
+                $numberOfComments = isset($comments['number_of_comments']) ? $comments['number_of_comments'] : 0;
+                $tags = array_map(function ($tag) {
+                    return $tag->getName();
+                }, $post->getTags());
+                $userPostsArray[] = [
+                    'id' => $post->getId(),
+                    'title' => $post->getTitle(),
+                    'slug' => $post->getSlug(),
+                    'created_at' => $post->getCreatedAt(),
+                    'is_enabled' => $post->getIsEnabled(),
+                    'category' => $post->getCategory()->getName(),
+                    'comments' => $numberOfComments.' commentaire(s)',
+                    'tags' => $tags,
+                    'type' => 'myPosts',
+                ];
+            }
+            $totalPosts = $userPostsData['count'];
 
-        return [
-            'rows' => $userPostsArray,
-            'total' => $totalPosts,
-        ];
+            return [
+                'rows' => $userPostsArray,
+                'total' => $totalPosts,
+            ];
+        } catch (\Exception $e) {
+            throw new \RuntimeException('Une erreur est survenue lors de la récupération des articles.');
+        }
     }
 
     public function getOtherUserPostsData(int $userId)
     {
-        $offset = $this->serverRequest->getQuery('offset') ? intval($this->serverRequest->getQuery('offset')) : 1;
-        $limit = $this->serverRequest->getQuery('limit') ? intval($this->serverRequest->getQuery('limit')) : 10;
-        $page = intval($offset / $limit) + 1;
-        $otherUserPostsData = $this->postManager->findUserPosts($userId, $page, $limit);
-        $otherUserPosts = $otherUserPostsData['posts'];
-        $otherUserPostsArray = [];
-        $comments = '';
-        foreach ($otherUserPosts as $post) {
-            $numberOfComments = isset($comments['number_of_comments']) ? $comments['number_of_comments'] : 0;
-            $tags = array_map(function ($tag) {
-                return $tag->getName();
-            }, $post->getTags());
-            $otherUserPostsArray[] = [
-                'id' => $post->getId(),
-                'title' => $post->getTitle(),
-                'slug' => $post->getSlug(),
-                'created_at' => $post->getCreatedAt(),
-                'is_enabled' => $post->getIsEnabled(),
-                'category' => $post->getCategory()->getName(),
-                'comments' => $numberOfComments.' commentaire(s)',
-                'tags' => $tags,
-                'type' => 'otherPosts',
-            ];
-        }
-        $totalPosts = $otherUserPostsData['count'];
+        try {
+            $offset = $this->serverRequest->getQuery('offset') ? intval($this->serverRequest->getQuery('offset')) : 1;
+            $limit = $this->serverRequest->getQuery('limit') ? intval($this->serverRequest->getQuery('limit')) : 10;
+            $page = intval($offset / $limit) + 1;
+            $otherUserPostsData = $this->postManager->findUserPosts($userId, $page, $limit);
+            $otherUserPosts = $otherUserPostsData['posts'];
+            $otherUserPostsArray = [];
+            $comments = '';
+            foreach ($otherUserPosts as $post) {
+                $numberOfComments = isset($comments['number_of_comments']) ? $comments['number_of_comments'] : 0;
+                $tags = array_map(function ($tag) {
+                    return $tag->getName();
+                }, $post->getTags());
+                $otherUserPostsArray[] = [
+                    'id' => $post->getId(),
+                    'title' => $post->getTitle(),
+                    'slug' => $post->getSlug(),
+                    'created_at' => $post->getCreatedAt(),
+                    'is_enabled' => $post->getIsEnabled(),
+                    'category' => $post->getCategory()->getName(),
+                    'comments' => $numberOfComments.' commentaire(s)',
+                    'tags' => $tags,
+                    'type' => 'otherPosts',
+                ];
+            }
+            $totalPosts = $otherUserPostsData['count'];
 
-        return [
-            'rows' => $otherUserPostsArray,
-            'total' => $totalPosts,
-        ];
+            return [
+                'rows' => $otherUserPostsArray,
+                'total' => $totalPosts,
+            ];
+        } catch (\Exception $e) {
+            throw new \RuntimeException('Une erreur est survenue lors de la récupération des articles.');
+        }
     }
 
     public function handleAddPostRequest()
@@ -200,79 +208,87 @@ class PostService extends AbstractService
 
     public function editPost($post, $data)
     {
-        $fields = ['title', 'chapo', 'content', 'category', 'tags', 'featuredImage', 'slug', 'updated_at', 'is_enabled'];
-        foreach ($fields as $field) {
-            $setter = 'set'.$field;
-            $dataKey = lcfirst($field);
-            if (isset($data[$dataKey])) {
-                switch ($field) {
-                    case 'category':
-                        $this->setCategory($post, $data[$dataKey]);
+        try {
+            $fields = ['title', 'chapo', 'content', 'category', 'tags', 'featuredImage', 'slug', 'updated_at', 'is_enabled'];
+            foreach ($fields as $field) {
+                $setter = 'set'.$field;
+                $dataKey = lcfirst($field);
+                if (isset($data[$dataKey])) {
+                    switch ($field) {
+                        case 'category':
+                            $this->setCategory($post, $data[$dataKey]);
 
-                        break;
+                            break;
 
-                    case 'tags':
-                        $this->setTags($post, $data[$dataKey]);
+                        case 'tags':
+                            $this->setTags($post, $data[$dataKey]);
 
-                        break;
+                            break;
 
-                    case 'featuredImage':
-                        if (isset($data[$dataKey])) {
-                            $featuredImage = $this->setFeaturedImage($post, $data[$dataKey]);
-                            if (null !== $featuredImage) {
-                                $post->{$setter}($featuredImage);
-                                $data[$dataKey] = $featuredImage;
+                        case 'featuredImage':
+                            if (isset($data[$dataKey])) {
+                                $featuredImage = $this->setFeaturedImage($post, $data[$dataKey]);
+                                if (null !== $featuredImage) {
+                                    $post->{$setter}($featuredImage);
+                                    $data[$dataKey] = $featuredImage;
+                                }
                             }
-                        }
 
-                        break;
+                            break;
 
-                    default:
-                        $post->{$setter}($data[$dataKey]);
+                        default:
+                            $post->{$setter}($data[$dataKey]);
 
-                        break;
+                            break;
+                    }
                 }
             }
-        }
-        $data['isEnabled'] = $post->getIsEnabled();
-        $postUpdated = $this->postManager->updatePost($post, $data);
-        $tagsUpdated = $this->postManager->updatePostTags($post, $post->getTags());
-        if ($postUpdated && $tagsUpdated) {
-            return [
-                'formData' => $data,
-                'postSlug' => $post->getSlug() ?? null,
-                'tagsUpdated' => $tagsUpdated ?? null,
-            ];
+            $data['isEnabled'] = $post->getIsEnabled();
+            $postUpdated = $this->postManager->updatePost($post, $data);
+            $tagsUpdated = $this->postManager->updatePostTags($post, $post->getTags());
+            if ($postUpdated && $tagsUpdated) {
+                return [
+                    'formData' => $data,
+                    'postSlug' => $post->getSlug() ?? null,
+                    'tagsUpdated' => $tagsUpdated ?? null,
+                ];
+            }
+        } catch (\Exception $e) {
+            error_log($e->getMessage());
         }
     }
 
     public function createPost(array $data)
     {
-        $user = $this->securityHelper->getUser();
-        $createdAt = new \DateTime();
-        $createdAt = $createdAt->format('Y-m-d H:i:s');
-        $filename = $this->imageHelper->uploadImage($data['featuredImage'], 1200, 900);
-        if (0 === strpos($filename, 'Error')) {
-            throw new \RuntimeException($filename);
-        }
-        $filename = explode('.', $filename)[0];
-        $formData = [
-            'title' => $data['title'],
-            'content' => $data['content'],
-            'author' => $user->getId(),
-            'chapo' => $data['chapo'],
-            'createdAt' => $createdAt,
-            'updatedAt' => $createdAt,
-            'isEnabled' => 1,
-            'featuredImage' => $filename,
-            'category' => $data['category'],
-            'slug' => $this->stringHelper->slugify($data['title']),
-            'tags' => $data['tags'],
-            'csrfToken' => $data['csrfToken'],
-        ];
-        $createdPost = $this->postManager->create($formData);
+        try {
+            $user = $this->securityHelper->getUser();
+            $createdAt = new \DateTime();
+            $createdAt = $createdAt->format('Y-m-d H:i:s');
+            $filename = $this->imageHelper->uploadImage($data['featuredImage'], 1200, 900);
+            if (0 === strpos($filename, 'Error')) {
+                throw new \RuntimeException($filename);
+            }
+            $filename = explode('.', $filename)[0];
+            $formData = [
+                'title' => $data['title'],
+                'content' => $data['content'],
+                'author' => $user->getId(),
+                'chapo' => $data['chapo'],
+                'createdAt' => $createdAt,
+                'updatedAt' => $createdAt,
+                'isEnabled' => 1,
+                'featuredImage' => $filename,
+                'category' => $data['category'],
+                'slug' => $this->stringHelper->slugify($data['title']),
+                'tags' => $data['tags'],
+                'csrfToken' => $data['csrfToken'],
+            ];
+            $createdPost = $this->postManager->create($formData);
 
-        return $createdPost ? $createdPost->getSlug() : null;
+            return $createdPost ? $createdPost->getSlug() : null;
+        } catch (\Exception $e) {
+            error_log($e->getMessage());
+        }
     }
 
     private function setCategory($post, $categoryData)

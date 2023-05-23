@@ -80,36 +80,44 @@ class ProfileService extends AbstractService
 
     public function updateUserProfile($user, $data)
     {
-        $fields = ['firstName', 'lastName', 'bio', 'twitter', 'facebook', 'github', 'linkedin', 'avatar'];
-        foreach ($fields as $field) {
-            $setter = 'set'.$field;
-            $dataKey = lcfirst($field);
-            if (isset($data[$dataKey])) {
-                if ('avatar' == $field) {
-                    $data[$dataKey] = $this->setAvatar($user, $data[$dataKey]);
+        try {
+            $fields = ['firstName', 'lastName', 'bio', 'twitter', 'facebook', 'github', 'linkedin', 'avatar'];
+            foreach ($fields as $field) {
+                $setter = 'set'.$field;
+                $dataKey = lcfirst($field);
+                if (isset($data[$dataKey])) {
+                    if ('avatar' == $field) {
+                        $data[$dataKey] = $this->setAvatar($user, $data[$dataKey]);
+                    }
+                    $user->{$setter}($data[$dataKey]);
                 }
-                $user->{$setter}($data[$dataKey]);
             }
-        }
-        $userUpdated = $this->userManager->updateProfile($user, $data);
-        if ($userUpdated) {
-            return [
-                'formData' => $data,
-            ];
+            $userUpdated = $this->userManager->updateProfile($user, $data);
+            if ($userUpdated) {
+                return [
+                    'formData' => $data,
+                ];
+            }
+        } catch (\Exception $e) {
+            throw new \RuntimeException($e->getMessage());
         }
     }
 
     private function setAvatar($user, $avatarData)
     {
-        if (!empty($avatarData['name']) && UPLOAD_ERR_NO_FILE !== $avatarData['error']) {
-            $filename = $this->imageHelper->uploadImage($avatarData, 200, 200);
-            if (0 === strpos($filename, 'Error')) {
-                throw new \RuntimeException($filename);
+        try {
+            if (!empty($avatarData['name']) && UPLOAD_ERR_NO_FILE !== $avatarData['error']) {
+                $filename = $this->imageHelper->uploadImage($avatarData, 200, 200);
+                if (0 === strpos($filename, 'Error')) {
+                    throw new \RuntimeException($filename);
+                }
+
+                return explode('.', $filename)[0];
             }
 
-            return explode('.', $filename)[0];
+            return $user->getAvatar();
+        } catch (\Exception $e) {
+            throw new \RuntimeException($e->getMessage());
         }
-
-        return $user->getAvatar();
     }
 }

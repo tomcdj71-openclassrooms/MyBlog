@@ -136,22 +136,26 @@ class UserManager
 
     public function updateProfile(UserModel $user, array $data): bool
     {
-        $sql = 'UPDATE user SET email = :email, firstName = :firstName, lastName = :lastName, bio = :bio, twitter = :twitter, facebook = :facebook, github = :github, avatar = :avatar, linkedin = :linkedin';
-        $sql .= ' WHERE id = :id';
-        $statement = $this->database->prepare($sql);
-        $statement->bindValue('id', $user->getId(), \PDO::PARAM_INT);
-        $statement->bindValue(':email', $data['email'] ?? $user->getEmail(), \PDO::PARAM_STR);
-        $statement->bindValue(':firstName', $data['firstName'] ?? $user->getFirstName(), \PDO::PARAM_STR);
-        $statement->bindValue(':lastName', $data['lastName'] ?? $user->getLastName(), \PDO::PARAM_STR);
-        $statement->bindValue(':bio', $data['bio'] ?? $user->getBio(), \PDO::PARAM_STR);
-        $statement->bindValue(':twitter', $data['twitter'] ?? $user->getTwitter(), \PDO::PARAM_STR);
-        $statement->bindValue(':facebook', $data['facebook'] ?? $user->getFacebook(), \PDO::PARAM_STR);
-        $statement->bindValue(':github', $data['github'] ?? $user->getGithub(), \PDO::PARAM_STR);
-        $statement->bindValue(':avatar', $data['avatar'] ?? $user->getAvatar(), \PDO::PARAM_STR);
-        $statement->bindValue(':linkedin', $data['linkedin'] ?? $user->getLinkedin(), \PDO::PARAM_STR);
-        $statement->execute();
+        try {
+            $sql = 'UPDATE user SET email = :email, firstName = :firstName, lastName = :lastName, bio = :bio, twitter = :twitter, facebook = :facebook, github = :github, avatar = :avatar, linkedin = :linkedin';
+            $sql .= ' WHERE id = :id';
+            $statement = $this->database->prepare($sql);
+            $statement->bindValue('id', $user->getId(), \PDO::PARAM_INT);
+            $statement->bindValue(':email', $data['email'] ?? $user->getEmail(), \PDO::PARAM_STR);
+            $statement->bindValue(':firstName', $data['firstName'] ?? $user->getFirstName(), \PDO::PARAM_STR);
+            $statement->bindValue(':lastName', $data['lastName'] ?? $user->getLastName(), \PDO::PARAM_STR);
+            $statement->bindValue(':bio', $data['bio'] ?? $user->getBio(), \PDO::PARAM_STR);
+            $statement->bindValue(':twitter', $data['twitter'] ?? $user->getTwitter(), \PDO::PARAM_STR);
+            $statement->bindValue(':facebook', $data['facebook'] ?? $user->getFacebook(), \PDO::PARAM_STR);
+            $statement->bindValue(':github', $data['github'] ?? $user->getGithub(), \PDO::PARAM_STR);
+            $statement->bindValue(':avatar', $data['avatar'] ?? $user->getAvatar(), \PDO::PARAM_STR);
+            $statement->bindValue(':linkedin', $data['linkedin'] ?? $user->getLinkedin(), \PDO::PARAM_STR);
+            $statement->execute();
 
-        return true;
+            return true;
+        } catch (\PDOException $error) {
+            error_log($error->getMessage(), (int) $error->getCode());
+        }
     }
 
     public function createUserModelFromArray(array $data): UserModel

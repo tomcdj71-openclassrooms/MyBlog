@@ -217,23 +217,27 @@ class CommentManager
 
     private function createCommentModelFromArray(array $data): CommentModel
     {
-        $data['tags'] = isset($data['tags']) ? array_map('trim', explode(',', $data['tags'])) : [];
-        $data['comments'] = isset($data['comments']) ? $data['comments'] : [];
-        $data['category'] = isset($data['categories']) ? $data['categories'] : null;
-        $authorModelParams = $this->userModelParams->createFromData($data);
-        $author = new UserModel($authorModelParams);
-        $data['author'] = $author;
-        $postModelParams = $this->postModelParams->createFromData($data);
-        $post = new PostModel($postModelParams);
+        try {
+            $data['tags'] = isset($data['tags']) ? array_map('trim', explode(',', $data['tags'])) : [];
+            $data['comments'] = isset($data['comments']) ? $data['comments'] : [];
+            $data['category'] = isset($data['categories']) ? $data['categories'] : null;
+            $authorModelParams = $this->userModelParams->createFromData($data);
+            $author = new UserModel($authorModelParams);
+            $data['author'] = $author;
+            $postModelParams = $this->postModelParams->createFromData($data);
+            $post = new PostModel($postModelParams);
 
-        return new CommentModel(
-            (int) $data['id'],
-            $data['content'],
-            $data['created_at'],
-            $author,
-            (bool) $data['is_enabled'],
-            $data['parent_id'],
-            $post
-        );
+            return new CommentModel(
+                (int) $data['id'],
+                $data['content'],
+                $data['created_at'],
+                $author,
+                (bool) $data['is_enabled'],
+                $data['parent_id'],
+                $post
+            );
+        } catch (\Exception $error) {
+            error_log($error->getMessage(), (int) $error->getCode());
+        }
     }
 }
