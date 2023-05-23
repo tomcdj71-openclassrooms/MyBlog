@@ -8,3 +8,5 @@
 /public/uploads/
 /public/assets/node_modules
 /src/Config/.env.php
+node_modules/
+vendor/
