@@ -5,7 +5,7 @@
 /var/node_modules
 /var/faker.js
 /var/pnpm*
-/public/uploads/
+
 /public/assets/node_modules
 /src/Config/.env.php
 node_modules/
