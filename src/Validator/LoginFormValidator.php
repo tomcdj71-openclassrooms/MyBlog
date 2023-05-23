@@ -24,13 +24,14 @@ class LoginFormValidator extends BaseValidator
         $validationRules = [
             'email' => [
                 'constraints' => [
-                    'required' => true, 'errorMsg' => 'Cet email ne correspond pas à un utilisateur.',
+                    'required' => true,
                     'type' => 'email',
                 ],
             ],
             'password' => [
                 'constraints' => [
-                    'required' => true, 'errorMsg' => 'Ce mot de passe est invalide.',
+                    'required' => true,
+                    'type' => 'password',
                 ],
             ],
             'csrfToken' => [

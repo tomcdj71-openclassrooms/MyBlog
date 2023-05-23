@@ -44,16 +44,19 @@ class SecurityHelper
         return true;
     }
 
-    public function authenticateUser(array $data): ?UserModel
+    public function authenticateUser(array $data): array
     {
         $user = $this->userManager->findOneBy(['email' => $data['email']]);
-        if (!$user || !password_verify($data['password'], $user->getPassword())) {
-            return null;
-        }
-        $this->session->regenerateId();
-        $this->session->set('user', $user);
+        $errors = [];
 
-        return $user;
+        if (!$user || !password_verify($data['password'], $user->getPassword())) {
+            $errors[] = 'Email ou mot de passe incorrect.';
+        } else {
+            $this->session->regenerateId();
+            $this->session->set('user', $user);
+        }
+
+        return ['user' => $user, 'errors' => $errors];
     }
 
     public function getUser(): ?UserModel
