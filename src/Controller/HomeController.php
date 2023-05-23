@@ -41,8 +41,6 @@ class HomeController extends AbstractController
             list($errors, $message, $formData) = $this->contactService->handleContactPostRequest();
             if ($errors) {
                 $this->session->set('formData', $formData);
-
-                return;
             }
             $mailerError = $this->mailerService->sendEmail(
                 $formData['data']['email'],
@@ -52,8 +50,7 @@ class HomeController extends AbstractController
                     'data' => $formData['data'],
                 ])
             );
-            $this->session->remove('formData');
-            $formData = null;
+            $this->session->set('errors', $errors);
             $this->session->set('success', $message);
             $this->session->set('mailerError', $mailerError);
             $url = $this->request->generateUrl('home');
@@ -63,11 +60,11 @@ class HomeController extends AbstractController
 
         return $this->twig->render('pages/portfolio/index.html.twig', [
             'user' => $this->securityHelper->getUser(),
-            'errors' => $errors ?? null,
             'csrfToken' => $csrfToken,
             'mailerError' => $mailerError ?? null,
             'flashBag' => $flashBag ?? [],
-            'formData' => $formData ?? null,
+            'errors' => $errors ?? $this->session->flash('errors') ?? null,
+            'formData' => $formData ?? $this->session->flash('formData') ?? null,
         ]);
     }
 }
