@@ -1,28 +1,70 @@
+# Welcome to MyBlog 👋
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](#)
+[![Twitter: tomcdj71](https://img.shields.io/twitter/follow/tomcdj71.svg?style=social)](https://twitter.com/tomcdj71)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/193fb464761e4d38b5248a686e6fedcc)](https://app.codacy.com/gh/tomcdj71/MyBlog/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
-# MyBlog
+
+> 5th course of OpenClassrooms - Developpeur d'applications PHP/Symfony formation
 
 ## Pre-requesites : 
----
-- PHP 8.2 ('intl' extension enabled)
+- PHP 8.2 ('intl' and sqlite3 extension enabled)
 - Composer
 - npm (I used pnpm)
+- sqlite 3
+---
 
-`composer install --no-dev --optimize-autoloader`
+## Install
 
-then, navigate to public and do :
-`pnpm install`
+```sh
+git clone https://github.com/tomcdj71/MyBlog
+cd MyBlog
+composer install --no-dev --optimize-autoloader
+pnpm -C public install
+```
 
-if you don't have pnpm, run `npm install`
+## Usage
 
-For the mailing system, I use MailCatcher to catch the emails instead sending to a real address.
+You need to copy or rename the .env.php.example to .env.php in src/Config before starting this application.
+```sh
+cp -pR src/Config/.env.php.example src/Config/.env.php
+```
+Now, you can start the application :
+```sh
+php -S localhost:8000 -t public/
+```
 
-On a Linux computer, you can use [use this tutorial](https://blog.eldernode.com/install-mailcatcher-on-ubuntu-20-04/) to get it working,or follow these steps : 
-`sudo apt-get update && sudo apt-get install -yqq build-essential software-properties-common libsqlite3-dev ruby-dev`
+## Mailing
 
-`gem install mailcatcher`
+Don't forget to setup your mailer DSN informations in the .env.php
+You can also use [MailCatcher](https://mailcatcher.me) if you are on dev environment and test the full application.
+If you don't know how to install it, here's the How-To :
+```sh
+sudo apt-get update && sudo apt-get install -yqq build-essential software-properties-common libsqlite3-dev ruby-dev
+gem install mailcatcher
+mailcatcher
+```
+*[source](https://blog.eldernode.com/install-mailcatcher-on-ubuntu-20-04/)*
 
-`mailcatcher --ip 127.0.0.1`
+Then, you can browse to [http://127.0.0.1:1080/](http://127.0.0.1:1080/) and start catching emails.
 
-The `env.php` file includes an environment variable. If you set it to 'prod', you will not have exceptions when sending an email without MailCatcher started. You'll get Exception only in 'dev' environment.
+## Database
+If you want to rebuild the sqlite database, you need to do the following : 
+```sh
+sqlite3 var/database.db < var/db_dump.sql
+```
 
-Then, you'll find the web interface at [http://127.0.0.1:1080/](http://127.0.0.1:1080/)
+*NOTE: all accounts passwords are* `pass1234`
+
+## Author
+
+👤 **Thomas Chauveau**
+
+* Twitter: [@tomcdj71](https://twitter.com/tomcdj71)
+* Github: [@tomcdj71](https://github.com/tomcdj71)
+
+## Show your support
+
+Give a ⭐️ if this project helped you!
+
+
+***
+_This README was generated with ❤️ by [readme-md-generator](https://github.com/kefranabg/readme-md-generator)_

@@ -34,7 +34,7 @@ class ModelFactory
                 return $this->createCategoryModelFromArray($data);
 
             default:
-                throw new \Exception("Classe de modèle inconnue {$modelClass}");
+                error_log("Classe de modèle inconnue {$modelClass}");
         }
     }
 

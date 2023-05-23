@@ -10,34 +10,30 @@
 								<h5 class="card-title text-center pb-0 fs-4">Connectez-vous à votre compte</h5>
 								<p class="text-center small">Entrez votre email &amp; mot de passe pour se connecter</p>
 							</div>
-							<form class="row g-3 needs-validation" action="{{ path('login') }}" method="POST">
-								<input type="hidden" name="login" value="1">
+							<form class="row g-3 needs-validation" method="POST">
 								<div class="col-12">
-									<label for="email" class="form-label">Email</label>
+									<label for="email" class="form-label">Votre email *</label>
 									<div class="input-group has-validation">
-										<span class="input-group-text" id="inputGroupPrepend">
-											<i class="bi bi-person"></i>
+										<span class="input-group-text {% if errors is defined and errors is not empty %} border-danger{% endif %}" id="inputGroupPrepend">
+											<i class="bi bi-envelope"></i>
 										</span>
-										<input type="email" name="email" class="form-control" id="email" required="">
-										<div class="invalid-feedback">Veuillez entrer votre email.</div>
+										<input type="email" name="email" class="form-control {% if errors is defined and errors is not empty %} is-invalid{% endif %}" id="email" required="" value="{{ formData.email|default('')|e('html_attr') }}">
 									</div>
 								</div>
-								{% if errors.username is defined %}
-									<div class="text-danger small">{{ errors.username }}</div>
-								{% endif %}
 								<div class="col-12">
-									<label for="password" class="form-label">Mot de passe</label>
+									<label for="password" class="form-label">Mot de passe *</label>
 									<div class="input-group has-validation">
-										<span class="input-group-text" id="inputGroupPrepend">
+										<span class="input-group-text {% if errors is defined and errors is not empty %} border-danger{% endif %}" id="inputGroupPrepend">
 											<i class="bi bi-lock"></i>
 										</span>
-										<input type="password" name="password" class="form-control" id="password" required="">
-										<div class="invalid-feedback">Veuillez entrer votre mot de passe</div>
+										<input type="password" name="password" class="form-control {% if errors is defined and errors is not empty %} is-invalid{% endif %}" id="password" required="" value="{{ formData.password|default('')|e('html_attr') }}">
 									</div>
+									{% if errors is defined and errors is not empty %}
+										<div class="alert alert-danger mt-3">
+											{{ errors[0] }}
+										</div>
+									{% endif %}
 								</div>
-								{% if errors.password is defined %}
-									<div class="text-danger small">{{ errors.password }}</div>
-								{% endif %}
 								<input type="hidden" name="csrfToken" value="{{ csrfToken }}">
 								<div class="col-12">
 									<button class="btn btn-indigo w-100" type="submit">Connexion</button>

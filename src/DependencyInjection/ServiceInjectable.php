@@ -28,6 +28,7 @@ class ServiceInjectable
         'mailer' => MailerService::class,
         'post' => PostService::class,
         'profile' => ProfileService::class,
+        'security' => SecurityService::class,
     ];
 
     public const SERVICE_DEPENDENCIES = [
@@ -35,6 +36,7 @@ class ServiceInjectable
         'csrfToken' => [Session::class],
         'post' => [ServerRequest::class, SecurityHelper::class, PostManager::class, Session::class, CsrfTokenService::class, UserManager::class, StringHelper::class, CategoryManager::class, TagManager::class],
         'profile' => [UserManager::class, CsrfTokenService::class, Session::class, SecurityHelper::class, ServerRequest::class],
+        'security' => [UserManager::class, CsrfTokenService::class, Session::class, SecurityHelper::class, ServerRequest::class, SecurityService::class],
     ];
 
     public static function register(Container $container): void

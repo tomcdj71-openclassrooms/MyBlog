@@ -21,15 +21,10 @@
         }
     },
     "require": {
-        "twig/twig": "^3.5",
-        "symfony/http-foundation": "^6.2",
-        "symfony/routing": "^6.2",
+        "twig/twig": "^3.6",
         "php": "8.2",
         "ext-PDO": "^8.2",
-        "symfony/mailer": "^6.2",
-        "symfony/mime": "^6.2",
-        "symfony/event-dispatcher-contracts": "^3.2",
-        "symfony/event-dispatcher": "^6.2"
+        "symfony/mailer": "^6.2"
     },
     "require-dev": {
         "tracy/tracy": "^2.10"
@@ -37,9 +32,6 @@
     "config": {
         "platform": {
             "php": "8.2"
-        },
-        "allow-plugins": {
-            "symfony/flex": true
         }
     }
 }

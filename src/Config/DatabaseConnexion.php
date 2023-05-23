@@ -7,6 +7,7 @@ namespace App\Config;
 class DatabaseConnexion
 {
     private $pathToSqliteFile;
+    private $env;
 
     /**
      * PDO instance.
@@ -18,6 +19,7 @@ class DatabaseConnexion
     public function __construct()
     {
         $this->pathToSqliteFile = __DIR__.'/../../var/database.db';
+        $this->env = new Configuration(['mode']);
     }
 
     /**
@@ -32,7 +34,11 @@ class DatabaseConnexion
             try {
                 $this->pdo = new \PDO('sqlite:'.$this->pathToSqliteFile);
             } catch (\PDOException $error) {
-                throw new \PDOException($error->getMessage(), (int) $error->getCode());
+                if ('dev' === $this->env->get('mode')) {
+                    throw new \PDOException($error->getMessage(), (int) $error->getCode());
+                }
+
+                return "La base de données n'est pas disponible pour le moment.";
             }
         }
 

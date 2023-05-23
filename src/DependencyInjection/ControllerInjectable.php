@@ -26,6 +26,7 @@ use App\Service\ContactService;
 use App\Service\CsrfTokenService;
 use App\Service\MailerService;
 use App\Service\PostService;
+use App\Service\SecurityService;
 
 class ControllerInjectable
 {
@@ -44,7 +45,7 @@ class ControllerInjectable
         'blog' => [TwigHelper::class, Session::class, ServerRequest::class, SecurityHelper::class, UserManager::class, Request::class, CategoryManager::class, TagManager::class, CommentManager::class, CommentService::class, PostManager::class, CsrfTokenService::class],
         'error' => [TwigHelper::class, Session::class, ServerRequest::class, SecurityHelper::class, UserManager::class, Request::class],
         'home' => [MailerService::class, Configuration::class, ContactService::class, CsrfTokenService::class, Request::class],
-        'user' => [TwigHelper::class, Session::class, ServerRequest::class, SecurityHelper::class, UserManager::class, Request::class, CsrfTokenService::class],
+        'user' => [TwigHelper::class, Session::class, ServerRequest::class, SecurityHelper::class, UserManager::class, Request::class, CsrfTokenService::class, SecurityService::class],
     ];
 
     public static function register(Container $container): void

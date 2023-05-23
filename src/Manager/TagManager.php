@@ -91,8 +91,12 @@ class TagManager
 
     private function createTagModelFromArray(array $data): TagModel
     {
-        $tagModelParams = $this->tagModelParams->createFromData($data);
+        try {
+            $tagModelParams = $this->tagModelParams->createFromData($data);
 
-        return new TagModel($tagModelParams);
+            return new TagModel($tagModelParams);
+        } catch (\Exception $error) {
+            error_log($error->getMessage(), (int) $error->getCode());
+        }
     }
 }

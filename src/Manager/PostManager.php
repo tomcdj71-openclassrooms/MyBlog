@@ -334,44 +334,52 @@ class PostManager
 
     public function updatePost(PostModel $post, array $data): bool
     {
-        $tagIds = implode(',', array_map(function ($tag) {
-            return $tag->getId();
-        }, $post->getTags()));
-        $sql = 'UPDATE post SET title = :title, content = :content, chapo = :chapo, updated_at = :updated_at, is_enabled = :is_enabled, featured_image = :featured_image, category_id = :category_id, slug = :slug, tags = :tags WHERE id = :id';
-        $statement = $this->database->prepare($sql);
-        $statement->bindValue('id', $post->getId(), \PDO::PARAM_INT);
-        $statement->bindValue(':title', $data['title']);
-        $statement->bindValue(':content', $data['content']);
-        $statement->bindValue(':chapo', $data['chapo']);
-        $statement->bindValue(':featured_image', $data['featuredImage']);
-        $statement->bindValue(':updated_at', $data['updatedAt']);
-        $statement->bindValue(':is_enabled', (int) $data['isEnabled']);
-        $statement->bindValue(':category_id', $data['category']);
-        $statement->bindValue(':slug', $data['slug']);
-        $statement->bindValue(':tags', $tagIds);
-        $statement->execute();
+        try {
+            $tagIds = implode(',', array_map(function ($tag) {
+                return $tag->getId();
+            }, $post->getTags()));
+            $sql = 'UPDATE post SET title = :title, content = :content, chapo = :chapo, updated_at = :updated_at, is_enabled = :is_enabled, featured_image = :featured_image, category_id = :category_id, slug = :slug, tags = :tags WHERE id = :id';
+            $statement = $this->database->prepare($sql);
+            $statement->bindValue('id', $post->getId(), \PDO::PARAM_INT);
+            $statement->bindValue(':title', $data['title']);
+            $statement->bindValue(':content', $data['content']);
+            $statement->bindValue(':chapo', $data['chapo']);
+            $statement->bindValue(':featured_image', $data['featuredImage']);
+            $statement->bindValue(':updated_at', $data['updatedAt']);
+            $statement->bindValue(':is_enabled', (int) $data['isEnabled']);
+            $statement->bindValue(':category_id', $data['category']);
+            $statement->bindValue(':slug', $data['slug']);
+            $statement->bindValue(':tags', $tagIds);
+            $statement->execute();
 
-        return true;
+            return true;
+        } catch (\Exception $e) {
+            error_log($e->getMessage());
+        }
     }
 
     public function updatePostTags(PostModel $post, array $tags): bool
     {
-        $deleteSql = 'DELETE FROM post_tag WHERE post_id = :post_id';
-        $deleteStatement = $this->database->prepare($deleteSql);
-        $deleteStatement->bindValue('post_id', $post->getId(), \PDO::PARAM_INT);
-        $deleteStatement->execute();
-        $insertSql = 'INSERT INTO post_tag (post_id, tag_id) VALUES (:post_id, :tag_id)';
-        $insertStatement = $this->database->prepare($insertSql);
-        foreach ($tags as $tag) {
-            $insertStatement->bindValue('post_id', $post->getId(), \PDO::PARAM_INT);
-            $insertStatement->bindValue('tag_id', $tag->getId(), \PDO::PARAM_INT);
-            $insertResult = $insertStatement->execute();
-            if (!$insertResult) {
-                return false;
+        try {
+            $deleteSql = 'DELETE FROM post_tag WHERE post_id = :post_id';
+            $deleteStatement = $this->database->prepare($deleteSql);
+            $deleteStatement->bindValue('post_id', $post->getId(), \PDO::PARAM_INT);
+            $deleteStatement->execute();
+            $insertSql = 'INSERT INTO post_tag (post_id, tag_id) VALUES (:post_id, :tag_id)';
+            $insertStatement = $this->database->prepare($insertSql);
+            foreach ($tags as $tag) {
+                $insertStatement->bindValue('post_id', $post->getId(), \PDO::PARAM_INT);
+                $insertStatement->bindValue('tag_id', $tag->getId(), \PDO::PARAM_INT);
+                $insertResult = $insertStatement->execute();
+                if (!$insertResult) {
+                    return false;
+                }
             }
-        }
 
-        return true;
+            return true;
+        } catch (\Exception $e) {
+            error_log($e->getMessage());
+        }
     }
 
     public function updateIsEnabled(PostModel $post): bool
