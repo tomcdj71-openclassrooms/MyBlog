@@ -10,9 +10,13 @@
 	<div class="col-12 col-md-5 col-lg-8 d-flex align-items-center justify-content-md-end mt-3 mt-md-0 mobile-menu-links">
 		<div class="dropdown d-none d-md-block">
 			<button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-				<img src="{{ asset('../uploads/avatars/' ~ user.avatar ~ '.jpg') }}" class="img-rounded" alt="{{ user.username }}" width="30" height="30">
-				<span>
-					{{ user.username }}</span>
+				{% if user.avatar starts with 'http://' or user.avatar starts with 'https://' %}
+					<img src="{{ user.avatar }}" class="img-rounded" alt="{{ user.username }}" width="30" height="30">
+				{% else %}
+					<img src="{{ asset('../uploads/avatars/' ~ user.avatar ~ '.jpg') }}" class="img-rounded" alt="{{ user.username }}" width="30" height="30">
+				{% endif %}
+				<span>{{ user.username }}
+				</span>
 			</button>
 			<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
 				<li>
